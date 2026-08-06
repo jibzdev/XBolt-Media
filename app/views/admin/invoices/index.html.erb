@@ -1,0 +1,110 @@
+<% content_for :page_title, "Invoices" %>
+<% content_for :page_description, "Create and manage business invoices" %>
+
+<div class="flex items-center justify-between mb-5">
+  <div></div>
+  <%= link_to new_admin_invoice_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+    <span>New Invoice</span>
+  <% end %>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Total Invoices</span>
+      <i data-lucide="file-text" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @invoices.total_count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Paid</span>
+      <i data-lucide="check-circle" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @invoices.select { |i| i.status == 'paid' }.count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Pending</span>
+      <i data-lucide="clock" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @invoices.select { |i| i.status == 'pending' || i.status == 'sent' }.count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Overdue</span>
+      <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @invoices.select { |i| i.status == 'overdue' }.count %></div>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+  <% if @invoices.any? %>
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="border-b border-zinc-200/70">
+          <tr>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Invoice</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Business</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Status</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Due date</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Total</th>
+            <th class="px-4 py-3 text-right text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-100">
+          <% @invoices.each do |invoice| %>
+            <tr class="hover:bg-zinc-50/60 transition-colors cursor-pointer xb-row-hover" onclick="window.location='<%= admin_invoice_path(invoice) %>'">
+              <td class="px-4 py-3">
+                <div class="text-[13px] font-medium text-zinc-800"><%= invoice.invoice_number %></div>
+                <div class="text-[11px] text-zinc-400 mt-0.5"><%= invoice.issue_date %></div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="text-[13px] text-zinc-600"><%= invoice.business.name %></div>
+              </td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium <%= invoice.status_badge_classes %>">
+                  <%= invoice.status.titleize %>
+                </span>
+              </td>
+              <td class="px-4 py-3 text-[13px] text-zinc-600"><%= invoice.due_date %></td>
+              <td class="px-4 py-3 text-[13px] font-medium text-zinc-800"><%= number_to_currency(invoice.total, unit: '£') %></td>
+              <td class="px-4 py-3 text-right">
+                <div class="inline-flex items-center gap-1.5" onclick="event.stopPropagation();">
+                  <%= link_to edit_admin_invoice_path(invoice), class: "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-zinc-200/70 text-zinc-600 hover:bg-zinc-50 text-[12px] font-medium transition" do %>
+                    <i data-lucide="pencil" class="w-3 h-3"></i>
+                    <span>Edit</span>
+                  <% end %>
+                  <%= button_to admin_invoice_path(invoice), method: :delete, data: { turbo_confirm: "Delete invoice #{invoice.invoice_number}?" }, class: "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-[12px] font-medium transition", form: { class: "inline-block", onclick: "event.stopPropagation();" } do %>
+                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                    <span>Delete</span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="px-4 py-3 border-t border-zinc-200/70">
+      <%= paginate @invoices %>
+    </div>
+  <% else %>
+    <div class="py-16 text-center">
+      <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-100 mb-3">
+        <i data-lucide="file-text" class="w-5 h-5 text-zinc-400"></i>
+      </div>
+      <h3 class="text-[13px] font-medium text-zinc-700 mb-1">No invoices yet</h3>
+      <p class="text-[13px] text-zinc-400 mb-4">Create your first invoice for a business.</p>
+      <%= link_to new_admin_invoice_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        <span>Create invoice</span>
+      <% end %>
+    </div>
+  <% end %>
+</div>

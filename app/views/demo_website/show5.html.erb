@@ -1,0 +1,669 @@
+<% primary_rgb = @theme[:primary].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<% accent_rgb  = @theme[:accent].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @demo.site_title %></title>
+  <meta name="description" content="<%= @demo.hero_subheading %>">
+  <meta name="theme-color" content="<%= @theme[:primary] %>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '<%= @theme[:primary] %>',
+            accent: '<%= @theme[:accent] %>'
+          },
+          fontFamily: {
+            heading: ['DM Serif Display', 'serif'],
+            sans: ['DM Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --theme-primary: <%= @theme[:primary] %>;
+      --theme-accent: <%= @theme[:accent] %>;
+      --theme-bg: <%= @theme[:bg] %>;
+      --theme-primary-rgb: <%= primary_rgb %>;
+      --theme-accent-rgb: <%= accent_rgb %>;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--theme-bg);
+      color: #e4e4e7;
+      overflow-x: hidden;
+    }
+
+    .font-heading { font-family: 'DM Serif Display', serif; }
+    .font-mono-num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+    /* Navbar */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+      border-bottom: 1px solid transparent;
+    }
+    #navbar.scrolled {
+      background: rgba(var(--theme-primary-rgb), 0.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-color: rgba(var(--theme-primary-rgb), 0.12);
+      box-shadow: 0 1px 30px rgba(0,0,0,0.35);
+    }
+
+    .nav-link {
+      position: relative;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.25s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; left: 0; bottom: -3px;
+      width: 0; height: 2px;
+      background: var(--theme-primary);
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Mobile menu */
+    .mobile-menu {
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .mobile-menu.open { transform: translateX(0); }
+
+    /* Geometric accents */
+    .geo-grid {
+      background-image:
+        linear-gradient(rgba(var(--theme-primary-rgb), 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--theme-primary-rgb), 0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .geo-dots {
+      background-image: radial-gradient(rgba(var(--theme-primary-rgb), 0.15) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Stat counter animation */
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card hover */
+    .card-lift {
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .card-lift:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      border-color: rgba(var(--theme-primary-rgb), 0.3) !important;
+    }
+
+    /* Accordion */
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+    }
+    .faq-answer.open {
+      max-height: 500px;
+    }
+    .faq-chevron {
+      transition: transform 0.3s ease;
+    }
+    .faq-chevron.rotated {
+      transform: rotate(180deg);
+    }
+
+    /* CTA button */
+    .btn-primary {
+      background: var(--theme-primary);
+      color: #fff;
+      font-weight: 600;
+      padding: 0.875rem 2rem;
+      border: none;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 24px rgba(var(--theme-primary-rgb), 0.35);
+    }
+
+    .btn-outline {
+      border: 1.5px solid rgba(var(--theme-primary-rgb), 0.4);
+      color: #fff;
+      font-weight: 600;
+      padding: 0.875rem 2rem;
+      background: transparent;
+      transition: all 0.25s ease;
+    }
+    .btn-outline:hover {
+      border-color: var(--theme-primary);
+      background: rgba(var(--theme-primary-rgb), 0.08);
+    }
+
+    /* Horizontal rule accent */
+    .rule-accent {
+      width: 48px; height: 3px;
+      background: var(--theme-primary);
+    }
+
+    /* Section divider */
+    .section-border {
+      border-top: 1px solid rgba(var(--theme-primary-rgb), 0.1);
+    }
+
+    /* Process connector */
+    .process-connector {
+      position: absolute;
+      top: 28px; left: calc(50% + 28px); right: calc(-50% + 28px);
+      height: 1px;
+      background: linear-gradient(90deg, rgba(var(--theme-primary-rgb), 0.3), rgba(var(--theme-primary-rgb), 0.05));
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(var(--theme-primary-rgb), 0.3); border-radius: 3px; }
+
+    /* Form inputs */
+    .form-input {
+      background: rgba(var(--theme-primary-rgb), 0.04);
+      border: 1px solid rgba(var(--theme-primary-rgb), 0.15);
+      color: #e4e4e7;
+      padding: 0.75rem 1rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      outline: none;
+      width: 100%;
+    }
+    .form-input:focus {
+      border-color: var(--theme-primary);
+      box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.12);
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body class="antialiased">
+
+<!-- ═══════════════════════ NAVBAR ═══════════════════════ -->
+<nav id="navbar" class="py-4">
+  <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+    <a href="#" class="flex items-center gap-3 text-white no-underline">
+      <div class="w-9 h-9 rounded flex items-center justify-center" style="background: var(--theme-primary);">
+        <i class="fas fa-chart-line text-sm"></i>
+      </div>
+      <span class="text-lg font-bold tracking-tight"><%= @demo.site_title %></span>
+    </a>
+
+    <div class="hidden lg:flex items-center gap-8">
+      <a href="#services" class="nav-link">Services</a>
+      <a href="#about" class="nav-link">About</a>
+      <a href="#work" class="nav-link">Results</a>
+      <a href="#testimonials" class="nav-link">Testimonials</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+      <a href="#contact" class="btn-primary rounded text-sm px-5 py-2.5 no-underline"><%= @demo.cta_primary_text %></a>
+    </div>
+
+    <button onclick="document.getElementById('mobile-menu').classList.toggle('open')" class="lg:hidden text-white text-xl bg-transparent border-none cursor-pointer p-2">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-72 z-50 flex flex-col" style="background: var(--theme-bg); border-left: 1px solid rgba(var(--theme-primary-rgb), 0.12);">
+  <div class="flex justify-end p-6">
+    <button onclick="document.getElementById('mobile-menu').classList.remove('open')" class="text-white text-xl bg-transparent border-none cursor-pointer">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="flex flex-col gap-1 px-6">
+    <a href="#services" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="py-3 px-4 rounded text-white/60 hover:text-white hover:bg-white/5 no-underline text-sm font-semibold uppercase tracking-wider transition-colors">Services</a>
+    <a href="#about" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="py-3 px-4 rounded text-white/60 hover:text-white hover:bg-white/5 no-underline text-sm font-semibold uppercase tracking-wider transition-colors">About</a>
+    <a href="#work" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="py-3 px-4 rounded text-white/60 hover:text-white hover:bg-white/5 no-underline text-sm font-semibold uppercase tracking-wider transition-colors">Results</a>
+    <a href="#testimonials" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="py-3 px-4 rounded text-white/60 hover:text-white hover:bg-white/5 no-underline text-sm font-semibold uppercase tracking-wider transition-colors">Testimonials</a>
+    <a href="#faq" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="py-3 px-4 rounded text-white/60 hover:text-white hover:bg-white/5 no-underline text-sm font-semibold uppercase tracking-wider transition-colors">FAQ</a>
+    <a href="#contact" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="btn-primary rounded text-center mt-4 no-underline text-sm"><%= @demo.cta_primary_text %></a>
+  </div>
+</div>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section class="relative min-h-screen flex items-center pt-24 overflow-hidden">
+  <div class="absolute inset-0 geo-grid opacity-40"></div>
+  <div class="absolute top-20 right-0 w-96 h-96 rounded-full opacity-10" style="background: radial-gradient(circle, var(--theme-primary), transparent 70%);"></div>
+  <div class="absolute bottom-0 left-0 w-80 h-80 opacity-5" style="border: 1px solid var(--theme-primary); transform: rotate(45deg); translate: -40% 40%;"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 w-full">
+    <div class="max-w-3xl">
+      <div data-aos="fade-up" data-aos-delay="100">
+        <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8" style="background: rgba(var(--theme-primary-rgb), 0.1); color: var(--theme-primary); border: 1px solid rgba(var(--theme-primary-rgb), 0.2);">
+          <span class="w-1.5 h-1.5 rounded-full" style="background: var(--theme-primary);"></span>
+          <%= @demo.hero_badge %>
+        </span>
+      </div>
+
+      <h1 data-aos="fade-up" data-aos-delay="200" class="font-heading text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-6">
+        <%= @demo.hero_heading %>
+      </h1>
+
+      <p data-aos="fade-up" data-aos-delay="300" class="text-lg md:text-xl text-white/50 leading-relaxed mb-10 max-w-2xl">
+        <%= @demo.hero_subheading %>
+      </p>
+
+      <div data-aos="fade-up" data-aos-delay="400" class="flex flex-wrap gap-4">
+        <a href="#contact" class="btn-primary rounded-md text-base no-underline inline-flex items-center gap-2">
+          <%= @demo.cta_primary_text %>
+          <i class="fas fa-arrow-right text-sm"></i>
+        </a>
+        <a href="#services" class="btn-outline rounded-md text-base no-underline inline-flex items-center gap-2">
+          <%= @demo.cta_secondary_text %>
+        </a>
+      </div>
+
+      <div data-aos="fade-up" data-aos-delay="500" class="flex items-center gap-8 mt-14 pt-8" style="border-top: 1px solid rgba(var(--theme-primary-rgb), 0.12);">
+        <% @demo.stat_items.first(3).each do |stat| %>
+          <div>
+            <div class="text-2xl font-bold text-white font-mono-num"><%= stat[:number] %></div>
+            <div class="text-xs text-white/40 uppercase tracking-wider mt-1"><%= stat[:label] %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SERVICES ═══════════════════════ -->
+<section id="services" class="py-28 section-border relative">
+  <div class="absolute top-0 right-0 w-64 h-64 geo-dots opacity-30"></div>
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-2xl mb-16" data-aos="fade-up">
+      <span class="text-xs font-semibold uppercase tracking-widest mb-4 block" style="color: var(--theme-primary);">What We Do</span>
+      <h2 class="font-heading text-4xl md:text-5xl text-white mb-5"><%= @demo.services_title %></h2>
+      <div class="rule-accent mb-6"></div>
+      <p class="text-white/45 text-lg leading-relaxed"><%= @demo.services_intro %></p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% service_icons = ["fa-calculator", "fa-file-invoice-dollar", "fa-chart-pie", "fa-landmark", "fa-shield-halved", "fa-scale-balanced", "fa-coins", "fa-hand-holding-dollar", "fa-building-columns"] %>
+      <% @demo.feature_cards.each_with_index do |card, i| %>
+        <div data-aos="fade-up" data-aos-delay="<%= i * 80 %>" class="card-lift rounded-lg p-7 group" style="background: rgba(var(--theme-primary-rgb), 0.03); border: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+          <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-5 transition-colors" style="background: rgba(var(--theme-primary-rgb), 0.08);">
+            <i class="fas <%= service_icons[i % service_icons.length] %> text-lg" style="color: var(--theme-primary);"></i>
+          </div>
+          <h3 class="text-white text-lg font-bold mb-3"><%= card[:title] %></h3>
+          <p class="text-white/40 text-sm leading-relaxed"><%= card[:body] %></p>
+          <div class="mt-5 pt-4" style="border-top: 1px solid rgba(var(--theme-primary-rgb), 0.06);">
+            <span class="text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-2 transition-colors" style="color: var(--theme-primary);">
+              Learn More <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+            </span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ ABOUT ═══════════════════════ -->
+<section id="about" class="py-28 section-border relative overflow-hidden">
+  <div class="absolute inset-0 geo-grid opacity-20"></div>
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div data-aos="fade-right">
+        <span class="text-xs font-semibold uppercase tracking-widest mb-4 block" style="color: var(--theme-primary);">About Us</span>
+        <h2 class="font-heading text-4xl md:text-5xl text-white mb-5"><%= @demo.about_title %></h2>
+        <div class="rule-accent mb-8"></div>
+        <div class="text-white/45 leading-relaxed space-y-4 text-base">
+          <p><%= @demo.about_body %></p>
+        </div>
+        <a href="#contact" class="btn-primary rounded-md text-sm no-underline inline-flex items-center gap-2 mt-8">
+          <%= @demo.cta_primary_text %>
+          <i class="fas fa-arrow-right text-xs"></i>
+        </a>
+      </div>
+
+      <div data-aos="fade-left" class="relative">
+        <div class="rounded-xl p-8 relative" style="background: rgba(var(--theme-primary-rgb), 0.04); border: 1px solid rgba(var(--theme-primary-rgb), 0.1);">
+          <div class="absolute -top-3 -right-3 w-20 h-20 rounded-lg opacity-20" style="border: 2px solid var(--theme-primary);"></div>
+          <div class="grid grid-cols-2 gap-5">
+            <% @demo.stat_items.each_with_index do |stat, i| %>
+              <div class="rounded-lg p-5 text-center" style="background: rgba(var(--theme-primary-rgb), 0.05); border: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+                <div class="text-3xl font-bold text-white font-mono-num mb-1" style="color: var(--theme-primary);"><%= stat[:number] %></div>
+                <div class="text-xs text-white/40 uppercase tracking-wider"><%= stat[:label] %></div>
+              </div>
+            <% end %>
+          </div>
+          <div class="mt-6 pt-5 flex items-center gap-3" style="border-top: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: rgba(var(--theme-primary-rgb), 0.1);">
+              <i class="fas fa-shield-halved text-sm" style="color: var(--theme-primary);"></i>
+            </div>
+            <div>
+              <div class="text-white text-sm font-semibold"><%= @demo.site_title %></div>
+              <div class="text-white/35 text-xs">Trusted Financial Partner</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ PROCESS ═══════════════════════ -->
+<section class="py-28 section-border relative">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center max-w-2xl mx-auto mb-16" data-aos="fade-up">
+      <span class="text-xs font-semibold uppercase tracking-widest mb-4 block" style="color: var(--theme-primary);">Our Process</span>
+      <h2 class="font-heading text-4xl md:text-5xl text-white mb-5">How We Work</h2>
+      <div class="rule-accent mx-auto mb-6"></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-<%= [@demo.process_steps.length, 4].min %> gap-8">
+      <% @demo.process_steps.each_with_index do |step, i| %>
+        <div data-aos="fade-up" data-aos-delay="<%= i * 120 %>" class="relative text-center">
+          <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 font-mono-num text-lg font-bold" style="background: rgba(var(--theme-primary-rgb), 0.1); border: 2px solid rgba(var(--theme-primary-rgb), 0.25); color: var(--theme-primary);">
+            <%= format("%02d", i + 1) %>
+          </div>
+          <h3 class="text-white text-lg font-bold mb-3"><%= step[:title] %></h3>
+          <p class="text-white/40 text-sm leading-relaxed"><%= step[:body] %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ RESULTS / WORK ═══════════════════════ -->
+<section id="work" class="py-28 section-border relative">
+  <div class="absolute bottom-0 right-0 w-80 h-80 geo-dots opacity-20"></div>
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-2xl mb-16" data-aos="fade-up">
+      <span class="text-xs font-semibold uppercase tracking-widest mb-4 block" style="color: var(--theme-primary);">Case Studies</span>
+      <h2 class="font-heading text-4xl md:text-5xl text-white mb-5"><%= @demo.work_title %></h2>
+      <div class="rule-accent mb-6"></div>
+      <p class="text-white/45 text-lg leading-relaxed"><%= @demo.work_intro %></p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @demo.project_cards.each_with_index do |card, i| %>
+        <div data-aos="fade-up" data-aos-delay="<%= i * 100 %>" class="card-lift rounded-lg overflow-hidden group" style="background: rgba(var(--theme-primary-rgb), 0.03); border: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+          <div class="h-48 relative flex items-center justify-center" style="background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.12), rgba(var(--theme-accent-rgb), 0.08));">
+            <% project_image = @demo.image_for("project_#{i + 1}") %>
+            <% if project_image.present? %>
+              <%= image_tag project_image, class: "w-full h-full object-cover", alt: card[:title] %>
+            <% else %>
+              <div class="absolute inset-0 geo-grid opacity-30"></div>
+              <i class="fas fa-chart-bar text-4xl relative z-10" style="color: rgba(var(--theme-primary-rgb), 0.4);"></i>
+            <% end %>
+          </div>
+          <div class="p-6">
+            <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full inline-block mb-3" style="color: var(--theme-primary); background: rgba(var(--theme-primary-rgb), 0.08);"><%= card[:category] %></span>
+            <h3 class="text-white text-lg font-bold mb-2"><%= card[:title] %></h3>
+            <p class="text-white/40 text-sm leading-relaxed"><%= card[:body] %></p>
+            <div class="mt-4 pt-4 flex items-center justify-between" style="border-top: 1px solid rgba(var(--theme-primary-rgb), 0.06);">
+              <span class="text-xs font-semibold inline-flex items-center gap-2" style="color: var(--theme-primary);">
+                View Details <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+              </span>
+              <i class="fas fa-chart-line text-white/15"></i>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ STATS ═══════════════════════ -->
+<section class="py-20 section-border relative overflow-hidden">
+  <div class="absolute inset-0 geo-grid opacity-30"></div>
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="grid grid-cols-2 lg:grid-cols-<%= [@demo.stat_items.length, 4].min %> gap-8">
+      <% @demo.stat_items.each_with_index do |stat, i| %>
+        <div data-aos="fade-up" data-aos-delay="<%= i * 100 %>" class="text-center py-8 px-4 rounded-lg" style="background: rgba(var(--theme-primary-rgb), 0.03); border: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+          <div class="text-4xl md:text-5xl font-bold font-mono-num mb-2" style="color: var(--theme-primary);"><%= stat[:number] %></div>
+          <div class="text-white/40 text-sm uppercase tracking-wider"><%= stat[:label] %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ TESTIMONIALS ═══════════════════════ -->
+<section id="testimonials" class="py-28 section-border relative">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center max-w-2xl mx-auto mb-16" data-aos="fade-up">
+      <span class="text-xs font-semibold uppercase tracking-widest mb-4 block" style="color: var(--theme-primary);">Client Feedback</span>
+      <h2 class="font-heading text-4xl md:text-5xl text-white mb-5"><%= @demo.testimonials_title %></h2>
+      <div class="rule-accent mx-auto mb-6"></div>
+      <p class="text-white/45 text-lg leading-relaxed"><%= @demo.testimonials_intro %></p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @demo.testimonial_cards.each_with_index do |card, i| %>
+        <div data-aos="fade-up" data-aos-delay="<%= i * 100 %>" class="card-lift rounded-lg p-7 relative" style="background: rgba(var(--theme-primary-rgb), 0.03); border: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+          <i class="fas fa-quote-left text-2xl mb-5 block" style="color: rgba(var(--theme-primary-rgb), 0.2);"></i>
+          <p class="text-white/50 text-sm leading-relaxed mb-6 italic">&ldquo;<%= card[:quote] %>&rdquo;</p>
+          <div class="flex items-center gap-3 pt-5" style="border-top: 1px solid rgba(var(--theme-primary-rgb), 0.06);">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white" style="background: rgba(var(--theme-primary-rgb), 0.15);">
+              <%= card[:name].chars.first.upcase %>
+            </div>
+            <div>
+              <div class="text-white text-sm font-semibold"><%= card[:name] %></div>
+              <div class="text-white/35 text-xs"><%= card[:role] %></div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FAQ ═══════════════════════ -->
+<section id="faq" class="py-28 section-border relative">
+  <div class="absolute top-0 left-0 w-64 h-64 geo-dots opacity-20"></div>
+  <div class="max-w-3xl mx-auto px-6">
+    <div class="text-center mb-16" data-aos="fade-up">
+      <span class="text-xs font-semibold uppercase tracking-widest mb-4 block" style="color: var(--theme-primary);">FAQ</span>
+      <h2 class="font-heading text-4xl md:text-5xl text-white mb-5"><%= @demo.faq_title %></h2>
+      <div class="rule-accent mx-auto mb-6"></div>
+      <p class="text-white/45 text-lg leading-relaxed"><%= @demo.faq_intro %></p>
+    </div>
+
+    <div class="space-y-3">
+      <% @demo.faq_items.each_with_index do |faq, i| %>
+        <div data-aos="fade-up" data-aos-delay="<%= i * 60 %>" class="rounded-lg overflow-hidden" style="background: rgba(var(--theme-primary-rgb), 0.03); border: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+          <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left bg-transparent border-none cursor-pointer group">
+            <span class="text-white text-sm font-semibold pr-4 leading-snug"><%= faq[:question] %></span>
+            <i class="fas fa-chevron-down faq-chevron text-xs flex-shrink-0" style="color: var(--theme-primary);"></i>
+          </button>
+          <div class="faq-answer px-5">
+            <p class="text-white/40 text-sm leading-relaxed pb-5"><%= faq[:answer] %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ CONTACT ═══════════════════════ -->
+<section id="contact" class="py-28 section-border relative overflow-hidden">
+  <div class="absolute inset-0 geo-grid opacity-20"></div>
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="grid lg:grid-cols-2 gap-16">
+      <div data-aos="fade-right">
+        <span class="text-xs font-semibold uppercase tracking-widest mb-4 block" style="color: var(--theme-primary);">Get In Touch</span>
+        <h2 class="font-heading text-4xl md:text-5xl text-white mb-5"><%= @demo.contact_title %></h2>
+        <div class="rule-accent mb-6"></div>
+        <p class="text-white/45 text-lg leading-relaxed mb-10"><%= @demo.contact_intro %></p>
+
+        <div class="space-y-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(var(--theme-primary-rgb), 0.08); border: 1px solid rgba(var(--theme-primary-rgb), 0.12);">
+              <i class="fas fa-envelope" style="color: var(--theme-primary);"></i>
+            </div>
+            <div>
+              <div class="text-white/35 text-xs uppercase tracking-wider mb-1">Email</div>
+              <div class="text-white text-sm font-semibold"><%= @demo.contact_email %></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(var(--theme-primary-rgb), 0.08); border: 1px solid rgba(var(--theme-primary-rgb), 0.12);">
+              <i class="fas fa-phone" style="color: var(--theme-primary);"></i>
+            </div>
+            <div>
+              <div class="text-white/35 text-xs uppercase tracking-wider mb-1">Phone</div>
+              <div class="text-white text-sm font-semibold"><%= @demo.contact_phone %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-aos="fade-left">
+        <form action="#contact" onsubmit="event.preventDefault(); this.querySelector('.submit-btn').textContent='Sent!'" class="rounded-xl p-8" style="background: rgba(var(--theme-primary-rgb), 0.03); border: 1px solid rgba(var(--theme-primary-rgb), 0.1);">
+          <div class="grid sm:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label class="block text-white/40 text-xs uppercase tracking-wider mb-2 font-semibold">Name</label>
+              <input type="text" class="form-input rounded-md" placeholder="Full name">
+            </div>
+            <div>
+              <label class="block text-white/40 text-xs uppercase tracking-wider mb-2 font-semibold">Email</label>
+              <input type="email" class="form-input rounded-md" placeholder="Email address">
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label class="block text-white/40 text-xs uppercase tracking-wider mb-2 font-semibold">Phone</label>
+              <input type="tel" class="form-input rounded-md" placeholder="Phone number">
+            </div>
+            <div>
+              <label class="block text-white/40 text-xs uppercase tracking-wider mb-2 font-semibold">Service</label>
+              <select class="form-input rounded-md">
+                <option value="" style="background: var(--theme-bg);">Select a service</option>
+                <% @demo.feature_cards.each do |card| %>
+                  <option value="<%= card[:title] %>" style="background: var(--theme-bg);"><%= card[:title] %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+          <div class="mb-5">
+            <label class="block text-white/40 text-xs uppercase tracking-wider mb-2 font-semibold">Message</label>
+            <textarea rows="4" class="form-input rounded-md resize-none" placeholder="Tell us about your needs..."></textarea>
+          </div>
+          <button type="submit" class="submit-btn btn-primary rounded-md w-full text-base">
+            <%= @demo.cta_primary_text %>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="py-16 section-border">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 rounded flex items-center justify-center" style="background: var(--theme-primary);">
+            <i class="fas fa-chart-line text-sm text-white"></i>
+          </div>
+          <span class="text-lg font-bold text-white"><%= @demo.site_title %></span>
+        </div>
+        <p class="text-white/35 text-sm leading-relaxed max-w-sm"><%= @demo.hero_subheading %></p>
+      </div>
+
+      <div>
+        <h4 class="text-white text-xs font-semibold uppercase tracking-widest mb-5">Quick Links</h4>
+        <div class="space-y-3">
+          <a href="#services" class="block text-white/35 text-sm hover:text-white transition-colors no-underline">Services</a>
+          <a href="#about" class="block text-white/35 text-sm hover:text-white transition-colors no-underline">About</a>
+          <a href="#work" class="block text-white/35 text-sm hover:text-white transition-colors no-underline">Results</a>
+          <a href="#testimonials" class="block text-white/35 text-sm hover:text-white transition-colors no-underline">Testimonials</a>
+          <a href="#contact" class="block text-white/35 text-sm hover:text-white transition-colors no-underline">Contact</a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white text-xs font-semibold uppercase tracking-widest mb-5">Services</h4>
+        <div class="space-y-3">
+          <% @demo.feature_cards.first(5).each do |card| %>
+            <a href="#services" class="block text-white/35 text-sm hover:text-white transition-colors no-underline"><%= card[:title] %></a>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4" style="border-top: 1px solid rgba(var(--theme-primary-rgb), 0.08);">
+      <p class="text-white/25 text-xs">&copy; <%= Time.current.year %> <%= @demo.site_title %>. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="#" class="text-white/25 hover:text-white transition-colors text-sm"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" class="text-white/25 hover:text-white transition-colors text-sm"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="text-white/25 hover:text-white transition-colors text-sm"><i class="fab fa-facebook-f"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // FAQ accordion
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const chevron = btn.querySelector('.faq-chevron');
+    const isOpen = answer.classList.contains('open');
+
+    document.querySelectorAll('.faq-answer.open').forEach(a => {
+      a.classList.remove('open');
+      a.previousElementSibling.querySelector('.faq-chevron').classList.remove('rotated');
+    });
+
+    if (!isOpen) {
+      answer.classList.add('open');
+      chevron.classList.add('rotated');
+    }
+  }
+
+  // Smooth scroll for nav links
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+
+<script>AOS.init({ duration: 800, once: true, offset: 50 });</script>
+</body>
+</html>

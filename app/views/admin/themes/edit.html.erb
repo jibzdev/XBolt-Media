@@ -1,0 +1,208 @@
+<% content_for :page_title, "Theme" %>
+<% content_for :page_description, "Manage colors used across the website and admin panel" %>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+  <div class="px-5 py-4 border-b border-zinc-200/70">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center">
+        <i data-lucide="paintbrush" class="w-4 h-4 text-white"></i>
+      </div>
+      <div>
+        <h3 class="text-[15px] font-semibold text-zinc-800">Theme</h3>
+        <p class="text-[12px] text-zinc-500">Colors for text, icons, buttons, backgrounds, and borders</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-5">
+    <%= form_with(model: @general_setting, url: admin_theme_path, method: :patch, local: true, class: "space-y-5") do |f| %>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_primary, "Primary", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_primary, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_primary", theme_input: "color", theme_var: "--xbolt-primary", theme_rgb_var: "--xbolt-primary-rgb" } %>
+            <%= f.text_field :theme_primary, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#18181b", data: { theme_pair: "theme_primary", theme_input: "text", theme_var: "--xbolt-primary", theme_rgb_var: "--xbolt-primary-rgb" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Primary buttons, active elements.</p>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style="background: var(--xbolt-primary); color: var(--xbolt-on-primary);">
+              <i data-lucide="star" class="w-3 h-3"></i><span class="text-[11px] font-medium">Primary</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_primary_hover, "Primary hover", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_primary_hover, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_primary_hover", theme_input: "color", theme_var: "--xbolt-primary-hover" } %>
+            <%= f.text_field :theme_primary_hover, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#27272a", data: { theme_pair: "theme_primary_hover", theme_input: "text", theme_var: "--xbolt-primary-hover" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Hover state for buttons.</p>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style="background: var(--xbolt-primary-hover); color: var(--xbolt-on-primary);">
+              <i data-lucide="mouse-pointer" class="w-3 h-3"></i><span class="text-[11px] font-medium">Hover</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_on_primary, "On primary", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_on_primary, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_on_primary", theme_input: "color", theme_var: "--xbolt-on-primary" } %>
+            <%= f.text_field :theme_on_primary, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#ffffff", data: { theme_pair: "theme_on_primary", theme_input: "text", theme_var: "--xbolt-on-primary" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Text/icon on primary bg.</p>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200/70" style="background: var(--xbolt-primary); color: var(--xbolt-on-primary);">
+              <i data-lucide="type" class="w-3 h-3"></i><span class="text-[11px] font-medium">Text</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_bg, "Background", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_bg, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_bg", theme_input: "color", theme_var: "--xbolt-bg", theme_rgb_var: "--xbolt-bg-rgb" } %>
+            <%= f.text_field :theme_bg, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#ffffff", data: { theme_pair: "theme_bg", theme_input: "text", theme_var: "--xbolt-bg", theme_rgb_var: "--xbolt-bg-rgb" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Overall page background.</p>
+            <div class="w-14 h-8 rounded-lg border border-zinc-200/70" style="background: var(--xbolt-bg);"></div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_surface, "Surface", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_surface, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_surface", theme_input: "color", theme_var: "--xbolt-surface", theme_rgb_var: "--xbolt-surface-rgb" } %>
+            <%= f.text_field :theme_surface, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#ffffff", data: { theme_pair: "theme_surface", theme_input: "text", theme_var: "--xbolt-surface", theme_rgb_var: "--xbolt-surface-rgb" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Cards, panels, inputs.</p>
+            <div class="w-20 rounded-lg border border-zinc-200/70 p-1.5" style="background: var(--xbolt-surface);">
+              <div class="h-1.5 w-10 rounded bg-zinc-900"></div>
+              <div class="mt-1.5 h-1.5 w-14 rounded bg-zinc-200"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_surface_alt, "Surface alt", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_surface_alt, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_surface_alt", theme_input: "color", theme_var: "--xbolt-surface-alt", theme_rgb_var: "--xbolt-surface-alt-rgb" } %>
+            <%= f.text_field :theme_surface_alt, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#fafafa", data: { theme_pair: "theme_surface_alt", theme_input: "text", theme_var: "--xbolt-surface-alt", theme_rgb_var: "--xbolt-surface-alt-rgb" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Soft backgrounds.</p>
+            <div class="w-14 h-8 rounded-lg border border-zinc-200/70" style="background: var(--xbolt-surface-alt);"></div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_border, "Border", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_border, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_border", theme_input: "color", theme_var: "--xbolt-border", theme_rgb_var: "--xbolt-border-rgb" } %>
+            <%= f.text_field :theme_border, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#e4e4e7", data: { theme_pair: "theme_border", theme_input: "text", theme_var: "--xbolt-border", theme_rgb_var: "--xbolt-border-rgb" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Cards, inputs, dividers.</p>
+            <div class="w-20 h-8 rounded-lg" style="border: 2px solid var(--xbolt-border); background: var(--xbolt-surface);"></div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_text, "Text", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_text, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_text", theme_input: "color", theme_var: "--xbolt-text", theme_rgb_var: "--xbolt-text-rgb" } %>
+            <%= f.text_field :theme_text, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#18181b", data: { theme_pair: "theme_text", theme_input: "text", theme_var: "--xbolt-text", theme_rgb_var: "--xbolt-text-rgb" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Headings, strong text.</p>
+            <div class="text-[12px] font-semibold" style="color: var(--xbolt-text);">Example Heading</div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <%= f.label :theme_text_muted, "Muted text", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <div class="flex items-center gap-2">
+            <%= f.color_field :theme_text_muted, class: "h-9 w-10 rounded-md border border-zinc-200/70 bg-white cursor-pointer", data: { theme_pair: "theme_text_muted", theme_input: "color", theme_var: "--xbolt-text-muted", theme_rgb_var: "--xbolt-text-muted-rgb" } %>
+            <%= f.text_field :theme_text_muted, class: "flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", placeholder: "#52525b", data: { theme_pair: "theme_text_muted", theme_input: "text", theme_var: "--xbolt-text-muted", theme_rgb_var: "--xbolt-text-muted-rgb" } %>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-zinc-400">Descriptions, helper text.</p>
+            <div class="text-[11px]" style="color: var(--xbolt-text-muted);">Example helper text</div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full px-3.5 py-2.5 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition inline-flex items-center justify-center gap-2">
+        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+        Save Theme
+      </button>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  (function () {
+    function initThemePairs() {
+      const byKey = new Map();
+      document.querySelectorAll("[data-theme-pair][data-theme-input]").forEach((el) => {
+        const key = el.getAttribute("data-theme-pair");
+        const kind = el.getAttribute("data-theme-input");
+        if (!byKey.has(key)) byKey.set(key, {});
+        byKey.get(key)[kind] = el;
+      });
+
+      const hexRe = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+      function hexToRgb(hex) {
+        const h = (hex || "").replace("#", "").trim();
+        if (h.length === 3) {
+          const r = parseInt(h[0] + h[0], 16);
+          const g = parseInt(h[1] + h[1], 16);
+          const b = parseInt(h[2] + h[2], 16);
+          return `${r} ${g} ${b}`;
+        }
+        const r = parseInt(h.slice(0, 2), 16);
+        const g = parseInt(h.slice(2, 4), 16);
+        const b = parseInt(h.slice(4, 6), 16);
+        return `${r} ${g} ${b}`;
+      }
+
+      function applyCssVarsFromText(textEl) {
+        const v = (textEl.value || "").trim();
+        if (!hexRe.test(v)) return;
+        const cssVar = textEl.getAttribute("data-theme-var");
+        const rgbVar = textEl.getAttribute("data-theme-rgb-var");
+        if (cssVar) document.documentElement.style.setProperty(cssVar, v);
+        if (rgbVar) document.documentElement.style.setProperty(rgbVar, hexToRgb(v));
+      }
+
+      byKey.forEach((pair) => {
+        const color = pair.color;
+        const text = pair.text;
+        if (!color || !text) return;
+
+        const syncFromColor = () => {
+          if (text.value !== color.value) text.value = color.value;
+          applyCssVarsFromText(text);
+        };
+
+        const syncFromText = () => {
+          const v = (text.value || "").trim();
+          if (hexRe.test(v)) color.value = v;
+          applyCssVarsFromText(text);
+        };
+
+        color.addEventListener("input", syncFromColor);
+        text.addEventListener("input", syncFromText);
+
+        syncFromColor();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", initThemePairs);
+    document.addEventListener("turbo:load", initThemePairs);
+  })();
+</script>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%= seo_meta_tags('privacy_policy') %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: #09090b; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #fff; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/[0.06]">
+        <div class="container mx-auto px-4 sm:px-6 py-5">
+            <div class="flex items-center justify-between">
+                <a href="<%= root_path %>" class="flex items-center gap-3">
+                    <img src="<%= brand_logo_url %>" alt="Logo" class="w-10 h-7 object-contain">
+                    <span class="text-sm font-semibold tracking-tight text-white">XBolt <span class="text-zinc-500 font-medium">Media</span></span>
+                </a>
+                <%= link_to root_path, class: "inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-amber-400 transition-colors" do %>
+                    <i class='bx bx-arrow-back'></i>
+                    <span>Back to Home</span>
+                <% end %>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 max-w-3xl">
+        <header class="mb-14">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] text-white mb-3">Privacy Policy</h1>
+            <p class="text-sm text-zinc-500">Last updated: <%= Time.current.strftime("%B %d, %Y") %></p>
+        </header>
+
+        <div class="space-y-10">
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">1. Introduction</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    Welcome to XBolt Media ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">2. Information We Collect</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-3">We collect information that you provide directly to us, including:</p>
+                <ul class="text-sm text-zinc-400 space-y-1.5 ml-5 list-disc marker:text-amber-500/40">
+                    <li>Name and contact information</li>
+                    <li>Email address</li>
+                    <li>Phone number</li>
+                    <li>Business information</li>
+                    <li>Any other information you choose to provide</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">3. How We Use Your Information</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-3">We use the information we collect to:</p>
+                <ul class="text-sm text-zinc-400 space-y-1.5 ml-5 list-disc marker:text-amber-500/40">
+                    <li>Provide, maintain, and improve our services</li>
+                    <li>Process and complete transactions</li>
+                    <li>Send you technical notices and support messages</li>
+                    <li>Respond to your comments and questions</li>
+                    <li>Communicate with you about products, services, and events</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">4. Information Sharing</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this Privacy Policy or as required by law.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">5. Data Security</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">6. Your Rights</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-3">You have the right to:</p>
+                <ul class="text-sm text-zinc-400 space-y-1.5 ml-5 list-disc marker:text-amber-500/40">
+                    <li>Access your personal information</li>
+                    <li>Correct inaccurate information</li>
+                    <li>Request deletion of your information</li>
+                    <li>Object to processing of your information</li>
+                    <li>Request restriction of processing</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">7. Contact Us</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                    If you have questions about this Privacy Policy, please contact us at:
+                </p>
+                <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+                    <p class="text-white font-semibold text-sm mb-1.5">XBolt Media</p>
+                    <p class="text-zinc-400 text-sm">Email: <%= @general_setting&.contact_email || 'info@xboltmedia.com' %></p>
+                    <p class="text-zinc-400 text-sm">Phone: <%= @general_setting&.phone_number || '+447459731426' %></p>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%= seo_meta_tags('terms_of_service') %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: #09090b; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #fff; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/[0.06]">
+        <div class="container mx-auto px-4 sm:px-6 py-5">
+            <div class="flex items-center justify-between">
+                <a href="<%= root_path %>" class="flex items-center gap-3">
+                    <img src="<%= brand_logo_url %>" alt="Logo" class="w-10 h-7 object-contain">
+                    <span class="text-sm font-semibold tracking-tight text-white">XBolt <span class="text-zinc-500 font-medium">Media</span></span>
+                </a>
+                <%= link_to root_path, class: "inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-amber-400 transition-colors" do %>
+                    <i class='bx bx-arrow-back'></i>
+                    <span>Back to Home</span>
+                <% end %>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 max-w-3xl">
+        <header class="mb-14">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] text-white mb-3">Terms of Service</h1>
+            <p class="text-sm text-zinc-500">Last updated: <%= Time.current.strftime("%B %d, %Y") %></p>
+        </header>
+
+        <div class="space-y-10">
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">1. Agreement to Terms</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    By accessing and using XBolt Media's services, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using our services.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">2. Use License</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    Permission is granted to temporarily access our services for personal, non-commercial use only. This license shall automatically terminate if you violate any of these restrictions.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">3. Services</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-3">XBolt Media provides web design, development, and digital services. We reserve the right to:</p>
+                <ul class="text-sm text-zinc-400 space-y-1.5 ml-5 list-disc marker:text-amber-500/40">
+                    <li>Modify or discontinue services without notice</li>
+                    <li>Refuse service to anyone for any reason</li>
+                    <li>Update these terms at any time</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">4. User Responsibilities</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-3">You agree to:</p>
+                <ul class="text-sm text-zinc-400 space-y-1.5 ml-5 list-disc marker:text-amber-500/40">
+                    <li>Provide accurate and complete information</li>
+                    <li>Maintain the security of your account</li>
+                    <li>Not use our services for illegal purposes</li>
+                    <li>Not attempt to interfere with our services</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">5. Intellectual Property</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    All content, features, and functionality of our services are owned by XBolt Media and are protected by international copyright, trademark, and other intellectual property laws.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">6. Limitation of Liability</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    XBolt Media shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our services.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">7. Governing Law</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    These terms shall be governed by and construed in accordance with the laws of the United Kingdom, without regard to its conflict of law provisions.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-white mb-3">8. Contact Information</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                    For questions about these Terms of Service, please contact us:
+                </p>
+                <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+                    <p class="text-white font-semibold text-sm mb-1.5">XBolt Media</p>
+                    <p class="text-zinc-400 text-sm">Email: <%= @general_setting&.contact_email || 'info@xboltmedia.com' %></p>
+                    <p class="text-zinc-400 text-sm">Phone: <%= @general_setting&.phone_number || '+447459731426' %></p>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

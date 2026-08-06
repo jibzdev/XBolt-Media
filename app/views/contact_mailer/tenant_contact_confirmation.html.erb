@@ -1,0 +1,14 @@
+<p style="margin: 0 0 16px; color: #3f3f46; font-size: 15px;">Hello <%= @name %>,</p>
+
+<p style="margin: 0 0 16px; color: #3f3f46; font-size: 15px;">Thank you for getting in touch with <strong style="color: #18181b;"><%= @business.name %></strong>. We have received your message and will get back to you as soon as possible.</p>
+
+<p style="margin: 16px 0 8px; font-size: 14px; color: #18181b;"><strong>Your message:</strong></p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 20px;">
+  <tr>
+    <td style="border-left: 3px solid #18181b; padding: 12px 16px; background-color: #fafafa; border-radius: 0 6px 6px 0; font-size: 14px; color: #3f3f46; line-height: 1.6;">
+      <%= simple_format(@message) %>
+    </td>
+  </tr>
+</table>
+
+<p style="margin: 0; color: #3f3f46; font-size: 15px;">Kind regards,<br><strong style="color: #18181b;"><%= @business.name %></strong></p>

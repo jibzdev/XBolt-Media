@@ -1,0 +1,13 @@
+<% content_for :page_title, "New Business" %>
+<% content_for :page_description, "Creates a client business and assigns a subdomain" %>
+
+<div class="max-w-2xl">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <%= render "form",
+      business: @business,
+      url: admin_businesses_path,
+      method: :post,
+      submit_label: "Create Business",
+      cancel_path: admin_businesses_path %>
+  </div>
+</div>

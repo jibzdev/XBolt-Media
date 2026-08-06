@@ -1,0 +1,128 @@
+<% content_for :page_title, "Messages" %>
+<% content_for :page_description, "Contact form messages from website visitors" %>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Total Messages</span>
+      <i data-lucide="message-square" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @messages.total_count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Unread</span>
+      <i data-lucide="mail" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @messages.select { |m| !m.read? }.count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Read</span>
+      <i data-lucide="check-circle" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @messages.select { |m| m.read? }.count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Today</span>
+      <i data-lucide="calendar" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @messages.select { |m| m.created_at.today? }.count %></div>
+  </div>
+</div>
+
+<div class="rounded-xl overflow-hidden" style="background:var(--xbolt-surface);border:1px solid var(--xbolt-border)">
+  <div class="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style="border-bottom:1px solid var(--xbolt-border);background:var(--xbolt-surface-alt)">
+    <div>
+      <h3 class="text-[13px] font-medium" style="color:var(--xbolt-text)">Prune Messages</h3>
+      <p class="text-[11px] mt-0.5" style="color:var(--xbolt-text-muted)">Delete host messages older than a selected age.</p>
+    </div>
+    <%= form_with url: prune_admin_messages_path, method: :delete, local: true, class: "flex items-center gap-2" do %>
+      <select name="window" class="rounded-lg text-[13px]" style="border:1px solid var(--xbolt-border);background:var(--xbolt-surface);color:var(--xbolt-text);padding:.35rem .65rem">
+        <option value="24h">24 hours</option>
+        <option value="1w">1 week</option>
+        <option value="1m">1 month</option>
+      </select>
+      <button
+        type="submit"
+        data-turbo-confirm="Delete all host messages older than this window?"
+        class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-[12px] font-medium transition"
+      >
+        <i data-lucide="trash-2" class="w-3 h-3"></i>
+        <span>Prune</span>
+      </button>
+    <% end %>
+  </div>
+  <% if @messages.any? %>
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead style="border-bottom:1px solid var(--xbolt-border)">
+          <tr>
+            <% %w[From Message Received Status].each do |col| %>
+              <th class="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wider" style="color:var(--xbolt-text-muted)"><%= col %></th>
+            <% end %>
+            <th class="px-4 py-3 text-right text-[11px] font-medium uppercase tracking-wider" style="color:var(--xbolt-text-muted)">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @messages.each do |message| %>
+            <tr class="transition-colors hover:opacity-80 xb-row-hover" style="border-bottom:1px solid var(--xbolt-border)">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-1.5">
+                  <div class="text-[13px] font-medium" style="color:var(--xbolt-text)"><%= message.name %></div>
+                  <% if message.system? %>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">System</span>
+                  <% end %>
+                </div>
+                <div class="text-[12px] mt-0.5" style="color:var(--xbolt-text-muted)"><%= message.email %></div>
+                <% if message.phone.present? %>
+                  <div class="text-[11px] mt-0.5" style="color:var(--xbolt-text-muted);opacity:.75"><%= message.phone %></div>
+                <% end %>
+              </td>
+              <td class="px-4 py-3">
+                <p class="text-[13px] line-clamp-3" style="color:var(--xbolt-text)"><%= message.message %></p>
+              </td>
+              <td class="px-4 py-3 text-[13px]" style="color:var(--xbolt-text-muted)">
+                <%= time_ago_in_words(message.created_at) %> ago
+              </td>
+              <td class="px-4 py-3">
+                <% if message.read? %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium" style="background:var(--xbolt-surface-alt);color:var(--xbolt-text-muted);border:1px solid var(--xbolt-border)">Read</span>
+                <% else %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Unread</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <div class="inline-flex items-center gap-1.5">
+                  <%= link_to admin_message_path(message), class: "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition", style: "border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)" do %>
+                    <i data-lucide="eye" class="w-3 h-3"></i>
+                    <span>Open</span>
+                  <% end %>
+                  <%= button_to admin_message_path(message), method: :delete, data: { turbo_confirm: "Delete this message?" }, class: "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-[12px] font-medium transition", form: { class: "inline-block" } do %>
+                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                    <span>Delete</span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="px-4 py-3" style="border-top:1px solid var(--xbolt-border)">
+      <%= paginate @messages %>
+    </div>
+  <% else %>
+    <div class="py-16 text-center">
+      <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-3" style="background:var(--xbolt-surface-alt)">
+        <i data-lucide="message-square" class="w-5 h-5" style="color:var(--xbolt-text-muted)"></i>
+      </div>
+      <h3 class="text-[13px] font-medium mb-1" style="color:var(--xbolt-text)">No messages yet</h3>
+      <p class="text-[13px]" style="color:var(--xbolt-text-muted)">New contact form messages will appear here.</p>
+    </div>
+  <% end %>
+</div>

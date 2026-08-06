@@ -1,0 +1,7 @@
+<% content_for :page_title, "Website Editor" %>
+<% content_for :page_description, "Redirecting to the visual editor" %>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 p-5">
+  <p class="text-[13px] text-zinc-600">The website editor now opens as a visual editor.</p>
+  <%= link_to "Open Visual Editor", admin_website_path(page_id: @page.id), class: "inline-flex mt-3 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" %>
+</div>

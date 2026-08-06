@@ -1,0 +1,9 @@
+<% app_name = GeneralSetting.first_or_initialize.application_name.presence || 'XBolt' %>
+<%= app_name %>
+==========
+
+<%= yield %>
+
+---
+Thank you for choosing <%= app_name %>!
+If you have any questions, please contact us.

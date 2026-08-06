@@ -1,0 +1,140 @@
+<% content_for :page_title, @invoice.invoice_number %>
+<% content_for :page_description, "Invoice for #{@invoice.business.name}" %>
+
+<div class="flex flex-wrap items-center gap-2 mb-5">
+  <%= link_to admin_invoices_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" do %>
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+    <span>Back</span>
+  <% end %>
+  <%= link_to edit_admin_invoice_path(@invoice), class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" do %>
+    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+    <span>Edit</span>
+  <% end %>
+  <%= link_to download_pdf_admin_invoice_path(@invoice), class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+    <span>Download PDF</span>
+  <% end %>
+  <%= button_to regenerate_share_token_admin_invoice_path(@invoice), method: :post, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition", form: { class: "inline-block" } do %>
+    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+    <span>Regenerate share link</span>
+  <% end %>
+  <%= button_to admin_invoice_path(@invoice), method: :delete, data: { turbo_confirm: "Delete invoice #{@invoice.invoice_number}? This cannot be undone." }, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-50 text-red-600 text-[13px] font-medium hover:bg-red-100 transition", form: { class: "inline-block" } do %>
+    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+    <span>Delete</span>
+  <% end %>
+</div>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 p-4 mb-5 xb-card-hover">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Business</div>
+      <div class="text-[13px] font-medium text-zinc-800 mt-1"><%= @invoice.business.name %></div>
+    </div>
+    <div>
+      <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Status</div>
+      <span class="inline-flex mt-1 items-center px-2 py-0.5 rounded text-[11px] font-medium <%= @invoice.status_badge_classes %>">
+        <%= @invoice.status.titleize %>
+      </span>
+    </div>
+    <div>
+      <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Issue date</div>
+      <div class="text-[13px] text-zinc-600 mt-1"><%= @invoice.issue_date %></div>
+    </div>
+    <div>
+      <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Due date</div>
+      <div class="text-[13px] text-zinc-600 mt-1"><%= @invoice.due_date %></div>
+    </div>
+  </div>
+</div>
+
+<div class="space-y-5 mb-5">
+  <% grouped_items = @invoice.grouped_line_items %>
+  <% [['One-time payments', 'one_time'], ['Monthly payments', 'monthly']].each do |section_title, section_key| %>
+    <% items = grouped_items[section_key] || [] %>
+    <% next if items.blank? %>
+    <div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-200/70">
+        <h3 class="text-[13px] font-medium text-zinc-700"><%= section_title %></h3>
+      </div>
+      <table class="min-w-full">
+        <thead class="border-b border-zinc-200/70">
+          <tr>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Item</th>
+            <th class="px-4 py-3 text-right text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Qty</th>
+            <th class="px-4 py-3 text-right text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Unit</th>
+            <th class="px-4 py-3 text-right text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-100">
+          <% items.each do |item| %>
+            <% qty = item['quantity'].to_f %>
+            <% unit = item['unit_price'].to_f %>
+            <tr class="xb-row-hover">
+              <td class="px-4 py-3 text-[13px] text-zinc-600"><%= item['description'] %></td>
+              <td class="px-4 py-3 text-right text-[13px] text-zinc-600"><%= qty %></td>
+              <td class="px-4 py-3 text-right text-[13px] text-zinc-600"><%= number_to_currency(unit, unit: '£') %></td>
+              <td class="px-4 py-3 text-right text-[13px] font-medium text-zinc-800"><%= number_to_currency(qty * unit, unit: '£') %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <div class="px-4 py-2.5 border-t border-zinc-200/70 text-right text-[13px] text-zinc-600">
+        <span class="font-medium">Section subtotal:</span>
+        <span class="font-medium text-zinc-800">
+          <%= number_to_currency(items.sum { |item| item['quantity'].to_f * item['unit_price'].to_f }, unit: '£') %>
+        </span>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 p-4 mb-5 xb-card-hover">
+  <div class="flex justify-end">
+    <div class="w-full max-w-xs space-y-1.5">
+      <div class="flex items-center justify-between text-[13px] text-zinc-600">
+        <span>Subtotal</span>
+        <span class="font-medium"><%= number_to_currency(@invoice.subtotal, unit: '£') %></span>
+      </div>
+      <div class="flex items-center justify-between text-[14px] font-medium text-zinc-800 border-t border-zinc-200/70 pt-2">
+        <span>Total</span>
+        <span><%= number_to_currency(@invoice.total, unit: '£') %></span>
+      </div>
+    </div>
+  </div>
+  <% if @invoice.notes.present? %>
+    <div class="mt-4 pt-4 border-t border-zinc-200/70">
+      <div class="text-[13px] font-medium text-zinc-700">Notes</div>
+      <p class="text-[13px] text-zinc-600 mt-1 whitespace-pre-wrap"><%= @invoice.notes %></p>
+    </div>
+  <% end %>
+</div>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+  <div class="text-[13px] font-medium text-zinc-700 mb-2">Shareable invoice link</div>
+  <div class="flex flex-col sm:flex-row gap-2">
+    <input id="share-link" readonly value="<%= shared_invoice_url(token: @invoice.share_token) %>" class="flex-1 px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" />
+    <button type="button" id="copy-share-link" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition">
+      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+      <span>Copy link</span>
+    </button>
+  </div>
+  <p id="copy-share-status" class="text-[12px] text-zinc-400 mt-1.5"></p>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('share-link');
+    const button = document.getElementById('copy-share-link');
+    const status = document.getElementById('copy-share-status');
+    if (!input || !button) return;
+
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(input.value);
+        if (status) status.textContent = 'Share link copied.';
+      } catch (_) {
+        if (status) status.textContent = 'Copy failed. Please copy manually.';
+      }
+    });
+  });
+</script>

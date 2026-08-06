@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Gallery - Dawkes Developments</title>
+    <link rel="icon" type="image/png" href="logo5.png">
+    <link rel="apple-touch-icon" href="logo5.png">
+	<link rel="icon" sizes="32x32" href="/logo5.png">
+	<link rel="icon" sizes="16x16" href="/logo5.png">
+    <meta name="description" content="View our portfolio of completed dry stone walling and landscaping projects across the Cotswolds.">
+	<meta name="theme-color" content="#D4AF37">
+	<meta name="robots" content="index,follow">
+    <meta property="og:title" content="Project Gallery - Dawkes Developments">
+    <meta property="og:description" content="Browse our portfolio of dry stone walling and landscaping projects">
+	<meta property="og:image" content="/logo5.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Project Gallery - Dawkes Developments">
+    <meta name="twitter:description" content="Browse our portfolio of dry stone walling and landscaping projects">
+	<meta name="twitter:image" content="/logo5.png">
+	<link rel="manifest" href="/site.webmanifest">
+    <meta name="keywords" content="stone walling gallery, dry stone wall projects, stone masonry portfolio">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css">
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "LocalBusiness",
+		"name": "Dawkes Developments",
+		"url": "http://localhost:3000",
+		"logo": "http://localhost:3000/logo5.png",
+		"image": "http://localhost:3000/logo5.png",
+		"description": "Premium dry stone walling and drone surveying services"
+	}
+	</script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#F4D03F',
+                            500: '#D4AF37',
+                            600: '#B8941E',
+                            700: '#9A7D0A'
+                        },
+                        luxury: {
+                            dark: '#0A0A0A',
+                            darker: '#000000',
+                            light: '#1A1A1A'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans antialiased overflow-x-hidden bg-black text-white">
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-3 items-center h-20">
+                <!-- Logo - Left -->
+                <div class="flex items-center justify-start">
+                    <a href="/" class="text-white">
+                        <div class="leading-none">
+                            <div class="text-2xl font-serif font-bold tracking-tight text-gold-500">DAWKES</div>
+                            <div class="text-xs font-sans font-light tracking-widest text-gray-300">DEVELOPMENTS</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Navigation Links - Center -->
+                <div class="hidden md:flex items-center justify-center">
+                    <div class="flex items-center space-x-8">
+                        <a href="/#about" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">About</a>
+                        <a href="/drone-services.html" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Drone Services</a>
+                        <a href="/gallery.html" class="nav-link text-gold-500 font-semibold transition-all duration-300 text-sm">Gallery</a>
+                        <a href="/contact.html" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Contact</a>
+                    </div>
+                </div>
+                
+                <!-- CTA Button - Right -->
+                <div class="hidden md:flex items-center justify-end">
+                    <a href="/contact.html" class="px-6 py-2.5 bg-gold-500 text-black font-semibold text-sm hover:bg-gold-400 transition-all duration-300">
+                        <span>Request Quote</span>
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden col-span-2 flex justify-end">
+                    <button class="text-white hover:text-gold-500" id="mobile-menu-button">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[40vh] flex items-center justify-center overflow-hidden bg-black pt-32 pb-16">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5" style="background-image: linear-gradient(#D4AF37 1px, transparent 1px), linear-gradient(90deg, #D4AF37 1px, transparent 1px); background-size: 50px 50px;"></div>
+        
+        <!-- Gradient Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"></div>
+        
+        <!-- Content -->
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                <span class="text-gold-500 text-xs tracking-widest font-medium">PORTFOLIO</span>
+            </div>
+            
+            <h1 class="font-serif text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white">
+                Project <span class="text-gold-500">Gallery</span>
+            </h1>
+            
+            <div class="w-24 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent mx-auto mb-8"></div>
+            
+            <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                Browse our portfolio of completed dry stone walling and landscaping projects
+            </p>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="py-24 bg-luxury-dark relative">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div id="gallery-filters" class="flex flex-wrap justify-center gap-3 mb-10">
+                <button data-category="all" class="gallery-filter-btn px-5 py-2.5 bg-gold-500 text-black text-sm font-semibold tracking-wider">All</button>
+            </div>
+
+            <div id="projects-grid" data-xbolt-gallery class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <div class="mt-10 text-center">
+                <button id="load-more-btn" class="inline-flex items-center gap-2 px-8 py-4 border border-gold-500/30 text-gold-500 hover:border-gold-500 hover:text-gold-400 font-semibold transition-all">
+                    Load More <i class="fas fa-plus text-sm"></i>
+                </button>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="mt-20 text-center">
+                <div class="bg-gradient-to-r from-gold-500/10 to-gold-600/10 border-2 border-gold-500/20 p-12">
+                    <h3 class="font-serif text-4xl font-bold text-white mb-4">Like What You See?</h3>
+                    <p class="text-gray-400 mb-8 max-w-2xl mx-auto text-lg">
+                        Let us help you create something exceptional. Get in touch for a free consultation and quote.
+                    </p>
+                    <a href="/contact.html" class="inline-flex items-center gap-2 px-8 py-4 bg-gold-500 hover:bg-gold-400 text-black font-semibold transition-all hover:shadow-lg hover:shadow-gold-500/50">
+                        Get Your Free Quote
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="fixed inset-0 bg-black/95 z-50 hidden items-center justify-center p-4">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white hover:text-gold-500 transition-colors z-10">
+            <i class="fas fa-times text-3xl"></i>
+        </button>
+        
+        <!-- Previous Button -->
+        <button onclick="changeImage(-1)" class="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white hover:text-gold-500 transition-colors bg-black/50 hover:bg-gold-500/20 border border-gold-500/30 p-4">
+            <i class="fas fa-chevron-left text-2xl"></i>
+        </button>
+        
+        <!-- Image Container -->
+        <div class="max-w-6xl max-h-[90vh] w-full h-full flex items-center justify-center">
+            <img id="lightbox-img" src="" alt="Project Image" class="max-w-full max-h-full object-contain">
+        </div>
+        
+        <!-- Next Button -->
+        <button onclick="changeImage(1)" class="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white hover:text-gold-500 transition-colors bg-black/50 hover:bg-gold-500/20 border border-gold-500/30 p-4">
+            <i class="fas fa-chevron-right text-2xl"></i>
+        </button>
+        
+        <!-- Image Counter -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white bg-black/70 border border-gold-500/30 px-6 py-3">
+            <span id="image-counter" class="text-gold-500 font-semibold">1 / 9</span>
+        </div>
+    </div>
+
+    <script>
+        const projectsGrid = document.getElementById('projects-grid');
+        const filtersContainer = document.getElementById('gallery-filters');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const batchSize = 6;
+        let visibleCount = 0;
+        let currentImageIndex = 0;
+        let currentCategory = 'all';
+        let allAssets = [];
+        let filteredAssets = [];
+        let filteredImageAssets = [];
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function formatCategoryLabel(slug) {
+            return slug
+                .split('-')
+                .filter(Boolean)
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function getFilteredAssets() {
+            return currentCategory === 'all'
+                ? allAssets
+                : allAssets.filter(asset => asset.category === currentCategory);
+        }
+
+        function setActiveFilter(activeButton) {
+            filtersContainer.querySelectorAll('.gallery-filter-btn').forEach(button => {
+                button.className = 'gallery-filter-btn px-5 py-2.5 border border-gold-500/30 text-gray-300 hover:border-gold-500 hover:text-gold-500 text-sm font-semibold tracking-wider transition-all';
+            });
+            activeButton.className = 'gallery-filter-btn px-5 py-2.5 bg-gold-500 text-black text-sm font-semibold tracking-wider transition-all';
+        }
+
+        function applyFilter(category, reset = true) {
+            currentCategory = category;
+            filteredAssets = getFilteredAssets();
+            filteredImageAssets = filteredAssets.filter(asset => !asset.isVideo);
+            renderProjects(reset);
+        }
+
+        function renderEmptyState() {
+            projectsGrid.innerHTML = `
+                <div class="md:col-span-2 lg:col-span-3 text-center py-20 border border-gold-500/20 bg-black/40">
+                    <i class="fas fa-camera text-gold-500/50 text-4xl mb-5"></i>
+                    <h3 class="font-serif text-2xl text-white mb-2">Projects Coming Soon</h3>
+                    <p class="text-gray-400 text-sm">We're putting together recent project photos. Check back soon.</p>
+                </div>
+            `;
+            loadMoreBtn.classList.add('hidden');
+        }
+
+        function renderProjects(reset = false) {
+            if (reset) {
+                visibleCount = 0;
+                projectsGrid.innerHTML = '';
+            }
+
+            if (filteredAssets.length === 0) {
+                renderEmptyState();
+                return;
+            }
+
+            const nextCount = Math.min(visibleCount + batchSize, filteredAssets.length);
+            for (let i = visibleCount; i < nextCount; i++) {
+                const asset = filteredAssets[i];
+                const safeUrl = escapeHtml(asset.url);
+                const safeTitle = escapeHtml(asset.title);
+                const safeCategory = asset.category ? escapeHtml(formatCategoryLabel(asset.category)) : '';
+                const card = document.createElement('div');
+                card.className = 'group relative overflow-hidden border border-gold-500/20 hover:border-gold-500/50 transition-all duration-500 bg-black';
+
+                if (asset.isVideo) {
+                    card.innerHTML = `
+                        <div class="relative h-80 overflow-hidden">
+                            <video controls preload="metadata" class="w-full h-full object-cover" src="${safeUrl}"></video>
+                        </div>
+                    `;
+                } else {
+                    const imageIndex = filteredImageAssets.findIndex(image => image.url === asset.url);
+                    card.classList.add('cursor-pointer');
+                    card.setAttribute('onclick', `openLightbox(${imageIndex})`);
+                    card.innerHTML = `
+                        <div class="relative h-80 overflow-hidden">
+                            <img src="${safeUrl}" alt="${safeTitle}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-6">
+                                ${safeCategory ? `<div class="inline-block px-3 py-1 bg-gold-500/90 text-black text-xs font-semibold mb-2">${safeCategory}</div>` : ''}
+                                <h3 class="font-serif text-xl text-white mb-1">${safeTitle}</h3>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                projectsGrid.appendChild(card);
+            }
+
+            visibleCount = nextCount;
+            loadMoreBtn.classList.toggle('hidden', visibleCount >= filteredAssets.length);
+        }
+
+        function renderFilterButtons() {
+            const categories = [...new Set(allAssets.map(asset => asset.category).filter(Boolean))];
+            filtersContainer.innerHTML = '';
+
+            const allButton = document.createElement('button');
+            allButton.dataset.category = 'all';
+            allButton.className = 'gallery-filter-btn px-5 py-2.5 bg-gold-500 text-black text-sm font-semibold tracking-wider transition-all';
+            allButton.textContent = 'All';
+            filtersContainer.appendChild(allButton);
+
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.dataset.category = category;
+                button.className = 'gallery-filter-btn px-5 py-2.5 border border-gold-500/30 text-gray-300 hover:border-gold-500 hover:text-gold-500 text-sm font-semibold tracking-wider transition-all';
+                button.textContent = formatCategoryLabel(category);
+                filtersContainer.appendChild(button);
+            });
+
+            filtersContainer.querySelectorAll('.gallery-filter-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const selectedCategory = button.dataset.category;
+                    if (!selectedCategory || selectedCategory === currentCategory) return;
+                    setActiveFilter(button);
+                    applyFilter(selectedCategory, true);
+                });
+            });
+        }
+
+        async function loadGalleryAssets() {
+            try {
+                const response = await fetch('/xbolt/gallery.json');
+                if (!response.ok) throw new Error('Gallery unavailable');
+                const payload = await response.json();
+
+                allAssets = (Array.isArray(payload.assets) ? payload.assets : [])
+                    .filter(asset => asset && asset.url)
+                    .map(asset => ({
+                        url: asset.url,
+                        title: asset.title || asset.filename || 'Gallery',
+                        filename: asset.filename || '',
+                        category: asset.category || '',
+                        contentType: asset.content_type || '',
+                        isVideo: (asset.content_type || '').startsWith('video/')
+                    }));
+
+                renderFilterButtons();
+                applyFilter('all', true);
+            } catch (_error) {
+                renderEmptyState();
+            }
+        }
+
+        function openLightbox(index) {
+            if (!filteredImageAssets.length) return;
+            currentImageIndex = index;
+            updateLightboxImage();
+            document.getElementById('lightbox').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function changeImage(direction) {
+            if (!filteredImageAssets.length) return;
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) currentImageIndex = filteredImageAssets.length - 1;
+            if (currentImageIndex >= filteredImageAssets.length) currentImageIndex = 0;
+            updateLightboxImage();
+        }
+
+        function updateLightboxImage() {
+            const asset = filteredImageAssets[currentImageIndex];
+            if (!asset) return;
+
+            const image = document.getElementById('lightbox-img');
+            image.src = asset.url;
+            image.alt = asset.title;
+            image.onerror = () => image.removeAttribute('src');
+            document.getElementById('image-counter').textContent = `${currentImageIndex + 1} / ${filteredImageAssets.length}`;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') changeImage(-1);
+            if (e.key === 'ArrowRight') changeImage(1);
+        });
+
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) closeLightbox();
+        });
+
+        loadMoreBtn.addEventListener('click', () => renderProjects(false));
+        loadGalleryAssets();
+    </script>
+
+    <!-- Footer -->
+    <footer class="text-white py-16 border-t border-gold-500/20 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-6xl relative z-10">
+            <!-- Footer Top -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-12 pb-12 border-b border-gold-500/10">
+                <div class="mb-6 md:mb-0">
+                    <div class="leading-none text-white">
+                        <div class="text-3xl font-serif font-bold tracking-tight text-gold-500">DAWKES</div>
+                        <div class="text-xs font-sans tracking-widest text-gray-400">DEVELOPMENTS</div>
+                    </div>
+                </div>
+            
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="/contact.html" class="px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-black transition-all text-sm font-semibold">
+                        Get a Quote
+                    </a>
+                    <a href="/#about" class="px-5 py-2.5 border border-gold-500/30 hover:border-gold-500 text-white transition-all text-sm">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+                
+            <!-- Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                <!-- About -->
+                <div>
+                    <h3 class="font-serif text-lg font-semibold text-white mb-4">About Dawkes Developments</h3>
+                    <p class="text-gray-400 text-sm mb-4 leading-relaxed">
+                        Specialist dry stone walling craftsmen combining traditional techniques with modern drone surveying technology to deliver exceptional results for heritage, residential, and commercial projects.
+                    </p>
+                    <div class="space-y-2 mt-4">
+                        <a href="tel:07301175562" class="flex items-center gap-2 text-gold-500 hover:text-gold-400 text-sm transition-colors">
+                            <i class="fas fa-phone"></i>
+                            <span>07301175562</span>
+                        </a>
+                        <a href="mailto:samdawkes99@gmail.com" class="flex items-center gap-2 text-gold-500 hover:text-gold-400 text-sm transition-colors">
+                            <i class="fas fa-envelope"></i>
+                            <span>samdawkes99@gmail.com</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Services -->
+                <div>
+                    <h3 class="font-serif text-lg font-semibold text-white mb-4">Our Services</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/services.html" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Dry Stone Walling</a></li>
+                        <li><a href="/drone-services.html" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Drone Surveying</a></li>
+                        <li><a href="/services.html" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Landscaping Features</a></li>
+                        <li><a href="/services.html" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Consultancy & Design</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="font-serif text-lg font-semibold text-white mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Home</a></li>
+                        <li><a href="/#about" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">About Us</a></li>
+                        <li><a href="/gallery.html" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Gallery</a></li>
+                        <li><a href="/contact.html" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Footer Bottom -->
+            <div class="pt-8 border-t border-gold-500/10">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-gray-400 text-sm text-center md:text-left">
+                        &copy; 2025 Dawkes Developments. All rights reserved.
+                    </p>
+                    <div class="flex items-center gap-2 text-gray-400 text-sm">
+                        <i class="fas fa-award text-gold-500"></i>
+                        <span>Craftsmanship Excellence</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+
+<script src="/xbolt-watermark.js?v=8b3ad447ae95" defer data-xbolt-watermark></script>
+</body>
+</html>

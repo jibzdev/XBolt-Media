@@ -1,0 +1,86 @@
+    <% contact_email = @general_setting&.contact_email || 'info@xboltmedia.com' %>
+    <% phone_number = @general_setting&.phone_number || '+447459731426' %>
+
+    <!-- Floating pill navbar -->
+    <nav id="navbar" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl" style="opacity: 0; transform: translateX(-50%) translateY(-12px); transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1); will-change: transform, opacity;">
+        <div class="rounded-2xl border border-amber-500/[0.08] bg-zinc-950/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]" id="nav-inner" style="transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;">
+            <div class="px-4 sm:px-5 py-3 flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2" data-turbo="false">
+                    <img src="<%= brand_logo_url %>" alt="Logo" class="w-8 h-6 object-contain brightness-0 invert">
+                    <span class="text-sm font-semibold text-white tracking-tight">XBolt</span>
+                </a>
+
+                <div class="hidden md:flex items-center gap-1 bg-white/[0.04] rounded-xl px-1 py-1">
+                    <a href="<%= services_path %>" class="px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-zinc-400 hover:text-amber-400 hover:bg-white/[0.06] transition-all">Services</a>
+                    <a href="<%= work_path %>" class="px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-zinc-400 hover:text-amber-400 hover:bg-white/[0.06] transition-all">Work</a>
+                    <a href="<%= reviews_path %>" class="px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-zinc-400 hover:text-amber-400 hover:bg-white/[0.06] transition-all">Reviews</a>
+                    <a href="<%= about_path %>" class="px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-zinc-400 hover:text-amber-400 hover:bg-white/[0.06] transition-all">About</a>
+                    <a href="<%= contact_path %>" class="px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-zinc-400 hover:text-amber-400 hover:bg-white/[0.06] transition-all">Contact</a>
+                </div>
+
+                <div class="hidden md:flex items-center gap-2">
+                    <% if user_signed_in? %>
+                        <a href="<%= admin_dashboard_path %>" class="px-4 py-2 rounded-xl bg-amber-500 text-zinc-950 text-[13px] font-semibold hover:bg-amber-400 transition-all shadow-[0_0_16px_rgba(245,158,11,0.25)]" data-turbo="false">Dashboard</a>
+                    <% else %>
+                        <a href="<%= login_path %>" class="px-4 py-2 rounded-xl border border-white/[0.08] text-zinc-400 text-[13px] font-medium hover:text-white hover:border-amber-500/30 transition-all" data-turbo="false">Log in</a>
+                    <% end %>
+                </div>
+
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-zinc-400 hover:text-amber-400 transition">
+                    <i class='bx bx-menu text-xl'></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile sidebar -->
+    <div id="mobile-sidebar" class="fixed top-0 right-0 w-80 h-full transform translate-x-full z-[60] md:hidden" style="background: #111113; border-left: 1px solid rgba(245,158,11,0.08); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-4 border-b border-white/[0.06]">
+                <div class="flex items-center gap-2">
+                    <img src="<%= brand_logo_url %>" alt="Logo" class="w-8 h-6 object-contain brightness-0 invert">
+                    <span class="text-sm font-semibold text-white">XBolt</span>
+                </div>
+                <button id="close-sidebar" class="w-8 h-8 rounded-lg border border-white/[0.08] flex items-center justify-center text-zinc-400 hover:text-amber-400 transition">
+                    <i class='bx bx-x text-xl'></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 px-4 py-6 space-y-1">
+                <a href="<%= services_path %>" class="flex items-center justify-between px-3 py-2.5 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/[0.06] rounded-lg transition">
+                    <span class="text-sm font-medium">Services</span><i class='bx bx-chevron-right text-sm'></i>
+                </a>
+                <a href="<%= work_path %>" class="flex items-center justify-between px-3 py-2.5 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/[0.06] rounded-lg transition">
+                    <span class="text-sm font-medium">Work</span><i class='bx bx-chevron-right text-sm'></i>
+                </a>
+                <a href="<%= reviews_path %>" class="flex items-center justify-between px-3 py-2.5 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/[0.06] rounded-lg transition">
+                    <span class="text-sm font-medium">Reviews</span><i class='bx bx-chevron-right text-sm'></i>
+                </a>
+                <a href="<%= about_path %>" class="flex items-center justify-between px-3 py-2.5 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/[0.06] rounded-lg transition">
+                    <span class="text-sm font-medium">About</span><i class='bx bx-chevron-right text-sm'></i>
+                </a>
+                <a href="<%= contact_path %>" class="flex items-center justify-between px-3 py-2.5 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/[0.06] rounded-lg transition">
+                    <span class="text-sm font-medium">Contact</span><i class='bx bx-chevron-right text-sm'></i>
+                </a>
+
+                <div class="pt-6 mt-4 border-t border-white/[0.06] space-y-1">
+                    <a href="tel:<%= phone_number %>" class="flex items-center gap-3 px-3 py-2.5 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/[0.06] rounded-lg transition">
+                        <i class='bx bx-phone text-base'></i><span class="text-sm font-medium">Call us</span>
+                    </a>
+                    <a href="mailto:<%= contact_email %>" class="flex items-center gap-3 px-3 py-2.5 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/[0.06] rounded-lg transition">
+                        <i class='bx bx-envelope text-base'></i><span class="text-sm font-medium">Email</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-white/[0.06]">
+                <% if user_signed_in? %>
+                    <a href="<%= admin_dashboard_path %>" class="flex items-center justify-center w-full py-2.5 bg-amber-500 text-zinc-950 font-semibold rounded-xl text-sm hover:bg-amber-400 transition" data-turbo="false">Dashboard</a>
+                <% else %>
+                    <a href="<%= login_path %>" class="flex items-center justify-center w-full py-2.5 border border-amber-500/20 text-amber-400 font-semibold rounded-xl text-sm hover:bg-amber-500/10 transition" data-turbo="false">Log in</a>
+                <% end %>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 z-[55] md:hidden"></div>

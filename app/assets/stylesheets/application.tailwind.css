@@ -1,0 +1,810 @@
+/*
+ * Tailwind source — this file is NOT served directly. The browser loads
+ * `app/assets/builds/tailwind.css` (compiled output). After editing here, run either:
+ *   - `bin/dev` (runs `rails tailwindcss:watch` — recommended), or
+ *   - `bin/rails tailwindcss:build` once.
+ * Without that, CSS changes in this file will not appear.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme system (admin-controlled via CSS variables) */
+:root {
+  --xbolt-primary: #f59e0b;
+  --xbolt-primary-hover: #d97706;
+  --xbolt-on-primary: #09090b;
+  --xbolt-bg: #09090b;
+  --xbolt-surface: #111113;
+  --xbolt-surface-alt: #18181b;
+  --xbolt-border: #27272a;
+  --xbolt-text: #fafafa;
+  --xbolt-text-muted: #a1a1aa;
+  --xbolt-accent: #fbbf24;
+
+  --xbolt-primary-rgb: 245 158 11;
+  --xbolt-text-rgb: 250 250 250;
+  --xbolt-bg-rgb: 9 9 11;
+  --xbolt-surface-rgb: 17 17 19;
+  --xbolt-surface-alt-rgb: 24 24 27;
+  --xbolt-border-rgb: 39 39 42;
+  --xbolt-text-muted-rgb: 161 161 170;
+  --xbolt-accent-rgb: 251 191 36;
+}
+
+/* Background remaps */
+.bg-zinc-50 { background-color: var(--xbolt-surface-alt) !important; }
+.bg-zinc-50\/50 { background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.50) !important; }
+.bg-zinc-50\/60 { background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.60) !important; }
+.bg-zinc-50\/80 { background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.80) !important; }
+.bg-zinc-100 { background-color: rgb(var(--xbolt-surface-alt-rgb) / 1) !important; }
+.bg-zinc-200 { background-color: rgb(var(--xbolt-border-rgb) / 0.65) !important; }
+.bg-zinc-300 { background-color: rgb(var(--xbolt-border-rgb) / 0.85) !important; }
+.bg-zinc-700 { background-color: rgb(var(--xbolt-text-rgb) / 0.85) !important; }
+.bg-zinc-900 { background-color: var(--xbolt-primary) !important; }
+.bg-zinc-800 { background-color: var(--xbolt-primary-hover) !important; }
+.bg-white { background-color: var(--xbolt-surface) !important; }
+.bg-white\/95 { background-color: rgb(var(--xbolt-surface-rgb) / 0.95) !important; }
+.bg-white\/70 { background-color: rgb(var(--xbolt-surface-rgb) / 0.70) !important; }
+.bg-white\/65 { background-color: rgb(var(--xbolt-surface-rgb) / 0.65) !important; }
+.bg-white\/60 { background-color: rgb(var(--xbolt-surface-rgb) / 0.60) !important; }
+.bg-white\/80 { background-color: rgb(var(--xbolt-surface-rgb) / 0.80) !important; }
+.bg-black\/20 { background-color: rgb(var(--xbolt-text-rgb) / 0.20) !important; }
+.bg-zinc-900\/5 { background-color: rgb(var(--xbolt-primary-rgb) / 0.05) !important; }
+.bg-zinc-900\/10 { background-color: rgb(var(--xbolt-primary-rgb) / 0.10) !important; }
+.bg-zinc-900\/15 { background-color: rgb(var(--xbolt-primary-rgb) / 0.15) !important; }
+
+/* Text remaps */
+.text-zinc-950 { color: var(--xbolt-text) !important; }
+.text-zinc-900 { color: var(--xbolt-text) !important; }
+.text-zinc-800 { color: rgb(var(--xbolt-text-rgb) / 0.92) !important; }
+.text-zinc-700 { color: rgb(var(--xbolt-text-rgb) / 0.85) !important; }
+.text-zinc-600 { color: var(--xbolt-text-muted) !important; }
+.text-zinc-500 { color: rgb(var(--xbolt-text-muted-rgb) / 0.95) !important; }
+.text-zinc-400 { color: rgb(var(--xbolt-text-muted-rgb) / 0.75) !important; }
+.text-zinc-300 { color: rgb(var(--xbolt-text-muted-rgb) / 0.55) !important; }
+.text-white { color: var(--xbolt-on-primary) !important; }
+
+/* Border remaps */
+.border-zinc-200 { border-color: var(--xbolt-border) !important; }
+.border-zinc-200\/70 { border-color: rgb(var(--xbolt-border-rgb) / 0.70) !important; }
+.border-zinc-200\/60 { border-color: rgb(var(--xbolt-border-rgb) / 0.60) !important; }
+.border-zinc-200\/50 { border-color: rgb(var(--xbolt-border-rgb) / 0.50) !important; }
+.border-zinc-200\/80 { border-color: rgb(var(--xbolt-border-rgb) / 0.80) !important; }
+.border-zinc-100 { border-color: rgb(var(--xbolt-border-rgb) / 0.45) !important; }
+.border-zinc-300 { border-color: rgb(var(--xbolt-border-rgb) / 0.90) !important; }
+
+/* Hover helpers */
+.hover\:bg-zinc-100:hover { background-color: var(--xbolt-surface-alt) !important; }
+.hover\:bg-zinc-50:hover { background-color: var(--xbolt-surface-alt) !important; }
+.hover\:bg-zinc-50\/50:hover { background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.50) !important; }
+.hover\:bg-zinc-50\/60:hover { background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.60) !important; }
+.hover\:bg-white:hover { background-color: var(--xbolt-surface) !important; }
+.hover\:bg-zinc-800:hover { background-color: var(--xbolt-primary-hover) !important; }
+.hover\:bg-zinc-900:hover { background-color: var(--xbolt-primary) !important; }
+.hover\:text-zinc-900:hover { color: var(--xbolt-text) !important; }
+.hover\:text-zinc-600:hover { color: var(--xbolt-text-muted) !important; }
+.hover\:text-zinc-500:hover { color: rgb(var(--xbolt-text-muted-rgb) / 0.95) !important; }
+.hover\:text-zinc-400:hover { color: rgb(var(--xbolt-text-muted-rgb) / 0.75) !important; }
+
+/* Focus rings */
+.focus\:ring-zinc-900:focus { --tw-ring-color: var(--xbolt-primary) !important; }
+.focus\:ring-zinc-200:focus { --tw-ring-color: rgb(var(--xbolt-border-rgb) / 0.60) !important; }
+.focus\:ring-zinc-300:focus { --tw-ring-color: rgb(var(--xbolt-border-rgb) / 0.80) !important; }
+.peer:checked ~ .peer-checked\:bg-zinc-900 { background-color: var(--xbolt-primary) !important; }
+
+/* Gradient tokens (used heavily in landing/auth backgrounds) */
+.from-white { --tw-gradient-from: rgb(var(--xbolt-bg-rgb) / 1) var(--tw-gradient-from-position) !important; }
+.via-white { --tw-gradient-via: rgb(var(--xbolt-bg-rgb) / 1) var(--tw-gradient-via-position) !important; }
+.to-white { --tw-gradient-to: rgb(var(--xbolt-bg-rgb) / 1) var(--tw-gradient-to-position) !important; }
+.to-zinc-50 { --tw-gradient-to: rgb(var(--xbolt-surface-alt-rgb) / 1) var(--tw-gradient-to-position) !important; }
+.via-zinc-50 { --tw-gradient-via: rgb(var(--xbolt-surface-alt-rgb) / 1) var(--tw-gradient-via-position) !important; }
+.from-zinc-900\/5 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.05) var(--tw-gradient-from-position) !important; }
+.from-zinc-900\/10 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.10) var(--tw-gradient-from-position) !important; }
+.to-black { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 1) var(--tw-gradient-to-position) !important; }
+.to-gray-900 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 1) var(--tw-gradient-to-position) !important; }
+.from-indigo-900 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 1) var(--tw-gradient-from-position) !important; }
+.via-purple-900 { --tw-gradient-via: rgb(var(--xbolt-primary-rgb) / 0.85) var(--tw-gradient-via-position) !important; }
+.from-indigo-800 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.95) var(--tw-gradient-from-position) !important; }
+.via-purple-800 { --tw-gradient-via: rgb(var(--xbolt-primary-rgb) / 0.80) var(--tw-gradient-via-position) !important; }
+.from-indigo-500\/20 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.20) var(--tw-gradient-from-position) !important; }
+.to-purple-500\/20 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 0.20) var(--tw-gradient-to-position) !important; }
+.from-blue-500\/20 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.20) var(--tw-gradient-from-position) !important; }
+.to-purple-500\/20 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 0.20) var(--tw-gradient-to-position) !important; }
+.from-amber-300\/25 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.25) var(--tw-gradient-from-position) !important; }
+.via-orange-200\/10 { --tw-gradient-via: rgb(var(--xbolt-primary-rgb) / 0.10) var(--tw-gradient-via-position) !important; }
+.to-amber-300\/20 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 0.20) var(--tw-gradient-to-position) !important; }
+.from-amber-500\/10 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.10) var(--tw-gradient-from-position) !important; }
+.via-orange-500\/10 { --tw-gradient-via: rgb(var(--xbolt-primary-rgb) / 0.10) var(--tw-gradient-via-position) !important; }
+.from-blue-500 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 1) var(--tw-gradient-from-position) !important; }
+.to-indigo-600 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 1) var(--tw-gradient-to-position) !important; }
+.from-purple-600 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 1) var(--tw-gradient-from-position) !important; }
+.to-purple-700 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 0.85) var(--tw-gradient-to-position) !important; }
+.to-purple-600 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 0.85) var(--tw-gradient-to-position) !important; }
+.from-blue-400 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.85) var(--tw-gradient-from-position) !important; }
+.from-purple-500 { --tw-gradient-from: rgb(var(--xbolt-primary-rgb) / 0.85) var(--tw-gradient-from-position) !important; }
+.to-blue-600 { --tw-gradient-to: rgb(var(--xbolt-primary-rgb) / 0.85) var(--tw-gradient-to-position) !important; }
+
+/* Support variant used in navbar */
+@supports ((-webkit-backdrop-filter: blur(0)) or (backdrop-filter: blur(0))) {
+  .supports-\[backdrop-filter\]\:bg-white\/60 { background-color: rgb(var(--xbolt-surface-rgb) / 0.60) !important; }
+}
+
+/* Prose (typography plugin) remap so policy/terms pages follow theme */
+.prose {
+  --tw-prose-body: var(--xbolt-text-muted) !important;
+  --tw-prose-headings: var(--xbolt-text) !important;
+  --tw-prose-links: var(--xbolt-primary) !important;
+  --tw-prose-bold: var(--xbolt-text) !important;
+  --tw-prose-counters: var(--xbolt-text-muted) !important;
+  --tw-prose-bullets: var(--xbolt-border) !important;
+  --tw-prose-hr: var(--xbolt-border) !important;
+  --tw-prose-quotes: var(--xbolt-text) !important;
+  --tw-prose-quote-borders: var(--xbolt-border) !important;
+  --tw-prose-captions: var(--xbolt-text-muted) !important;
+  --tw-prose-code: var(--xbolt-text) !important;
+  --tw-prose-pre-code: var(--xbolt-on-primary) !important;
+  --tw-prose-pre-bg: var(--xbolt-primary) !important;
+  --tw-prose-th-borders: var(--xbolt-border) !important;
+  --tw-prose-td-borders: var(--xbolt-border) !important;
+}
+
+/* Ensure prose-zinc variant doesn't override our theme tokens */
+.prose-zinc {
+  --tw-prose-body: var(--xbolt-text-muted) !important;
+  --tw-prose-headings: var(--xbolt-text) !important;
+  --tw-prose-links: var(--xbolt-primary) !important;
+  --tw-prose-bold: var(--xbolt-text) !important;
+  --tw-prose-counters: var(--xbolt-text-muted) !important;
+  --tw-prose-bullets: var(--xbolt-border) !important;
+  --tw-prose-hr: var(--xbolt-border) !important;
+  --tw-prose-quotes: var(--xbolt-text) !important;
+  --tw-prose-quote-borders: var(--xbolt-border) !important;
+  --tw-prose-captions: var(--xbolt-text-muted) !important;
+  --tw-prose-code: var(--xbolt-text) !important;
+  --tw-prose-pre-code: var(--xbolt-on-primary) !important;
+  --tw-prose-pre-bg: var(--xbolt-primary) !important;
+  --tw-prose-th-borders: var(--xbolt-border) !important;
+  --tw-prose-td-borders: var(--xbolt-border) !important;
+}
+
+/* Ring accents used around gradient icons */
+.ring-blue-500\/30 { --tw-ring-color: rgb(var(--xbolt-primary-rgb) / 0.30) !important; }
+.ring-purple-500 { --tw-ring-color: var(--xbolt-primary) !important; }
+
+/* Landing hero: theme-driven accent blob + microchart */
+.xbolt-hero-accent {
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgb(var(--xbolt-primary-rgb) / 0.28),
+    rgb(var(--xbolt-primary-rgb) / 0.12) 35%,
+    transparent 70%
+  );
+}
+
+.xbolt-hero-microchart {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--xbolt-primary-rgb) / 0.06) 0%,
+    rgb(var(--xbolt-primary-rgb) / 0.00) 60%
+  );
+}
+
+/* Lightning flash effect for hero section (like real lightning strike) */
+@keyframes xbolt-lightning-flash {
+  0%, 100% { opacity: 0; }
+  10% { opacity: 0.6; }
+  11% { opacity: 0; }
+  12% { opacity: 0.95; }
+  13% { opacity: 0.4; }
+  14% { opacity: 0; }
+}
+
+.xbolt-hero-lightning-bg {
+  position: relative;
+  background: var(--xbolt-surface);
+  overflow: hidden;
+}
+
+.xbolt-hero-lightning-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--xbolt-primary-rgb) / 0.95) 0%,
+    rgb(var(--xbolt-primary-rgb) / 0.6) 40%,
+    rgb(var(--xbolt-primary-rgb) / 0.3) 70%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: -5;
+  opacity: 0;
+  animation: xbolt-lightning-flash 8s ease-in-out infinite;
+}
+
+.xbolt-hero-lightning-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 60% 20%, 
+    rgb(255 255 255 / 0.8) 0%,
+    rgb(var(--xbolt-primary-rgb) / 0.4) 20%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: -5;
+  opacity: 0;
+  animation: xbolt-lightning-flash 10s ease-in-out infinite 4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xbolt-hero-lightning-bg::before,
+  .xbolt-hero-lightning-bg::after {
+    animation: none;
+    display: none;
+  }
+}
+
+/* Scroll Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes cardBounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  50% {
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.scroll-animate-init {
+  opacity: 0;
+}
+
+.scroll-animate.animate-in {
+  animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scroll-animate-scale.animate-in {
+  animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.xbolt-card-animate {
+  opacity: 0;
+  animation: cardBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-play-state: paused;
+}
+
+.xbolt-dashboard-mock.animate-in .xbolt-card-animate {
+  animation-play-state: running;
+}
+
+/* Prevent horizontal overflow on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
+}
+
+/* Ensure all containers don't overflow */
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 100%;
+}
+
+/* Ensure hero section doesn't overflow */
+.xbolt-hero-section {
+  max-width: 100vw;
+  overflow-x: hidden !important;
+}
+
+/* Ensure main and sections don't overflow */
+main, section, footer {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Prevent text from causing overflow */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Premium landing card effects ── */
+
+/* 3D tilt perspective wrapper */
+.xb-tilt {
+  perspective: 800px;
+  transform-style: preserve-3d;
+}
+.xb-tilt-inner {
+  transition: transform 0.45s cubic-bezier(.03,.98,.52,.99), box-shadow 0.45s ease;
+  will-change: transform;
+}
+.xb-tilt:hover .xb-tilt-inner {
+  box-shadow: 0 25px 60px -12px rgba(0,0,0,0.10), 0 0 0 1px rgb(var(--xbolt-border-rgb) / 0.6);
+}
+
+/* Floating review card animations (staggered) */
+@keyframes xbFloat1 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes xbFloat2 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes xbFloat3 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+.xb-float-1 { animation: xbFloat1 6s ease-in-out infinite; }
+.xb-float-2 { animation: xbFloat2 7s ease-in-out infinite -2s; }
+.xb-float-3 { animation: xbFloat3 5.5s ease-in-out infinite -4s; }
+
+/* Review card hover glow */
+.xb-review-card {
+  position: relative;
+  transition: transform 0.5s cubic-bezier(.03,.98,.52,.99), box-shadow 0.5s ease, border-color 0.3s ease;
+}
+.xb-review-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgb(var(--xbolt-primary-rgb) / 0.08), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+.xb-review-card:hover::before { opacity: 1; }
+.xb-review-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 32px 64px -16px rgba(0,0,0,0.08), 0 0 0 1px rgb(var(--xbolt-border-rgb) / 0.5);
+}
+.xb-review-card > * { position: relative; z-index: 1; }
+
+/* Service card shine sweep on hover */
+.xb-shine {
+  position: relative;
+  overflow: hidden;
+}
+.xb-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgb(var(--xbolt-surface-rgb) / 0.12), transparent);
+  transform: rotate(25deg);
+  transition: left 0.8s cubic-bezier(.16,1,.3,1);
+  pointer-events: none;
+  z-index: 2;
+}
+.xb-shine:hover::after { left: 130%; }
+
+/* Marquee / continuous scroll for logo row */
+@keyframes xbMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.xb-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: xbMarquee 30s linear infinite;
+}
+.xb-marquee-track:hover { animation-play-state: paused; }
+
+/* Stagger reveal for grid children */
+.xb-stagger > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(.16,1,.3,1), transform 0.6s cubic-bezier(.16,1,.3,1);
+}
+.xb-stagger.animate-in > *:nth-child(1) { transition-delay: 0s; opacity: 1; transform: translateY(0); }
+.xb-stagger.animate-in > *:nth-child(2) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
+.xb-stagger.animate-in > *:nth-child(3) { transition-delay: 0.2s; opacity: 1; transform: translateY(0); }
+.xb-stagger.animate-in > *:nth-child(4) { transition-delay: 0.3s; opacity: 1; transform: translateY(0); }
+.xb-stagger.animate-in > *:nth-child(5) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
+.xb-stagger.animate-in > *:nth-child(6) { transition-delay: 0.5s; opacity: 1; transform: translateY(0); }
+
+/* Pulse dot (live indicator) — amber for dark theme */
+.xbolt-pulse-dot {
+  animation: xbPulseDot 2s ease-in-out infinite;
+}
+@keyframes xbPulseDot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(251,191,36,0.5); }
+  50% { opacity: .6; box-shadow: 0 0 0 4px rgba(251,191,36,0); }
+}
+
+/* ── Accent utility classes ── */
+.text-xbolt-accent { color: var(--xbolt-accent, #fbbf24) !important; }
+.bg-xbolt-accent { background-color: var(--xbolt-accent, #fbbf24) !important; }
+.border-xbolt-accent { border-color: var(--xbolt-accent, #fbbf24) !important; }
+.bg-xbolt-accent\/10 { background-color: rgb(var(--xbolt-accent-rgb, 251 191 36) / 0.10) !important; }
+.bg-xbolt-accent\/15 { background-color: rgb(var(--xbolt-accent-rgb, 251 191 36) / 0.15) !important; }
+.border-xbolt-accent\/20 { border-color: rgb(var(--xbolt-accent-rgb, 251 191 36) / 0.20) !important; }
+.hover\:text-xbolt-accent:hover { color: var(--xbolt-accent, #fbbf24) !important; }
+.hover\:bg-xbolt-accent:hover { background-color: var(--xbolt-accent, #fbbf24) !important; }
+.hover\:border-xbolt-accent\/30:hover { border-color: rgb(var(--xbolt-accent-rgb, 251 191 36) / 0.30) !important; }
+.focus\:ring-xbolt-accent:focus { --tw-ring-color: rgb(var(--xbolt-accent-rgb, 251 191 36) / 0.40) !important; }
+
+/* ===== Global hover animations (admin + public) ===== */
+
+/* Card hover: subtle lift + border tint */
+.xb-card-hover {
+  transition: transform 0.22s cubic-bezier(.22,1,.36,1),
+              box-shadow 0.22s cubic-bezier(.22,1,.36,1),
+              border-color 0.22s ease;
+}
+.xb-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px -4px rgb(var(--xbolt-text-rgb) / 0.06);
+  border-color: rgb(var(--xbolt-border-rgb) / 0.95);
+}
+
+/* Table row hover: gentle highlight */
+.xb-row-hover {
+  transition: background-color 0.18s ease;
+}
+.xb-row-hover:hover {
+  background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.55);
+}
+
+/* Button press: micro-scale feedback */
+.xb-btn-press {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.xb-btn-press:active {
+  transform: scale(0.975);
+}
+
+/* Link arrow nudge on hover */
+.xb-link-arrow {
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1);
+}
+.group:hover .xb-link-arrow,
+a:hover > .xb-link-arrow {
+  transform: translateX(3px);
+}
+
+/* Smooth border glow for focused inputs */
+.xb-input-glow {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.xb-input-glow:focus {
+  border-color: rgb(var(--xbolt-primary-rgb) / 0.35);
+  box-shadow: 0 0 0 3px rgb(var(--xbolt-primary-rgb) / 0.06);
+}
+
+/* Badge/pill hover pulse */
+.xb-badge-hover {
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+.xb-badge-hover:hover {
+  transform: scale(1.04);
+}
+
+/* Icon spin on hover (for refresh/settings icons) */
+.xb-icon-spin-hover {
+  transition: transform 0.4s cubic-bezier(.22,1,.36,1);
+}
+.group:hover .xb-icon-spin-hover {
+  transform: rotate(90deg);
+}
+
+/* Stat card number count-up shimmer */
+@keyframes xb-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.xb-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--xbolt-text) 0%,
+    rgb(var(--xbolt-text-muted-rgb) / 0.6) 50%,
+    var(--xbolt-text) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: xb-shimmer 2.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xb-float-1, .xb-float-2, .xb-float-3 { animation: none !important; }
+  .xb-review-card:hover { transform: none !important; }
+  .xb-shine::after { transition: none !important; display: none; }
+  .xb-marquee-track { animation: none !important; }
+  .xb-stagger > * { transition: none !important; opacity: 1 !important; transform: none !important; }
+  .xb-card-hover:hover { transform: none !important; box-shadow: none !important; }
+  .xb-btn-press:active { transform: none !important; }
+  .xb-badge-hover:hover { transform: none !important; }
+  .xb-icon-spin-hover { transition: none !important; }
+  .group:hover .xb-icon-spin-hover { transform: none !important; }
+  .xb-shimmer-text { animation: none !important; }
+}
+
+/* ===== Admin Panel Component Styles ===== */
+
+/* Admin sidebar enhancement */
+#admin-app-shell aside {
+  background: var(--xbolt-surface);
+  border-right-color: rgb(var(--xbolt-border-rgb) / 0.5);
+}
+#admin-app-shell aside nav a {
+  transition: all 0.15s ease;
+}
+
+/* Admin main content area subtle gradient */
+#admin-main {
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(var(--xbolt-primary-rgb) / 0.02) 0%, transparent 50%),
+    var(--xbolt-surface-alt);
+}
+
+/* Admin header glass effect */
+#admin-app-shell header {
+  background: rgb(var(--xbolt-surface-rgb) / 0.85) !important;
+  border-bottom-color: rgb(var(--xbolt-border-rgb) / 0.4) !important;
+}
+
+/* Global admin form inputs — themed styling */
+#admin-main input[type="text"],
+#admin-main input[type="email"],
+#admin-main input[type="url"],
+#admin-main input[type="password"],
+#admin-main input[type="number"],
+#admin-main input[type="search"],
+#admin-main input[type="tel"],
+#admin-main input[type="file"],
+#admin-main textarea,
+#admin-main select {
+  background-color: var(--xbolt-surface) !important;
+  border-color: rgb(var(--xbolt-border-rgb) / 0.7) !important;
+  color: var(--xbolt-text) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+#admin-main input[type="text"]:focus,
+#admin-main input[type="email"]:focus,
+#admin-main input[type="url"]:focus,
+#admin-main input[type="password"]:focus,
+#admin-main input[type="number"]:focus,
+#admin-main input[type="search"]:focus,
+#admin-main input[type="tel"]:focus,
+#admin-main textarea:focus,
+#admin-main select:focus {
+  border-color: rgb(var(--xbolt-primary-rgb) / 0.5) !important;
+  box-shadow: 0 0 0 3px rgb(var(--xbolt-primary-rgb) / 0.08) !important;
+  outline: none !important;
+  background-color: var(--xbolt-surface) !important;
+}
+#admin-main input::placeholder,
+#admin-main textarea::placeholder {
+  color: rgb(var(--xbolt-text-muted-rgb) / 0.5) !important;
+}
+#admin-main select {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E") !important;
+}
+
+/* Admin tables */
+#admin-main table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+#admin-main table thead {
+  background: rgb(var(--xbolt-surface-alt-rgb) / 0.6) !important;
+}
+#admin-main table thead th {
+  color: rgb(var(--xbolt-text-muted-rgb) / 0.65) !important;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+#admin-main table tbody tr {
+  transition: background-color 0.15s ease;
+}
+#admin-main table tbody tr:hover {
+  background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.45) !important;
+}
+#admin-main table tbody td {
+  border-bottom: 1px solid rgb(var(--xbolt-border-rgb) / 0.35);
+}
+#admin-main table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Admin cards — inner shadow for depth */
+#admin-main .bg-white.rounded-xl {
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.08),
+    inset 0 1px 0 0 rgb(var(--xbolt-text-rgb) / 0.02);
+}
+
+/* Stat cards: accent indicator bar */
+.xb-stat-card {
+  position: relative;
+  overflow: hidden;
+}
+.xb-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgb(var(--xbolt-primary-rgb) / 0.6), rgb(var(--xbolt-primary-rgb) / 0.1));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.xb-stat-card:hover::before {
+  opacity: 1;
+}
+
+/* Badge pills */
+#admin-main .bg-emerald-50 {
+  background-color: rgb(16 185 129 / 0.1) !important;
+  border: 1px solid rgb(16 185 129 / 0.15);
+}
+#admin-main .bg-amber-50 {
+  background-color: rgb(245 158 11 / 0.1) !important;
+  border: 1px solid rgb(245 158 11 / 0.15);
+}
+#admin-main .bg-red-50 {
+  background-color: rgb(239 68 68 / 0.08) !important;
+  border: 1px solid rgb(239 68 68 / 0.12);
+}
+
+/* Admin buttons */
+#admin-main .bg-zinc-900 {
+  background: var(--xbolt-primary) !important;
+  box-shadow: 0 1px 3px 0 rgb(var(--xbolt-primary-rgb) / 0.2);
+  transition: all 0.15s ease;
+}
+#admin-main a.bg-zinc-900:hover,
+#admin-main button.bg-zinc-900:hover,
+#admin-main input[type="submit"].bg-zinc-900:hover {
+  background: var(--xbolt-primary-hover) !important;
+  box-shadow: 0 2px 8px 0 rgb(var(--xbolt-primary-rgb) / 0.3);
+  transform: translateY(-1px);
+}
+#admin-main a.bg-zinc-900:active,
+#admin-main button.bg-zinc-900:active,
+#admin-main input[type="submit"].bg-zinc-900:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Secondary/outline button hover */
+#admin-main .border.border-zinc-200\/70:hover,
+#admin-main a.border-zinc-200\/70:hover {
+  border-color: rgb(var(--xbolt-border-rgb) / 0.9);
+  background-color: rgb(var(--xbolt-surface-alt-rgb) / 0.6) !important;
+}
+
+/* Pagination styling */
+#admin-main nav ul {
+  gap: 2px;
+}
+#admin-main nav ul li span.bg-zinc-900,
+#admin-main nav ul li a.bg-zinc-900 {
+  box-shadow: 0 1px 4px 0 rgb(var(--xbolt-primary-rgb) / 0.25);
+}
+
+/* Scrollbar inside admin cards */
+#admin-main .overflow-y-auto::-webkit-scrollbar { width: 4px; }
+#admin-main .overflow-y-auto::-webkit-scrollbar-track { background: transparent; }
+#admin-main .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgb(var(--xbolt-border-rgb) / 0.6);
+  border-radius: 10px;
+}
+#admin-main .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--xbolt-text-muted-rgb) / 0.4);
+}
+
+/* Empty state styling */
+#admin-main .text-center .text-zinc-200,
+#admin-main .text-center [data-lucide] {
+  opacity: 0.5;
+}
+
+/* Checkbox themed */
+#admin-main input[type="checkbox"] {
+  background-color: var(--xbolt-surface) !important;
+  border-color: rgb(var(--xbolt-border-rgb) / 0.8) !important;
+}
+#admin-main input[type="checkbox"]:checked {
+  background-color: var(--xbolt-primary) !important;
+  border-color: var(--xbolt-primary) !important;
+}
+
+/* Admin alert banners */
+#admin-main .bg-emerald-50.border-emerald-200\/70,
+#admin-main .bg-emerald-50.border.border-emerald-200\/70 {
+  background: rgb(16 185 129 / 0.06) !important;
+  border-color: rgb(16 185 129 / 0.2) !important;
+}
+#admin-main .bg-red-50.border-red-200\/70,
+#admin-main .bg-red-50.border.border-red-200\/70 {
+  background: rgb(239 68 68 / 0.06) !important;
+  border-color: rgb(239 68 68 / 0.2) !important;
+}
+
+/* Divider styling */
+#admin-main .divide-y > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(var(--xbolt-border-rgb) / 0.35) !important;
+}
+#admin-main .border-t.border-zinc-100,
+#admin-main .border-b.border-zinc-100 {
+  border-color: rgb(var(--xbolt-border-rgb) / 0.35) !important;
+}
+
+/* Toggle switch themed */
+#admin-main .peer-checked\:bg-zinc-900 {
+  background-color: var(--xbolt-primary) !important;
+}
+
+/* File input themed */
+#admin-main input[type="file"] {
+  border: 1px dashed rgb(var(--xbolt-border-rgb) / 0.6) !important;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+#admin-main input[type="file"]:hover {
+  border-color: rgb(var(--xbolt-primary-rgb) / 0.4) !important;
+  background: rgb(var(--xbolt-primary-rgb) / 0.02) !important;
+}
+
+/* Textarea resize handle themed */
+#admin-main textarea {
+  resize: vertical;
+  min-height: 80px;
+}

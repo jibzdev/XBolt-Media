@@ -1,0 +1,110 @@
+<% content_for :page_title, "IP Bans" %>
+<% content_for :page_description, "Block abusive IP addresses from all host and tenant content" %>
+
+<% if flash[:notice] %>
+  <div class="mb-5 bg-emerald-50 border border-emerald-200/70 rounded-lg px-3.5 py-2.5">
+    <div class="flex items-center gap-2 text-emerald-700">
+      <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+      <span class="text-[13px] font-medium"><%= flash[:notice] %></span>
+    </div>
+  </div>
+<% end %>
+
+<% if flash[:alert] %>
+  <div class="mb-5 bg-red-50 border border-red-200/70 rounded-lg px-3.5 py-2.5">
+    <div class="flex items-center gap-2 text-red-600">
+      <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+      <span class="text-[13px] font-medium"><%= flash[:alert] %></span>
+    </div>
+  </div>
+<% end %>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+  <div class="xl:col-span-1">
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="shield-off" class="w-4 h-4 text-zinc-500"></i>
+        <h3 class="text-[13px] font-semibold text-zinc-800">Ban an IP address</h3>
+      </div>
+
+      <%= form_with(model: @banned_ip, url: admin_ip_bans_path, method: :post, local: true, class: "space-y-3") do |f| %>
+        <div>
+          <%= f.label :ip_address, "IP address", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <%= f.text_field :ip_address, placeholder: "e.g. 203.0.113.9", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+          <% if @banned_ip.errors[:ip_address].present? %>
+            <p class="text-[12px] text-red-600 mt-1"><%= @banned_ip.errors[:ip_address].join(", ") %></p>
+          <% end %>
+        </div>
+
+        <div>
+          <%= f.label :reason, "Reason (optional)", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <%= f.text_area :reason, rows: 3, placeholder: "Spam, abuse, scraping, etc.", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none" %>
+        </div>
+
+        <%= f.submit "Ban IP", class: "w-full px-3.5 py-2 rounded-lg bg-red-50 text-red-600 text-[13px] font-medium hover:bg-red-100 transition cursor-pointer border border-red-200/70" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="xl:col-span-2">
+    <div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-200/70 flex items-center justify-between gap-3">
+        <h3 class="text-[13px] font-semibold text-zinc-800">Currently banned IPs</h3>
+        <span class="text-[12px] text-zinc-400">
+          <%= @banned_ips.total_count %> total
+          <% if @banned_ips.total_pages > 1 %>
+            &middot; page <%= @banned_ips.current_page %> of <%= @banned_ips.total_pages %>
+          <% end %>
+        </span>
+      </div>
+
+      <% if @banned_ips.any? %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full">
+            <thead class="bg-zinc-50 border-b border-zinc-200/70">
+              <tr>
+                <th class="text-left px-4 py-2.5 text-[11px] font-medium text-zinc-400 uppercase tracking-wider">IP</th>
+                <th class="text-left px-4 py-2.5 text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Reason</th>
+                <th class="text-left px-4 py-2.5 text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Banned by</th>
+                <th class="text-left px-4 py-2.5 text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Last seen</th>
+                <th class="text-right px-4 py-2.5 text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100">
+              <% @banned_ips.each do |ban| %>
+                <tr class="hover:bg-zinc-50/60 transition-colors xb-row-hover">
+                  <td class="px-4 py-3 text-[13px] font-mono text-zinc-700"><%= ban.ip_address %></td>
+                  <td class="px-4 py-3 text-[13px] text-zinc-600"><%= ban.reason.presence || "-" %></td>
+                  <td class="px-4 py-3 text-[13px] text-zinc-600"><%= ban.banned_by&.username || "System" %></td>
+                  <td class="px-4 py-3 text-[13px] text-zinc-500"><%= ban.last_seen_at ? time_ago_in_words(ban.last_seen_at) + " ago" : "Never" %></td>
+                  <td class="px-4 py-3 text-right">
+                    <%= button_to admin_ip_ban_path(ban),
+                      method: :delete,
+                      data: { turbo_confirm: "Remove ban for #{ban.ip_address}?" },
+                      class: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200/70 text-zinc-600 hover:bg-zinc-50 transition text-[12px] font-medium" do %>
+                      <i data-lucide="undo-2" class="w-3 h-3"></i>
+                      <span>Unban</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <% if @banned_ips.total_pages > 1 %>
+          <div class="p-3 border-t border-zinc-200/70">
+            <%= paginate @banned_ips %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="p-10 text-center">
+          <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-zinc-100 mb-2">
+            <i data-lucide="shield" class="w-4 h-4 text-zinc-400"></i>
+          </div>
+          <p class="text-[13px] font-medium text-zinc-700">No banned IPs</p>
+          <p class="text-[12px] text-zinc-500 mt-0.5">Add an IP on the left to block access globally.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

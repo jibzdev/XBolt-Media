@@ -1,0 +1,3 @@
+---
+BUNDLE_BUILD__PSYCH: "--with-cflags=-Wno-incompatible-pointer-types -Wno-implicit-function-declaration"
+BUNDLE_BUILD__DEBUG: "--with-cflags=-Wno-incompatible-pointer-types -Wno-implicit-function-declaration"

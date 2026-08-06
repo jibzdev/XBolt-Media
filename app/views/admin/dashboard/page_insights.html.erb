@@ -1,0 +1,124 @@
+<% content_for :page_title, "Page Insights" %>
+<% content_for :page_description, "Detailed analytics and security traces for a single page" %>
+
+<div class="flex items-center gap-2.5 mb-5">
+  <%= link_to "Back to overview", admin_overview_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" %>
+  <code class="px-2.5 py-1.5 rounded-md bg-zinc-100 text-zinc-700 text-[12px] font-mono"><%= @path %></code>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-3.5 xb-card-hover">
+    <div class="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Total views (30d)</div>
+    <div class="text-[15px] font-semibold text-zinc-800 mt-1"><%= number_with_delimiter(@total_views) %></div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-3.5 xb-card-hover">
+    <div class="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Views (24h)</div>
+    <div class="text-[15px] font-semibold text-zinc-800 mt-1"><%= number_with_delimiter(@views_24h) %></div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-3.5 xb-card-hover">
+    <div class="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Unique visitors</div>
+    <div class="text-[15px] font-semibold text-zinc-800 mt-1"><%= number_with_delimiter(@unique_visitors) %></div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-3.5 xb-card-hover">
+    <div class="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Recent hits loaded</div>
+    <div class="text-[15px] font-semibold text-zinc-800 mt-1"><%= @recent_hits.size %></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-2.5">Top referrers</h3>
+    <% if @top_referrers.present? %>
+      <div class="space-y-1.5">
+        <% @top_referrers.each do |ref, count| %>
+          <div class="flex items-center justify-between text-[13px]">
+            <span class="text-zinc-600 truncate"><%= ref.presence || 'Direct / Unknown' %></span>
+            <span class="font-medium text-zinc-700 tabular-nums"><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-[13px] text-zinc-400">No data</div>
+    <% end %>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-2.5">Top hosts</h3>
+    <% if @top_hosts.present? %>
+      <div class="space-y-1.5">
+        <% @top_hosts.each do |host, count| %>
+          <div class="flex items-center justify-between text-[13px]">
+            <span class="text-zinc-600 truncate font-mono"><%= host %></span>
+            <span class="font-medium text-zinc-700 tabular-nums"><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-[13px] text-zinc-400">No data</div>
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-2.5">Countries</h3>
+    <% if @top_countries.present? %>
+      <div class="space-y-1.5">
+        <% @top_countries.each do |cc, count| %>
+          <div class="flex items-center justify-between text-[13px]">
+            <span class="text-zinc-600"><%= cc.presence || 'Unknown' %></span>
+            <span class="font-medium text-zinc-700 tabular-nums"><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-[13px] text-zinc-400">No data</div>
+    <% end %>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-2.5">Devices</h3>
+    <% if @top_devices.present? %>
+      <div class="space-y-1.5">
+        <% @top_devices.each do |device, count| %>
+          <div class="flex items-center justify-between text-[13px]">
+            <span class="text-zinc-600"><%= device.presence || 'Unknown' %></span>
+            <span class="font-medium text-zinc-700 tabular-nums"><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-[13px] text-zinc-400">No data</div>
+    <% end %>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+  <div class="px-4 py-3 border-b border-zinc-200/70">
+    <h3 class="text-[13px] font-medium text-zinc-700">Recent hits</h3>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
+      <thead class="bg-zinc-50 border-b border-zinc-200/70">
+        <tr>
+          <th class="px-4 py-2.5 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Time</th>
+          <th class="px-4 py-2.5 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Host</th>
+          <th class="px-4 py-2.5 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">IP address</th>
+          <th class="px-4 py-2.5 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Referrer</th>
+          <th class="px-4 py-2.5 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Device</th>
+          <th class="px-4 py-2.5 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Browser</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-100">
+        <% @recent_hits.each do |hit| %>
+          <tr class="hover:bg-zinc-50/60 transition-colors xb-row-hover">
+            <td class="px-4 py-2.5 text-[12px] text-zinc-600 whitespace-nowrap"><%= hit.occurred_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
+            <td class="px-4 py-2.5 text-[12px] text-zinc-600 font-mono"><%= hit.host %></td>
+            <td class="px-4 py-2.5 text-[12px] text-zinc-600 font-mono"><%= hit.ip_hash %></td>
+            <td class="px-4 py-2.5 text-[12px] text-zinc-500 truncate max-w-[200px]"><%= hit.referrer_domain.presence || '-' %></td>
+            <td class="px-4 py-2.5 text-[12px] text-zinc-600"><%= hit.device_type.presence || '-' %></td>
+            <td class="px-4 py-2.5 text-[12px] text-zinc-600"><%= hit.browser.presence || '-' %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

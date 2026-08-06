@@ -1,0 +1,142 @@
+<% content_for :page_title, "Tenants" %>
+<% content_for :page_description, "Create and manage tenant websites" %>
+
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+  <p class="text-[13px] text-zinc-400">Manage subdomain and custom domain websites for your clients.</p>
+  <%= link_to new_admin_business_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition", "data-turbo": "false" do %>
+    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+    New Tenant
+  <% end %>
+</div>
+
+<!-- Summary Stats -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+  <%
+    stats = [
+      { label: "Total Tenants", value: @total_count, icon: "building-2" },
+      { label: "Active", value: @active_count, icon: "check-circle" },
+      { label: "Custom Domains", value: @with_domain_count, icon: "globe" },
+      { label: "Added (30d)", value: @recent_count, icon: "clock" }
+    ]
+  %>
+  <% stats.each do |s| %>
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] text-zinc-400"><%= s[:label] %></span>
+        <i data-lucide="<%= s[:icon] %>" class="w-3.5 h-3.5 text-zinc-300"></i>
+      </div>
+      <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= s[:value] %></div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Search -->
+<div class="mb-5">
+  <%= form_with url: admin_businesses_path, method: :get, local: true, class: "relative max-w-sm" do %>
+    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+      <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <input
+      type="text"
+      name="q"
+      value="<%= @q %>"
+      placeholder="Search tenants…"
+      class="w-full pl-9 pr-8 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300"
+    >
+    <% if @q.present? %>
+      <%= link_to admin_businesses_path, class: "absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-300 hover:text-zinc-500 transition", "data-turbo": "false" do %>
+        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% if @q.present? %>
+    <p class="text-[11px] text-zinc-400 mt-1.5"><%= @businesses.total_count %> result(s) for "<%= @q %>"</p>
+  <% end %>
+</div>
+
+<!-- Tenant Cards -->
+<% if @businesses.any? %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
+    <% @businesses.each do |b| %>
+      <%
+        has_domain = b.custom_domain.present?
+        site_dir = Rails.root.join('public', 'tenant_sites', b.subdomain.to_s, 'index.html')
+        has_site = File.exist?(site_dir)
+      %>
+      <%= link_to admin_business_path(b), class: "group bg-white rounded-xl border border-zinc-200/70 p-4 block hover:border-zinc-300 transition-all duration-150 xb-card-hover", "data-turbo": "false" do %>
+        <div class="flex items-start justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-zinc-900">
+              <span class="text-white font-semibold text-[11px]"><%= b.name.first(2).upcase %></span>
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-[13px] font-semibold text-zinc-900 truncate"><%= b.name %></h3>
+              <p class="text-[11px] font-mono text-zinc-400 truncate"><%= b.full_subdomain %></p>
+            </div>
+          </div>
+          <% if b.active? %>
+            <span class="flex-shrink-0 w-2 h-2 bg-emerald-500 rounded-full mt-1.5" title="Active"></span>
+          <% else %>
+            <span class="flex-shrink-0 w-2 h-2 bg-zinc-200 rounded-full mt-1.5" title="Inactive"></span>
+          <% end %>
+        </div>
+
+        <div class="space-y-1.5">
+          <% if has_domain %>
+            <div class="flex items-center gap-1.5 text-[11px]">
+              <i data-lucide="globe" class="w-3 h-3 text-zinc-300"></i>
+              <span class="font-mono text-zinc-600 truncate"><%= b.custom_domain %></span>
+            </div>
+          <% end %>
+
+          <div class="flex items-center gap-3 text-[11px] text-zinc-400">
+            <div class="flex items-center gap-1">
+              <i data-lucide="folder-open" class="w-3 h-3"></i>
+              <% if has_site %>
+                <span class="text-emerald-600 font-medium">Deployed</span>
+              <% else %>
+                <span>No site</span>
+              <% end %>
+            </div>
+            <div class="flex items-center gap-1">
+              <i data-lucide="mail" class="w-3 h-3"></i>
+              <% if b.tenant_contact_configured? %>
+                <span class="text-emerald-600 font-medium">Email on</span>
+              <% else %>
+                <span>No email</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-2.5 flex items-center justify-between text-[11px] text-zinc-400 border-t border-zinc-100">
+          <span>Created <%= b.created_at.strftime("%b %d, %Y") %></span>
+          <i data-lucide="chevron-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @businesses.respond_to?(:current_page) && @businesses.total_pages > 1 %>
+    <div class="flex justify-center">
+      <%= paginate @businesses %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-12 text-center">
+    <i data-lucide="building-2" class="w-7 h-7 text-zinc-200 mb-1.5 mx-auto"></i>
+    <% if @q.present? %>
+      <h3 class="text-[13px] font-medium text-zinc-700 mb-1">No results</h3>
+      <p class="text-[11px] text-zinc-400 mb-4">No tenants match "<%= @q %>". Try a different search.</p>
+      <%= link_to "Clear search", admin_businesses_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" %>
+    <% else %>
+      <h3 class="text-[13px] font-medium text-zinc-700 mb-1">No tenants yet</h3>
+      <p class="text-[11px] text-zinc-400 mb-4">Create your first tenant to generate a subdomain website.</p>
+      <%= link_to new_admin_business_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition", "data-turbo": "false" do %>
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        Create Tenant
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

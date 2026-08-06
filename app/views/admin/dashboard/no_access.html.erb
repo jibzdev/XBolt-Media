@@ -1,0 +1,23 @@
+<% content_for :page_title, "Dashboard" %>
+<% content_for :page_description, "Access status" %>
+
+<div class="max-w-2xl">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <div class="flex items-start gap-3">
+      <div class="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="lock" class="w-4 h-4 text-zinc-500"></i>
+      </div>
+      <div class="flex-1">
+        <h2 class="text-[15px] font-semibold text-zinc-800">No access</h2>
+        <p class="text-[13px] text-zinc-500 mt-1.5">
+          Your account doesn't have admin privileges yet. Contact an administrator to request access.
+        </p>
+
+        <div class="mt-4 px-3.5 py-3 rounded-lg bg-zinc-50 border border-zinc-200/70">
+          <div class="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Signed in as</div>
+          <div class="mt-1 font-mono text-[13px] text-zinc-700">@<%= current_user.username %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

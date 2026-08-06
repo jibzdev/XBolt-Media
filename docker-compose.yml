@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-xboltmedia}
+      POSTGRES_USER: ${DB_USERNAME:-xboltmedia}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "true"
+      RAILS_SERVE_STATIC_FILES: "true"
+      RUN_MIGRATIONS: "1"
+      AWS_EC2_METADATA_DISABLED: "true"
+
+      # Prefer DATABASE_URL; fall back to parts if you want to build it yourself.
+      DATABASE_URL: ${DATABASE_URL:-postgres://${DB_USERNAME:-xboltmedia}:${DB_PASSWORD}@db:5432/${POSTGRES_DB:-xboltmedia}}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?set SECRET_KEY_BASE}
+
+    volumes:
+      # Persist uploaded/deployed tenant sites + backups across container restarts
+      - tenant_sites:/myapp/public/tenant_sites
+      - tenant_sites_backups:/myapp/public/tenant_sites_backups
+
+volumes:
+  postgres_data:
+  tenant_sites:
+  tenant_sites_backups:

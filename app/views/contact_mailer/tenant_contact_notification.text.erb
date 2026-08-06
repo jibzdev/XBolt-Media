@@ -1,0 +1,11 @@
+You have a new enquiry from your website.
+
+Name: <%= @name %>
+Email: <%= @email %>
+<% if @phone.present? %>Phone: <%= @phone %>
+<% end %>
+
+Message:
+<%= @message %>
+
+You can reply directly to this email to respond to <%= @name %>.

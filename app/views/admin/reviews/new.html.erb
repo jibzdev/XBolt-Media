@@ -1,0 +1,10 @@
+<% content_for :page_title, "New Review" %>
+<% content_for :page_description, "Add a client review" %>
+
+<div class="mb-5">
+  <%= link_to admin_reviews_path, class: "inline-flex items-center gap-1 text-[12px] text-zinc-400 hover:text-zinc-600 transition" do %>
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>Back to Reviews
+  <% end %>
+</div>
+
+<%= render 'form', review: @review %>

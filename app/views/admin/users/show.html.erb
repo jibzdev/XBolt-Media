@@ -1,0 +1,211 @@
+<% content_for :page_title, @user.username %>
+<% content_for :page_description, "Member since #{@user.created_at.strftime('%B %d, %Y')}" %>
+
+<div class="flex gap-2 mb-5">
+  <% if current_user&.full_admin? %>
+    <%= link_to edit_admin_user_path(@user), class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit
+    <% end %>
+  <% end %>
+  <% if current_user&.super_admin? && @user != current_user %>
+    <%= button_to impersonate_admin_user_path(@user),
+      method: :post,
+      data: { turbo_confirm: "Log in as #{@user.username}? You can return to your Super Admin session from the dashboard." },
+      class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-600 text-white text-[13px] font-medium hover:bg-amber-700 transition" do %>
+      <i data-lucide="user-round-check" class="w-3.5 h-3.5"></i>Log in as <%= @user.username %>
+    <% end %>
+  <% end %>
+  <%= link_to admin_users_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" do %>
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>Back
+  <% end %>
+</div>
+
+<% if defined?(@new_user_credentials) && @new_user_credentials.present? %>
+  <div class="mb-5 max-w-4xl">
+    <div class="bg-emerald-50 border border-emerald-200/70 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <i data-lucide="copy" class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0"></i>
+        <div class="flex-1 min-w-0">
+          <div class="text-[13px] font-medium text-emerald-900">User created</div>
+          <div class="text-[12px] text-emerald-700 mt-0.5">Copy these credentials now — they're shown only once.</div>
+
+          <div class="mt-3">
+            <textarea id="new-user-credentials" readonly class="w-full h-24 font-mono text-[12px] p-3 rounded-lg bg-white border border-emerald-200/70 text-zinc-800"><%= "Login URL: #{@new_user_credentials['login_url']}\nUsername: #{@new_user_credentials['username']}\nPassword: #{@new_user_credentials['password']}\n" %></textarea>
+          </div>
+
+          <div class="mt-2 flex items-center gap-2">
+            <button type="button" id="copy-new-user-credentials" class="px-3.5 py-2 rounded-lg bg-emerald-600 text-white text-[13px] font-medium hover:bg-emerald-700 transition">
+              Copy
+            </button>
+            <div id="copy-status" class="text-[12px] text-emerald-700"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const btn = document.getElementById("copy-new-user-credentials");
+      const ta = document.getElementById("new-user-credentials");
+      const status = document.getElementById("copy-status");
+      if (!btn || !ta) return;
+
+      btn.addEventListener("click", async () => {
+        try {
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+          await navigator.clipboard.writeText(ta.value);
+          if (status) status.textContent = "Copied.";
+        } catch (e) {
+          if (status) status.textContent = "Copy failed — select the text and copy manually.";
+        }
+      });
+    })();
+  </script>
+<% end %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+  <div class="lg:col-span-1 space-y-3">
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <div class="text-center mb-5">
+        <div class="w-14 h-14 bg-zinc-900 rounded-xl flex items-center justify-center mx-auto mb-3">
+          <span class="text-white font-semibold text-[14px]"><%= @user.username.first.upcase %></span>
+        </div>
+        <h2 class="text-[15px] font-semibold text-zinc-900 break-words"><%= @user.username %></h2>
+        <p class="text-[11px] text-zinc-400 mt-0.5 break-all">ID: <%= @user.id %></p>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-[13px] font-medium text-zinc-500">Status</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-medium <%= @user.status == 'verified' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' %>">
+            <%= @user.status.titleize %>
+          </span>
+        </div>
+
+        <div class="flex justify-between items-center pt-3 border-t border-zinc-100">
+          <span class="text-[13px] font-medium text-zinc-500">Role</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium <%= @user.staff_admin? ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600' %>">
+            <% if @user.staff_admin? %><i data-lucide="crown" class="w-3 h-3"></i><% end %><%= @user.admin_role_label %>
+          </span>
+        </div>
+
+        <div class="flex justify-between items-center pt-3 border-t border-zinc-100">
+          <span class="text-[13px] font-medium text-zinc-500">Last Active</span>
+          <span class="text-[13px] text-zinc-800"><%= @user.last_active_at&.strftime("%b %d, %Y") || "Never" %></span>
+        </div>
+
+        <div class="pt-3 border-t border-zinc-100 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[13px] font-medium text-zinc-500">Email</span>
+            <span class="text-[13px] text-zinc-800 break-all text-right"><%= @user.email.presence || "Not set" %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-[13px] font-medium text-zinc-500">Name</span>
+            <span class="text-[13px] text-zinc-800 text-right"><%= @user.full_name %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-[13px] font-medium text-zinc-500">Business</span>
+            <span class="text-[13px] text-zinc-800 text-right"><%= @user.business&.name || "None" %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lg:col-span-2 space-y-3">
+    <% if @can_view_user_tracking && @tracking_summary.present? %>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <% [
+          ["Activities", @tracking_summary[:activities]],
+          ["Logins", @tracking_summary[:logins]],
+          ["Page views", @tracking_summary[:page_views]],
+          ["Unique IPs", @tracking_summary[:unique_ips]]
+        ].each do |label, value| %>
+          <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+            <div class="text-[11px] text-zinc-400 mb-2"><%= label %></div>
+            <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= number_with_delimiter(value) %></div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-100">
+        <h3 class="text-[13px] font-medium text-zinc-700">Recent Activity</h3>
+      </div>
+
+      <% if @recent_activities.any? %>
+        <div class="divide-y divide-zinc-100">
+          <% @recent_activities.each do |activity| %>
+            <div class="px-4 py-3 hover:bg-zinc-50/50 transition-colors">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-[13px] text-zinc-700 font-medium truncate"><%= activity.description %></p>
+                  <p class="text-[11px] text-zinc-400 mt-0.5">
+                    <%= time_ago_in_words(activity.created_at) %> ago
+                  </p>
+                </div>
+                <span class="text-[11px] text-zinc-400 whitespace-nowrap">
+                  <%= activity.created_at.strftime("%b %d, %Y") %>
+                </span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="px-4 py-12 text-center">
+          <i data-lucide="info" class="w-7 h-7 text-zinc-200 mx-auto mb-1.5"></i>
+          <p class="text-[13px] font-medium text-zinc-500">No activity found</p>
+          <p class="text-[12px] text-zinc-400 mt-0.5">This user has no recent activity.</p>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @can_view_user_tracking %>
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+        <div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+          <div class="px-4 py-3 border-b border-zinc-100">
+            <h3 class="text-[13px] font-medium text-zinc-700">Login IPs</h3>
+          </div>
+          <% if @ip_logs.present? %>
+            <div class="divide-y divide-zinc-100 max-h-[420px] overflow-y-auto">
+              <% @ip_logs.each do |log| %>
+                <div class="px-4 py-3 flex items-center justify-between gap-3">
+                  <span class="text-[12px] font-mono text-zinc-700"><%= log.ip_address %></span>
+                  <span class="text-[11px] text-zinc-400"><%= log.login_time&.strftime("%b %d, %Y %H:%M") || "Unknown" %></span>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="px-4 py-8 text-center text-[13px] text-zinc-400">No login IPs recorded.</div>
+          <% end %>
+        </div>
+
+        <div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+          <div class="px-4 py-3 border-b border-zinc-100">
+            <h3 class="text-[13px] font-medium text-zinc-700">Recent Page Views</h3>
+          </div>
+          <% if @recent_page_views.present? && @recent_page_views.any? %>
+            <div class="divide-y divide-zinc-100 max-h-[420px] overflow-y-auto">
+              <% @recent_page_views.each do |view| %>
+                <div class="px-4 py-3">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-[12px] font-mono text-zinc-700 truncate"><%= view.host %><%= view.path %></p>
+                      <p class="text-[11px] text-zinc-400 mt-0.5"><%= [view.device_type, view.browser, view.os].compact.join(" · ").presence || "Unknown device" %></p>
+                    </div>
+                    <span class="text-[11px] text-zinc-400 whitespace-nowrap"><%= view.occurred_at&.strftime("%b %d, %H:%M") %></span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="px-4 py-8 text-center text-[13px] text-zinc-400">No page views matched this user's known IPs.</div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

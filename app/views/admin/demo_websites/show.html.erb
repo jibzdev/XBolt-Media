@@ -1,0 +1,632 @@
+<% content_for :page_title, "Demo Website" %>
+<% content_for :page_description, "Configure the live mockup shown on example subdomain" %>
+<% preview_host = Rails.env.development? ? "example.localhost:3001" : "example.#{request.host}" %>
+<% preview_base_url = "#{request.protocol}#{preview_host}" %>
+<% current_layout_meta = @layouts[@demo.layout_name] || @layouts.values.first %>
+<% current_theme_meta = @themes[@demo.theme_name] || @themes.values.first %>
+
+<style>
+  .picker-track{display:flex;gap:0.75rem;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;padding:4px 2px 8px;scroll-snap-type:x mandatory}
+  .picker-track::-webkit-scrollbar{display:none}
+  .picker-card{flex:0 0 auto;cursor:pointer;transition:all .25s ease;user-select:none;scroll-snap-align:start;opacity:.72;transform:translateY(6px) scale(.985)}
+  .picker-card.in-view{opacity:1;transform:translateY(0) scale(1)}
+  .picker-card:hover{transform:translateY(-2px) scale(1.01)}
+  .picker-card.selected{border-color:var(--xbolt-primary)!important;box-shadow:0 0 0 2px var(--xbolt-primary)}
+  .picker-card.selected .pick-badge{display:flex}
+  .pick-badge{display:none}
+  .scroll-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:24px;height:24px;border-radius:9999px;background:var(--xbolt-surface);border:1px solid var(--xbolt-border);box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;color:var(--xbolt-text-muted);cursor:pointer;transition:all .15s}
+  .scroll-arrow:hover{background:var(--xbolt-surface-alt);color:var(--xbolt-text);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+  .wiz-step{display:none;animation:fadeStep .25s ease}
+  .wiz-step.active{display:block}
+  @keyframes fadeStep{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .fi{width:100%;border-radius:.5rem;border:1px solid var(--xbolt-border);background:var(--xbolt-surface);color:var(--xbolt-text);font-size:.8125rem;padding:.5rem .75rem;transition:border-color .15s,box-shadow .15s}
+  .fi:focus{outline:none;border-color:var(--xbolt-primary);box-shadow:0 0 0 2px rgb(var(--xbolt-primary-rgb) / .12)}
+  textarea.fi{resize:vertical}
+  .fl{display:block;font-size:.6875rem;font-weight:500;color:var(--xbolt-text-muted);margin-bottom:4px}
+  .sc{background:var(--xbolt-surface);border:1px solid var(--xbolt-border);border-radius:.75rem;padding:1rem}
+  .st{font-size:.8125rem;font-weight:600;color:var(--xbolt-text);margin-bottom:.5rem;display:flex;align-items:center;gap:.375rem}
+  .slot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.5rem}
+  .slot-card{border:1px solid var(--xbolt-border);border-radius:.5rem;padding:.75rem;background:var(--xbolt-surface-alt)}
+  .anim-swap{animation:fadeSwap .22s ease}
+  @keyframes fadeSwap{from{opacity:.35;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+<%= form_with model: @demo, url: admin_demo_website_path, method: :patch, local: true, id: "demo-form" do |f| %>
+<%= f.hidden_field :theme_name, id: "inp-theme" %>
+<%= f.hidden_field :layout_name, id: "inp-layout" %>
+
+<!-- ============ STEP 0: Overview ============ -->
+<div class="wiz-step active" data-step="0">
+  <div class="flex items-center justify-between mb-5">
+    <div>
+      <h1 class="text-[15px] font-semibold" style="color:var(--xbolt-text)">Demo Website</h1>
+      <p class="text-[12px] mt-0.5" style="color:var(--xbolt-text-muted)">Your current configuration at a glance.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="<%= preview_base_url %>" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition" style="border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)">
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>Preview
+      </a>
+      <button type="button" data-goto="1" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition" style="background:var(--xbolt-primary);color:#fff">
+        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-5">
+    <div style="background:var(--xbolt-surface);border:1px solid var(--xbolt-border)" class="rounded-xl p-4">
+      <div class="text-[11px] font-medium uppercase tracking-wider mb-2.5" style="color:var(--xbolt-text-muted)">Layout</div>
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--xbolt-surface-alt);border:1px solid var(--xbolt-border)">
+          <i data-lucide="layout" class="w-4 h-4" style="color:var(--xbolt-text-muted)"></i>
+        </div>
+        <div>
+          <div class="text-[13px] font-semibold" style="color:var(--xbolt-text)" id="overview-layout-name"><%= current_layout_meta[:name] %></div>
+          <div class="text-[11px]" style="color:var(--xbolt-text-muted)"><%= current_layout_meta[:desc] %></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--xbolt-surface);border:1px solid var(--xbolt-border)" class="rounded-xl p-4">
+      <div class="text-[11px] font-medium uppercase tracking-wider mb-2.5" style="color:var(--xbolt-text-muted)">Theme</div>
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style="background:<%= current_theme_meta[:bg] %>;border:1px solid var(--xbolt-border)">
+          <div class="w-4 h-4 rounded-full" style="background:<%= current_theme_meta[:primary] %>; box-shadow: 0 0 8px <%= current_theme_meta[:primary] %>44;"></div>
+        </div>
+        <div>
+          <div class="text-[13px] font-semibold" style="color:var(--xbolt-text)" id="overview-theme-name"><%= current_theme_meta[:name] %></div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="w-3 h-3 rounded-full" style="background:<%= current_theme_meta[:primary] %>;border:1px solid var(--xbolt-border)"></span>
+            <span class="w-3 h-3 rounded-full" style="background:<%= current_theme_meta[:accent] %>;border:1px solid var(--xbolt-border)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--xbolt-surface);border:1px solid var(--xbolt-border)" class="rounded-xl p-4">
+      <div class="text-[11px] font-medium uppercase tracking-wider mb-2.5" style="color:var(--xbolt-text-muted)">Details</div>
+      <div class="space-y-1.5">
+        <% [
+          ["Site Title", @demo.site_title],
+          ["Email", @demo.contact_email.presence || '—'],
+          ["Phone", @demo.contact_phone.presence || '—'],
+          ["Last saved", (@demo.updated_at.strftime("%b %d, %Y %I:%M %p") rescue "Never")]
+        ].each do |lbl, val| %>
+          <div class="flex items-center justify-between">
+            <span class="text-[11px]" style="color:var(--xbolt-text-muted)"><%= lbl %></span>
+            <span class="text-[11px] font-medium truncate max-w-[60%] text-right" style="color:var(--xbolt-text)"><%= val %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--xbolt-surface);border:1px solid var(--xbolt-border)" class="rounded-xl p-4">
+    <div class="text-[11px] font-medium uppercase tracking-wider mb-3" style="color:var(--xbolt-text-muted)">Content Preview</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <% [
+        ["Hero Heading", @demo.hero_heading],
+        ["About", @demo.about_title],
+        ["Services", @demo.services_title],
+        ["Feature Cards", "#{@demo.feature_cards.length} items"],
+        ["FAQs", "#{@demo.faq_items.length} items"],
+        ["Testimonials", "#{@demo.testimonial_cards.length} items"]
+      ].each do |lbl, val| %>
+        <div class="rounded-lg p-3" style="background:var(--xbolt-surface-alt);border:1px solid var(--xbolt-border)">
+          <div class="text-[10px] font-medium uppercase tracking-wider mb-0.5" style="color:var(--xbolt-text-muted)"><%= lbl %></div>
+          <div class="text-[13px] line-clamp-2" style="color:var(--xbolt-text)"><%= val %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STEP 1: Layout & Theme ============ -->
+<div class="wiz-step" data-step="1">
+  <div class="flex items-center justify-between mb-5">
+    <div class="flex items-center gap-2.5">
+      <button type="button" data-goto="0" class="w-7 h-7 rounded-lg flex items-center justify-center transition" style="border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+      </button>
+      <div>
+        <h1 class="text-[15px] font-semibold" style="color:var(--xbolt-text)">Choose Layout & Theme</h1>
+        <p class="text-[12px] mt-0.5" style="color:var(--xbolt-text-muted)">Step 1 of 2</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="flex items-center gap-1">
+        <span class="w-5 h-1 rounded-full" style="background:var(--xbolt-primary)"></span>
+        <span class="w-5 h-1 rounded-full" style="background:var(--xbolt-border)"></span>
+      </span>
+      <button type="button" data-goto="2" class="ml-2 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition" style="background:var(--xbolt-primary);color:#fff">
+        Next<i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-2.5">
+      <h2 class="text-[13px] font-semibold" style="color:var(--xbolt-text)">Layout</h2>
+      <span id="lbl-layout" class="text-[11px] font-medium" style="color:var(--xbolt-text-muted)"></span>
+    </div>
+    <div class="relative">
+      <button type="button" class="scroll-arrow left-0 -ml-2" onclick="this.parentElement.querySelector('.picker-track').scrollBy({left:-280,behavior:'smooth'})">
+        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+      </button>
+      <div class="picker-track px-1">
+        <% @layouts.each do |key, meta| %>
+          <div class="picker-card w-48 rounded-xl overflow-hidden" style="border:2px solid var(--xbolt-border);background:var(--xbolt-surface)" data-pick="layout" data-key="<%= key %>" data-name="<%= meta[:name] %>" data-desc="<%= meta[:desc] %>">
+            <div class="h-24 flex items-center justify-center relative overflow-hidden" style="background:var(--xbolt-surface-alt);border-bottom:1px solid var(--xbolt-border)">
+              <% img_map = { "show" => "jmg.png", "show2" => "dawkes.png", "show3" => "3.png", "show4" => "beauty.png", "show5" => "accountant.png", "show6" => "restaurant.png", "show7" => "fitness.png", "show8" => "estate.png" } %>
+              <% if img_map[key] %>
+                <%= image_tag "/assets/images/#{img_map[key]}", class: "w-full h-full object-cover" %>
+              <% else %>
+                <div class="text-center">
+                  <i data-lucide="layout" class="w-5 h-5 mx-auto" style="color:var(--xbolt-text-muted)"></i>
+                  <div class="text-[10px] mt-1" style="color:var(--xbolt-text-muted)"><%= meta[:name] %></div>
+                </div>
+              <% end %>
+              <div class="pick-badge absolute top-1 right-1 items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium" style="background:var(--xbolt-primary);color:#fff">
+                <i data-lucide="check" class="w-2.5 h-2.5"></i>Active
+              </div>
+            </div>
+            <div class="px-2.5 py-1.5">
+              <div class="text-[11px] font-semibold" style="color:var(--xbolt-text)"><%= meta[:name] %></div>
+              <div class="text-[10px] mt-0.5 leading-snug" style="color:var(--xbolt-text-muted)"><%= meta[:desc] %></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <button type="button" class="scroll-arrow right-0 -mr-2" onclick="this.parentElement.querySelector('.picker-track').scrollBy({left:280,behavior:'smooth'})">
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <div class="flex items-center justify-between mb-2.5">
+      <h2 class="text-[13px] font-semibold" style="color:var(--xbolt-text)">Theme</h2>
+      <span id="lbl-theme" class="text-[11px] font-medium" style="color:var(--xbolt-text-muted)"></span>
+    </div>
+    <div class="relative">
+      <button type="button" class="scroll-arrow left-0 -ml-2" onclick="this.parentElement.querySelector('.picker-track').scrollBy({left:-180,behavior:'smooth'})">
+        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+      </button>
+      <div class="picker-track px-1">
+        <% @themes.each do |key, theme| %>
+          <div class="picker-card w-32 rounded-xl overflow-hidden" style="border:2px solid var(--xbolt-border);background:var(--xbolt-surface)" data-pick="theme" data-key="<%= key %>" data-name="<%= theme[:name] %>">
+            <div class="h-16 relative overflow-hidden" style="background:<%= theme[:bg] %>">
+              <div class="absolute top-1 left-1 w-10 h-10 rounded-full blur-[18px] opacity-40" style="background:<%= theme[:primary] %>"></div>
+              <div class="absolute bottom-0 right-0 w-8 h-8 rounded-full blur-[14px] opacity-30" style="background:<%= theme[:accent] %>"></div>
+              <div class="relative h-full p-1.5 flex flex-col justify-between">
+                <div class="w-6 h-0.5 rounded-full" style="background:<%= theme[:accent] %>"></div>
+                <div class="space-y-0.5">
+                  <div class="w-8 h-1 rounded-full" style="background:<%= theme[:primary] %>"></div>
+                  <div class="w-5 h-0.5 rounded-full bg-white/40"></div>
+                </div>
+                <div class="flex gap-1">
+                  <div class="w-4 h-1 rounded" style="background:<%= theme[:primary] %>"></div>
+                  <div class="w-4 h-1 rounded border" style="border-color:<%= theme[:accent] %>"></div>
+                </div>
+              </div>
+              <div class="pick-badge absolute top-1 right-1 items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium shadow" style="background:var(--xbolt-primary);color:#fff">
+                <i data-lucide="check" class="w-2 h-2"></i>
+              </div>
+            </div>
+            <div class="px-2 py-1.5" style="background:var(--xbolt-surface);border-top:1px solid var(--xbolt-border)">
+              <div class="text-[11px] font-medium truncate" style="color:var(--xbolt-text)"><%= theme[:name] %></div>
+              <div class="flex items-center gap-0.5 mt-0.5">
+                <span class="w-2.5 h-2.5 rounded-full" style="background:<%= theme[:primary] %>;border:1px solid var(--xbolt-border)"></span>
+                <span class="w-2.5 h-2.5 rounded-full" style="background:<%= theme[:accent] %>;border:1px solid var(--xbolt-border)"></span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <button type="button" class="scroll-arrow right-0 -mr-2" onclick="this.parentElement.querySelector('.picker-track').scrollBy({left:180,behavior:'smooth'})">
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STEP 2: Content Editor ============ -->
+<div class="wiz-step" data-step="2">
+  <div class="flex items-center justify-between mb-5">
+    <div class="flex items-center gap-2.5">
+      <button type="button" data-goto="1" class="w-7 h-7 rounded-lg flex items-center justify-center transition" style="border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+      </button>
+      <div>
+        <h1 class="text-[15px] font-semibold" style="color:var(--xbolt-text)">Edit Content</h1>
+        <p class="text-[12px] mt-0.5" style="color:var(--xbolt-text-muted)">Step 2 of 2</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1">
+      <span class="w-5 h-1 rounded-full" style="background:var(--xbolt-primary)"></span>
+      <span class="w-5 h-1 rounded-full" style="background:var(--xbolt-primary)"></span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
+    <div class="sc lg:col-span-2">
+      <div class="st"><i data-lucide="star" class="w-3.5 h-3.5" style="color:var(--xbolt-text-muted)"></i>Hero</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div>
+          <label class="fl">Site Title</label>
+          <%= f.text_field :site_title, placeholder: "Your Business Name", class: "fi" %>
+        </div>
+        <div>
+          <label class="fl">Badge</label>
+          <%= f.text_field :hero_badge, placeholder: "New • Premium • Featured", class: "fi" %>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="fl">Heading</label>
+          <%= f.text_field :hero_heading, placeholder: "Your powerful headline", class: "fi" %>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="fl">Subheading</label>
+          <%= f.text_area :hero_subheading, rows: 2, placeholder: "A compelling description of your value proposition", class: "fi" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc">
+      <div class="st"><i data-lucide="mouse-pointer" class="w-3.5 h-3.5" style="color:var(--xbolt-text-muted)"></i>Buttons</div>
+      <div class="space-y-2.5">
+        <div>
+          <label class="fl">Primary Button</label>
+          <%= f.text_field :cta_primary_text, placeholder: "Get Started", class: "fi" %>
+        </div>
+        <div>
+          <label class="fl">Secondary Button</label>
+          <%= f.text_field :cta_secondary_text, placeholder: "Learn More", class: "fi" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc">
+      <div class="st"><i data-lucide="info" class="w-3.5 h-3.5" style="color:var(--xbolt-text-muted)"></i>About</div>
+      <div class="space-y-2.5">
+        <div>
+          <label class="fl">Title</label>
+          <%= f.text_field :about_title, placeholder: "About Your Business", class: "fi" %>
+        </div>
+        <div>
+          <label class="fl">Body</label>
+          <%= f.text_area :about_body, rows: 3, placeholder: "Tell your story...", class: "fi" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc lg:col-span-2">
+      <div class="st"><i data-lucide="mail" class="w-3.5 h-3.5" style="color:var(--xbolt-text-muted)"></i>Contact Info</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div>
+          <label class="fl">Email</label>
+          <%= f.email_field :contact_email, placeholder: "hello@yourbusiness.com", class: "fi" %>
+        </div>
+        <div>
+          <label class="fl">Phone</label>
+          <%= f.text_field :contact_phone, placeholder: "+1 (555) 123-4567", class: "fi" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc lg:col-span-2">
+      <div class="st"><i data-lucide="type" class="w-3.5 h-3.5" style="color:var(--xbolt-text-muted)"></i>Section Titles & Intros</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <% [
+          [:services_title, "Services Title"],
+          [:work_title, "Work / Portfolio Title"],
+          [:testimonials_title, "Testimonials Title"],
+          [:faq_title, "FAQ Title"],
+          [:contact_title, "Contact Title"],
+        ].each do |attr, label| %>
+          <div>
+            <label class="fl"><%= label %></label>
+            <%= f.text_field attr, class: "fi" %>
+          </div>
+        <% end %>
+        <div></div>
+        <% [
+          [:services_intro, "Services Intro"],
+          [:work_intro, "Work Intro"],
+          [:testimonials_intro, "Testimonials Intro"],
+          [:faq_intro, "FAQ Intro"],
+          [:contact_intro, "Contact Intro"],
+        ].each do |attr, label| %>
+          <div class="sm:col-span-2">
+            <label class="fl"><%= label %></label>
+            <%= f.text_area attr, rows: 2, class: "fi" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="sc lg:col-span-2">
+      <div class="st"><i data-lucide="layers" class="w-3.5 h-3.5" style="color:var(--xbolt-text-muted)"></i>Cards, Stats & FAQs</div>
+      <p class="text-[11px] mb-2.5" style="color:var(--xbolt-text-muted)">One item per line. Separate fields with <code class="px-1 py-0.5 rounded text-[10px]" style="background:var(--xbolt-surface-alt);color:var(--xbolt-text)">|</code></p>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <% [
+          [:feature_cards_data, "Feature Cards", "Title|Description", 4],
+          [:project_cards_data, "Project Cards", "Title|Tag|Description", 5],
+          [:testimonial_cards_data, "Testimonials", "Name|Role|Quote", 3],
+          [:stat_items_data, "Stats", "Number|Label", 3],
+          [:process_steps_data, "Process Steps", "Title|Description", 3],
+          [:faq_items_data, "FAQs", "Question|Answer", 5],
+        ].each do |attr, label, fmt, rows| %>
+          <div>
+            <label class="fl"><%= label %> <span class="font-normal" style="color:var(--xbolt-text-muted);opacity:.7">(<%= fmt %>)</span></label>
+            <%= f.text_area attr, rows: rows, class: "fi font-mono text-[11px] leading-relaxed" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="sc lg:col-span-2">
+      <div class="st"><i data-lucide="image" class="w-3.5 h-3.5" style="color:var(--xbolt-text-muted)"></i>Template Images</div>
+      <p class="text-[11px] mb-2.5" style="color:var(--xbolt-text-muted)">Pick a tenant and assign tenant assets to image slots used by the selected layout.</p>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-2.5 items-end mb-2.5">
+        <div>
+          <label class="fl">Tenant Source</label>
+          <%= f.select :tenant_image_business_id,
+                       options_from_collection_for_select(@businesses, :id, :name, @demo.tenant_image_business_id),
+                       { include_blank: "No tenant selected" },
+                       { class: "fi", id: "demo-tenant-image-business" } %>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" id="load-tenant-assets" class="px-3 py-2 rounded-lg text-[12px] font-medium transition" style="border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)">Load Images</button>
+          <button type="button" id="autofill-tenant-assets" class="px-3 py-2 rounded-lg text-[12px] font-medium transition" style="border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)">Auto-fill Slots</button>
+        </div>
+        <div class="text-[11px]" id="tenant-assets-status" style="color:var(--xbolt-text-muted)">Select a tenant and load images.</div>
+      </div>
+      <div id="image-slot-editor" class="slot-grid mb-2.5"></div>
+      <div>
+        <label class="fl">Image Slot Mapping (advanced)</label>
+        <%= f.text_area :image_slots_data, rows: 5, class: "fi font-mono text-[11px] leading-relaxed", id: "image-slots-data", placeholder: "project_1|/media/tenants/.../image.jpg" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="sticky bottom-0 z-20 backdrop-blur rounded-lg px-4 py-2.5 flex items-center justify-between gap-3 mt-2" style="background:var(--xbolt-surface-alt);border:1px solid var(--xbolt-border)">
+    <div class="flex items-center gap-2">
+      <button type="button" data-goto="1" class="px-3 py-1.5 rounded-lg text-[12px] font-medium transition inline-flex items-center gap-1.5" style="border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)">
+        <i data-lucide="arrow-left" class="w-3 h-3"></i>Back
+      </button>
+      <a href="<%= preview_base_url %>" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg text-[12px] font-medium transition inline-flex items-center gap-1.5" style="border:1px solid var(--xbolt-border);color:var(--xbolt-text-muted);background:var(--xbolt-surface)">
+        <i data-lucide="eye" class="w-3 h-3"></i>Preview
+      </a>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-[11px] hidden sm:block" style="color:var(--xbolt-text-muted)">Last saved: <%= @demo.updated_at.strftime("%b %d, %I:%M %p") rescue "Never" %></span>
+      <%= f.submit "Save Changes", class: "px-3.5 py-2 rounded-lg text-[13px] font-medium transition cursor-pointer", style: "background:var(--xbolt-primary);color:#fff" %>
+    </div>
+  </div>
+</div>
+
+<% end %>
+
+<script>
+(() => {
+  const form = document.getElementById('demo-form');
+  if (!form) return;
+
+  const steps = form.querySelectorAll('.wiz-step');
+  const inpTheme = form.querySelector('#inp-theme');
+  const inpLayout = form.querySelector('#inp-layout');
+  const lblTheme = document.getElementById('lbl-theme');
+  const lblLayout = document.getElementById('lbl-layout');
+  const tenantSelect = form.querySelector('#demo-tenant-image-business');
+  const loadTenantAssetsBtn = document.getElementById('load-tenant-assets');
+  const autofillTenantAssetsBtn = document.getElementById('autofill-tenant-assets');
+  const tenantAssetsStatus = document.getElementById('tenant-assets-status');
+  const imageSlotEditor = document.getElementById('image-slot-editor');
+  const imageSlotsDataInput = document.getElementById('image-slots-data');
+  const imageSlotsByLayout = {
+    show: ["project_1", "project_2", "project_3", "project_4", "project_5", "project_6"],
+    show2: ["about_main", "drone_feature", "project_1", "project_2", "project_3", "project_4", "project_5", "project_6"],
+    show3: ["project_1", "project_2", "project_3", "project_4", "project_5", "project_6"],
+    show4: ["hero_visual", "about_main", "project_1", "project_2", "project_3", "project_4", "project_5", "project_6"],
+    show5: ["hero_visual", "project_1", "project_2", "project_3", "project_4", "project_5", "project_6"],
+    show6: ["hero_visual", "project_1", "project_2", "project_3", "project_4", "project_5", "project_6"],
+    show7: ["about_main", "project_1", "project_2", "project_3", "project_4", "project_5", "project_6"],
+    show8: ["project_1", "project_2", "project_3", "project_4", "project_5", "project_6"]
+  };
+  let tenantAssets = [];
+
+  function goTo(n) {
+    steps.forEach(s => s.classList.toggle('active', s.dataset.step === String(n)));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  form.querySelectorAll('[data-goto]').forEach(btn => {
+    btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
+
+  function activate(type) {
+    const input = type === 'theme' ? inpTheme : inpLayout;
+    const label = type === 'theme' ? lblTheme : lblLayout;
+    const cards = form.querySelectorAll('[data-pick="' + type + '"]');
+
+    cards.forEach(c => {
+      const active = c.dataset.key === input.value;
+      c.classList.toggle('selected', active);
+      if (active && label) label.textContent = c.dataset.name;
+    });
+  }
+
+  function animateTextSwap(el, text) {
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('anim-swap');
+    void el.offsetWidth;
+    el.classList.add('anim-swap');
+  }
+
+  function parseImageAssignments() {
+    return imageSlotsDataInput.value.split(/\r?\n/).reduce((acc, line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return acc;
+      const parts = trimmed.split("|");
+      const slot = (parts.shift() || "").trim();
+      const url = parts.join("|").trim();
+      if (slot && url) acc[slot] = url;
+      return acc;
+    }, {});
+  }
+
+  function serializeImageAssignments(assignments) {
+    return Object.entries(assignments)
+      .filter(([, url]) => String(url || "").trim().length > 0)
+      .map(([slot, url]) => `${slot}|${url}`)
+      .join("\n");
+  }
+
+  function activeLayoutSlots() {
+    return imageSlotsByLayout[inpLayout.value] || imageSlotsByLayout.show;
+  }
+
+  function updateImageAssignmentsFromEditor() {
+    if (!imageSlotEditor || !imageSlotsDataInput) return;
+    const assignments = parseImageAssignments();
+    imageSlotEditor.querySelectorAll("select[data-slot]").forEach((select) => {
+      const slot = select.dataset.slot;
+      const value = (select.value || "").trim();
+      if (value) {
+        assignments[slot] = value;
+      } else {
+        delete assignments[slot];
+      }
+    });
+    imageSlotsDataInput.value = serializeImageAssignments(assignments);
+  }
+
+  function renderImageSlotEditor() {
+    if (!imageSlotEditor || !imageSlotsDataInput) return;
+    const assignments = parseImageAssignments();
+    const slots = activeLayoutSlots();
+    imageSlotEditor.innerHTML = "";
+
+    slots.forEach((slot) => {
+      const wrap = document.createElement("div");
+      wrap.className = "slot-card";
+
+      const label = document.createElement("label");
+      label.className = "fl";
+      label.textContent = slot.replace(/_/g, " ");
+
+      const select = document.createElement("select");
+      select.className = "fi";
+      select.dataset.slot = slot;
+
+      const emptyOption = document.createElement("option");
+      emptyOption.value = "";
+      emptyOption.textContent = "No image";
+      select.appendChild(emptyOption);
+
+      tenantAssets.forEach((asset) => {
+        const option = document.createElement("option");
+        option.value = asset.url;
+        option.textContent = asset.title || asset.filename || asset.url;
+        select.appendChild(option);
+      });
+
+      const savedValue = assignments[slot] || "";
+      select.value = savedValue;
+      select.addEventListener("change", updateImageAssignmentsFromEditor);
+
+      wrap.appendChild(label);
+      wrap.appendChild(select);
+      imageSlotEditor.appendChild(wrap);
+    });
+  }
+
+  async function loadTenantAssets() {
+    const tenantId = tenantSelect?.value;
+    if (!tenantId) {
+      tenantAssets = [];
+      tenantAssetsStatus.textContent = "Select a tenant to load image assets.";
+      renderImageSlotEditor();
+      return;
+    }
+
+    tenantAssetsStatus.textContent = "Loading tenant assets...";
+    try {
+      const response = await fetch(`/tenants/${tenantId}/assets`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      tenantAssets = (payload.assets || []).filter((asset) => String(asset.content_type || "").startsWith("image/"));
+      tenantAssetsStatus.textContent = `Loaded ${tenantAssets.length} image asset${tenantAssets.length === 1 ? "" : "s"}.`;
+    } catch (error) {
+      tenantAssets = [];
+      tenantAssetsStatus.textContent = "Could not load tenant images.";
+    }
+    renderImageSlotEditor();
+  }
+
+  form.querySelectorAll('[data-pick]').forEach(card => {
+    card.addEventListener('click', () => {
+      const type = card.dataset.pick;
+      const input = type === 'theme' ? inpTheme : inpLayout;
+      input.value = card.dataset.key;
+      activate(type);
+
+      if (type === 'layout') {
+        const el = document.getElementById('overview-layout-name');
+        animateTextSwap(el, card.dataset.name);
+        renderImageSlotEditor();
+      } else {
+        const el = document.getElementById('overview-theme-name');
+        animateTextSwap(el, card.dataset.name);
+      }
+    });
+  });
+
+  function setupPickerTrackAnimations() {
+    const tracks = Array.from(form.querySelectorAll('.picker-track'));
+    if (!tracks.length) return;
+
+    const refreshVisibility = (track) => {
+      const trackRect = track.getBoundingClientRect();
+      track.querySelectorAll('.picker-card').forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const visible = rect.right > trackRect.left + 24 && rect.left < trackRect.right - 24;
+        card.classList.toggle('in-view', visible);
+      });
+    };
+
+    tracks.forEach((track) => {
+      let raf = null;
+      const onScroll = () => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => refreshVisibility(track));
+      };
+      track.addEventListener('scroll', onScroll, { passive: true });
+      refreshVisibility(track);
+    });
+
+    form.querySelectorAll('.scroll-arrow').forEach((arrow) => {
+      arrow.addEventListener('click', () => {
+        window.setTimeout(() => tracks.forEach(refreshVisibility), 220);
+      });
+    });
+  }
+
+  loadTenantAssetsBtn?.addEventListener("click", loadTenantAssets);
+  autofillTenantAssetsBtn?.addEventListener("click", () => {
+    if (!tenantAssets.length) return;
+    const selects = imageSlotEditor.querySelectorAll("select[data-slot]");
+    selects.forEach((select, idx) => {
+      select.value = tenantAssets[idx % tenantAssets.length]?.url || "";
+    });
+    updateImageAssignmentsFromEditor();
+  });
+  imageSlotsDataInput?.addEventListener("input", renderImageSlotEditor);
+
+  activate('theme');
+  activate('layout');
+  setupPickerTrackAnimations();
+  renderImageSlotEditor();
+  if (tenantSelect?.value) loadTenantAssets();
+})();
+</script>

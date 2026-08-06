@@ -1,0 +1,544 @@
+<% primary_rgb = @theme[:primary].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<% accent_rgb = @theme[:accent].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= @demo.site_title %></title>
+    <meta name="description" content="<%= @demo.hero_subheading %>">
+    <meta name="theme-color" content="<%= @theme[:primary] %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: { primary: '<%= @theme[:primary] %>', accent: '<%= @theme[:accent] %>' },
+                fontFamily: { serif: ['Cormorant Garamond', 'serif'], sans: ['Jost', 'sans-serif'] }
+            }}
+        }
+    </script>
+    <style>
+        :root {
+            --p: <%= @theme[:primary] %>;
+            --a: <%= @theme[:accent] %>;
+            --bg: <%= @theme[:bg] %>;
+            --p-rgb: <%= primary_rgb %>;
+            --a-rgb: <%= accent_rgb %>;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Jost', sans-serif; background: var(--bg); color: #ede9e6; overflow-x: hidden; }
+        h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: rgba(var(--p-rgb), 0.3); border-radius: 10px; }
+        ::selection { background: rgba(var(--p-rgb), 0.25); color: #fff; }
+
+        #navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; transition: all 0.4s ease; }
+        #navbar.scrolled { background: rgba(0,0,0,0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--p-rgb), 0.08); }
+        .nav-link { color: rgba(255,255,255,0.55); font-size: 0.78rem; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; transition: color 0.3s; }
+        .nav-link:hover { color: var(--p); }
+
+        #mobile-menu { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.95); backdrop-filter: blur(24px); flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
+        #mobile-menu.open { display: flex; }
+        #mobile-menu a { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; text-decoration: none; transition: color 0.3s; letter-spacing: 0.05em; }
+        #mobile-menu a:hover { color: var(--p); }
+
+        .btn-book { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 2rem; background: var(--p); color: #fff; font-weight: 500; font-size: 0.85rem; letter-spacing: 0.06em; border-radius: 0; text-decoration: none; text-transform: uppercase; transition: all 0.3s; border: none; cursor: pointer; }
+        .btn-book:hover { background: var(--a); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(var(--p-rgb), 0.25); }
+        .btn-ghost { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 2rem; background: transparent; color: #fff; font-weight: 400; font-size: 0.85rem; letter-spacing: 0.06em; border: 1px solid rgba(var(--p-rgb), 0.3); border-radius: 0; text-decoration: none; text-transform: uppercase; transition: all 0.3s; cursor: pointer; }
+        .btn-ghost:hover { border-color: var(--p); background: rgba(var(--p-rgb), 0.06); }
+
+        .treatment-card { background: rgba(var(--p-rgb), 0.03); border: 1px solid rgba(var(--p-rgb), 0.08); transition: all 0.4s ease; position: relative; overflow: hidden; }
+        .treatment-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, var(--p), var(--a)); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; }
+        .treatment-card:hover::before { transform: scaleX(1); }
+        .treatment-card:hover { border-color: rgba(var(--p-rgb), 0.2); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+
+        .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(var(--p-rgb), 0.15), transparent); max-width: 500px; margin: 0 auto; }
+
+        .form-input { width: 100%; padding: 1rem; background: rgba(var(--p-rgb), 0.03); border: 1px solid rgba(var(--p-rgb), 0.1); border-radius: 0; color: #ede9e6; font-family: 'Jost', sans-serif; font-size: 0.9rem; transition: border-color 0.3s; outline: none; }
+        .form-input::placeholder { color: rgba(255,255,255,0.3); }
+        .form-input:focus { border-color: var(--p); }
+
+        .faq-item { border-bottom: 1px solid rgba(var(--p-rgb), 0.08); }
+        .faq-q { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; background: none; border: none; cursor: pointer; color: #ede9e6; font-family: 'Jost', sans-serif; font-size: 1rem; font-weight: 400; text-align: left; transition: color 0.3s; }
+        .faq-q:hover { color: var(--p); }
+        .faq-q .ic { transition: transform 0.35s ease; color: var(--p); font-size: 0.85rem; }
+        .faq-q.active .ic { transform: rotate(45deg); }
+        .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .faq-a.open { max-height: 400px; }
+
+        .gradient-text { background: linear-gradient(135deg, var(--p), var(--a)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        .gallery-item { position: relative; overflow: hidden; }
+        .gallery-item .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; opacity: 0; transition: opacity 0.4s; }
+        .gallery-item:hover .overlay { opacity: 1; }
+        .gallery-item:hover img, .gallery-item:hover .placeholder { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar" class="py-5">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <a href="#" class="font-serif text-2xl font-semibold text-white tracking-wide" style="text-decoration:none;">
+            <%= @demo.site_title %>
+        </a>
+        <div class="hidden lg:flex items-center gap-10">
+            <a href="#treatments" class="nav-link">Treatments</a>
+            <a href="#about" class="nav-link">About</a>
+            <a href="#gallery" class="nav-link">Gallery</a>
+            <a href="#reviews" class="nav-link">Reviews</a>
+            <a href="#faq" class="nav-link">FAQ</a>
+            <a href="#contact" class="btn-book" style="padding:0.6rem 1.5rem; font-size:0.75rem;"><%= @demo.cta_primary_text %></a>
+        </div>
+        <button id="menu-toggle" class="lg:hidden text-white text-xl" aria-label="Menu"><i class="fas fa-bars"></i></button>
+    </div>
+</nav>
+
+<div id="mobile-menu">
+    <button id="menu-close" class="absolute top-6 right-6 text-white text-2xl"><i class="fas fa-times"></i></button>
+    <a href="#treatments">Treatments</a>
+    <a href="#about">About</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#reviews">Reviews</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
+</div>
+
+<!-- HERO -->
+<section class="relative min-h-screen flex items-center pt-20">
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute w-[600px] h-[600px] rounded-full blur-[150px] opacity-15 -top-20 -right-40" style="background:var(--p)"></div>
+        <div class="absolute w-[400px] h-[400px] rounded-full blur-[120px] opacity-10 bottom-10 left-10" style="background:var(--a)"></div>
+    </div>
+    <div class="absolute inset-0" style="background: linear-gradient(180deg, transparent 0%, var(--bg) 100%); z-index:1;"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6 w-full">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <% if @demo.hero_badge.present? %>
+                    <div data-aos="fade-up" data-aos-delay="100" class="inline-flex items-center gap-2 mb-8">
+                        <span class="w-8 h-px" style="background:var(--p)"></span>
+                        <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)"><%= @demo.hero_badge %></span>
+                    </div>
+                <% end %>
+
+                <h1 data-aos="fade-up" data-aos-delay="200" class="font-serif text-5xl md:text-7xl font-bold leading-[1.05] mb-6">
+                    <%= @demo.hero_heading %>
+                </h1>
+
+                <p data-aos="fade-up" data-aos-delay="350" class="text-base md:text-lg max-w-lg mb-10 leading-relaxed font-light" style="color:rgba(255,255,255,0.5);">
+                    <%= @demo.hero_subheading %>
+                </p>
+
+                <div data-aos="fade-up" data-aos-delay="500" class="flex flex-wrap gap-4">
+                    <a href="#contact" class="btn-book"><%= @demo.cta_primary_text %></a>
+                    <a href="#treatments" class="btn-ghost"><%= @demo.cta_secondary_text %></a>
+                </div>
+            </div>
+
+            <div data-aos="fade-left" data-aos-delay="300" class="hidden lg:block">
+                <div class="relative">
+                    <div class="aspect-[3/4] rounded-none overflow-hidden" style="background: linear-gradient(135deg, rgba(var(--p-rgb),0.08), rgba(var(--a-rgb),0.04));">
+                        <% hero_visual = @demo.image_for("hero_visual") %>
+                        <% if hero_visual.present? %>
+                          <%= image_tag hero_visual, class: "w-full h-full object-cover", alt: @demo.site_title %>
+                        <% else %>
+                          <div class="w-full h-full flex items-center justify-center">
+                              <i class="fas fa-scissors text-[120px]" style="color:rgba(var(--p-rgb),0.08); transform:rotate(-30deg);"></i>
+                          </div>
+                        <% end %>
+                    </div>
+                    <div class="absolute -bottom-4 -left-4 px-6 py-4" style="background:var(--p);">
+                        <div class="flex items-center gap-3">
+                            <% first_stat = @demo.stat_items.first %>
+                            <% if first_stat %>
+                                <span class="text-3xl font-serif font-bold text-white"><%= first_stat[:number] %></span>
+                                <span class="text-xs text-white/70 uppercase tracking-wider leading-tight"><%= first_stat[:label] %></span>
+                            <% end %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TREATMENTS / SERVICES -->
+<section id="treatments" class="relative z-10 py-24">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16" data-aos="fade-up">
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-8 h-px" style="background:var(--p)"></span>
+                    <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)">Our Menu</span>
+                </div>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold"><%= @demo.services_title %></h2>
+            </div>
+            <p class="max-w-md text-sm leading-relaxed font-light" style="color:rgba(255,255,255,0.45);"><%= @demo.services_intro %></p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-px" style="background:rgba(var(--p-rgb),0.06);">
+            <% treatment_icons = ['fa-spa', 'fa-scissors', 'fa-wand-magic-sparkles', 'fa-eye', 'fa-hand-sparkles', 'fa-face-grin-stars', 'fa-pump-soap', 'fa-leaf', 'fa-gem'] %>
+            <% @demo.feature_cards.each_with_index do |card, i| %>
+                <div class="treatment-card p-8 md:p-10" style="background:var(--bg);" data-aos="fade-up" data-aos-delay="<%= i * 60 %>">
+                    <div class="flex items-start gap-5">
+                        <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="border:1px solid rgba(var(--p-rgb),0.15);">
+                            <i class="fas <%= treatment_icons[i % treatment_icons.size] %>" style="color:var(--p);"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-serif text-xl font-semibold mb-2"><%= card[:title] %></h3>
+                            <p class="text-sm leading-relaxed font-light" style="color:rgba(255,255,255,0.45);"><%= card[:body] %></p>
+                        </div>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+
+        <div class="text-center mt-10" data-aos="fade-up">
+            <a href="#contact" class="btn-book"><%= @demo.cta_primary_text %> <i class="fas fa-arrow-right text-xs"></i></a>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about" class="relative z-10 py-24">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid lg:grid-cols-5 gap-16 items-center">
+            <div class="lg:col-span-2" data-aos="fade-right">
+                <div class="relative">
+                    <div class="aspect-[3/4]" style="background: rgba(var(--p-rgb),0.04); border: 1px solid rgba(var(--p-rgb),0.08);">
+                        <% about_image = @demo.image_for("about_main") %>
+                        <% if about_image.present? %>
+                          <%= image_tag about_image, class: "w-full h-full object-cover", alt: @demo.about_title %>
+                        <% else %>
+                          <div class="w-full h-full flex items-center justify-center">
+                              <i class="fas fa-spa text-7xl" style="color:rgba(var(--p-rgb),0.1);"></i>
+                          </div>
+                        <% end %>
+                    </div>
+                    <div class="absolute -bottom-3 -right-3 w-full h-full" style="border: 1px solid rgba(var(--p-rgb),0.12); z-index:-1;"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-3" data-aos="fade-left">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-8 h-px" style="background:var(--p)"></span>
+                    <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)">About Us</span>
+                </div>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold mb-6"><%= @demo.about_title %></h2>
+                <div class="space-y-4 text-sm leading-relaxed font-light" style="color:rgba(255,255,255,0.5);">
+                    <% @demo.about_body.to_s.split("\n").reject(&:blank?).each do |para| %>
+                        <p><%= para %></p>
+                    <% end %>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6 mt-10 pt-10" style="border-top: 1px solid rgba(var(--p-rgb),0.08);">
+                    <% @demo.stat_items.first(3).each do |stat| %>
+                        <div>
+                            <div class="font-serif text-3xl font-bold gradient-text"><%= stat[:number] %></div>
+                            <div class="text-xs uppercase tracking-wider mt-1" style="color:rgba(255,255,255,0.35);"><%= stat[:label] %></div>
+                        </div>
+                    <% end %>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GALLERY / WORK -->
+<section id="gallery" class="relative z-10 py-24">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <div class="flex items-center justify-center gap-2 mb-3">
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+                <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)">Portfolio</span>
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+            </div>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4"><%= @demo.work_title %></h2>
+            <p class="max-w-lg mx-auto text-sm leading-relaxed font-light" style="color:rgba(255,255,255,0.45);"><%= @demo.work_intro %></p>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-1">
+            <% gallery_icons = ['fa-scissors', 'fa-spa', 'fa-wand-magic-sparkles', 'fa-eye', 'fa-hand-sparkles', 'fa-face-grin-stars'] %>
+            <% @demo.project_cards.each_with_index do |card, i| %>
+                <div class="gallery-item group" data-aos="fade-up" data-aos-delay="<%= i * 60 %>">
+                    <% project_image = @demo.image_for("project_#{i + 1}") %>
+                    <% if project_image.present? %>
+                      <%= image_tag project_image, class: "aspect-square w-full object-cover transition-transform duration-500", alt: card[:title] %>
+                    <% else %>
+                      <div class="aspect-square flex items-center justify-center placeholder transition-transform duration-500"
+                           style="background: linear-gradient(<%= 135 + i * 30 %>deg, rgba(var(--p-rgb),0.08), rgba(var(--a-rgb),0.04));">
+                          <i class="fas <%= gallery_icons[i % gallery_icons.size] %> text-4xl" style="color:rgba(var(--p-rgb),0.12);"></i>
+                      </div>
+                    <% end %>
+                    <div class="overlay">
+                        <span class="text-[10px] uppercase tracking-[0.15em] mb-1" style="color:var(--p);"><%= card[:category] %></span>
+                        <span class="font-serif text-lg font-semibold"><%= card[:title] %></span>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROCESS -->
+<section class="relative z-10 py-24">
+    <div class="max-w-5xl mx-auto px-6">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <div class="flex items-center justify-center gap-2 mb-3">
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+                <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)">How It Works</span>
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+            </div>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold">Your Experience</h2>
+        </div>
+
+        <div class="grid md:grid-cols-<%= [@demo.process_steps.size, 4].min %> gap-10">
+            <% @demo.process_steps.each_with_index do |step, i| %>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="<%= i * 100 %>">
+                    <div class="inline-flex items-center justify-center w-14 h-14 mb-5" style="border: 1px solid rgba(var(--p-rgb),0.2);">
+                        <span class="font-serif text-2xl font-bold gradient-text"><%= '%02d' % (i + 1) %></span>
+                    </div>
+                    <h3 class="font-serif text-lg font-semibold mb-2"><%= step[:title] %></h3>
+                    <p class="text-sm leading-relaxed font-light" style="color:rgba(255,255,255,0.4);"><%= step[:body] %></p>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TESTIMONIALS -->
+<section id="reviews" class="relative z-10 py-24">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <div class="flex items-center justify-center gap-2 mb-3">
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+                <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)">Reviews</span>
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+            </div>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4"><%= @demo.testimonials_title %></h2>
+            <p class="max-w-lg mx-auto text-sm leading-relaxed font-light" style="color:rgba(255,255,255,0.45);"><%= @demo.testimonials_intro %></p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+            <% @demo.testimonial_cards.each_with_index do |t, i| %>
+                <div class="treatment-card p-8 relative" style="background:var(--bg);" data-aos="fade-up" data-aos-delay="<%= i * 80 %>">
+                    <div class="font-serif text-5xl leading-none mb-4" style="color:rgba(var(--p-rgb),0.15);">&ldquo;</div>
+                    <div class="flex gap-0.5 mb-4">
+                        <% 5.times do %><i class="fas fa-star text-[10px]" style="color:var(--p);"></i><% end %>
+                    </div>
+                    <p class="text-sm leading-relaxed mb-6 font-light" style="color:rgba(255,255,255,0.55);"><%= t[:quote] %></p>
+                    <div class="flex items-center gap-3 mt-auto">
+                        <div class="w-10 h-10 flex items-center justify-center text-sm font-medium" style="background:rgba(var(--p-rgb),0.08); color:var(--p);">
+                            <%= t[:name]&.chars&.first&.upcase %>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium"><%= t[:name] %></div>
+                            <div class="text-xs font-light" style="color:rgba(255,255,255,0.35);"><%= t[:role] %></div>
+                        </div>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FAQ -->
+<section id="faq" class="relative z-10 py-24">
+    <div class="max-w-3xl mx-auto px-6">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <div class="flex items-center justify-center gap-2 mb-3">
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+                <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)">FAQ</span>
+                <span class="w-8 h-px" style="background:var(--p)"></span>
+            </div>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4"><%= @demo.faq_title %></h2>
+            <p class="max-w-lg mx-auto text-sm leading-relaxed font-light" style="color:rgba(255,255,255,0.45);"><%= @demo.faq_intro %></p>
+        </div>
+
+        <div data-aos="fade-up">
+            <% @demo.faq_items.each do |faq| %>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span><%= faq[:question] %></span>
+                        <span class="ic">+</span>
+                    </button>
+                    <div class="faq-a">
+                        <p class="text-sm leading-relaxed font-light pb-5" style="color:rgba(255,255,255,0.45);"><%= faq[:answer] %></p>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section id="contact" class="relative z-10 py-24">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-16">
+            <div data-aos="fade-right">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-8 h-px" style="background:var(--p)"></span>
+                    <span class="text-xs font-medium tracking-[0.2em] uppercase" style="color:var(--p)">Book Now</span>
+                </div>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold mb-5"><%= @demo.contact_title %></h2>
+                <p class="text-sm leading-relaxed font-light mb-10" style="color:rgba(255,255,255,0.45);"><%= @demo.contact_intro %></p>
+
+                <div class="space-y-6">
+                    <% if @demo.contact_email.present? %>
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center" style="border:1px solid rgba(var(--p-rgb),0.15);">
+                                <i class="fas fa-envelope text-sm" style="color:var(--p);"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] uppercase tracking-[0.15em] mb-0.5" style="color:rgba(255,255,255,0.3);">Email</div>
+                                <div class="text-sm"><%= @demo.contact_email %></div>
+                            </div>
+                        </div>
+                    <% end %>
+                    <% if @demo.contact_phone.present? %>
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center" style="border:1px solid rgba(var(--p-rgb),0.15);">
+                                <i class="fas fa-phone text-sm" style="color:var(--p);"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] uppercase tracking-[0.15em] mb-0.5" style="color:rgba(255,255,255,0.3);">Phone</div>
+                                <div class="text-sm"><%= @demo.contact_phone %></div>
+                            </div>
+                        </div>
+                    <% end %>
+                </div>
+
+                <!-- Opening Hours -->
+                <div class="mt-10 pt-8" style="border-top: 1px solid rgba(var(--p-rgb),0.08);">
+                    <h4 class="font-serif text-lg font-semibold mb-4">Opening Hours</h4>
+                    <div class="space-y-2 text-sm" style="color:rgba(255,255,255,0.45);">
+                        <div class="flex justify-between"><span>Monday — Friday</span><span style="color:var(--p);">9:00 — 19:00</span></div>
+                        <div class="flex justify-between"><span>Saturday</span><span style="color:var(--p);">10:00 — 17:00</span></div>
+                        <div class="flex justify-between"><span>Sunday</span><span style="color:rgba(255,255,255,0.25);">Closed</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div data-aos="fade-left">
+                <form action="#contact" method="post"
+                      onsubmit="event.preventDefault(); this.querySelector('.submit-btn').textContent='Booking Sent!';"
+                      class="p-8 md:p-10 space-y-5" style="background:rgba(var(--p-rgb),0.02); border:1px solid rgba(var(--p-rgb),0.08);">
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="text-[10px] uppercase tracking-[0.15em] mb-2 block" style="color:rgba(255,255,255,0.35);">Name</label>
+                            <input type="text" class="form-input" placeholder="Your name">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-[0.15em] mb-2 block" style="color:rgba(255,255,255,0.35);">Phone</label>
+                            <input type="tel" class="form-input" placeholder="Your phone number">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-[0.15em] mb-2 block" style="color:rgba(255,255,255,0.35);">Email</label>
+                        <input type="email" class="form-input" placeholder="Your email">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-[0.15em] mb-2 block" style="color:rgba(255,255,255,0.35);">Treatment</label>
+                        <select class="form-input" style="cursor:pointer;">
+                            <option value="">Select a treatment...</option>
+                            <% @demo.feature_cards.each do |card| %>
+                                <option><%= card[:title] %></option>
+                            <% end %>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-[0.15em] mb-2 block" style="color:rgba(255,255,255,0.35);">Message</label>
+                        <textarea rows="4" class="form-input" placeholder="Any preferences or notes..." style="resize:none;"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn btn-book w-full justify-center">
+                        <%= @demo.cta_primary_text %> <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="relative z-10 py-16" style="border-top:1px solid rgba(var(--p-rgb),0.06);">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-10 mb-12">
+            <div class="md:col-span-2">
+                <a href="#" class="font-serif text-2xl font-semibold text-white" style="text-decoration:none;"><%= @demo.site_title %></a>
+                <p class="text-sm mt-4 leading-relaxed font-light max-w-sm" style="color:rgba(255,255,255,0.35);"><%= @demo.hero_subheading %></p>
+                <div class="flex items-center gap-4 mt-6">
+                    <a href="#" style="color:rgba(255,255,255,0.3); text-decoration:none;" class="hover:text-white transition-colors"><i class="fab fa-instagram text-lg"></i></a>
+                    <a href="#" style="color:rgba(255,255,255,0.3); text-decoration:none;" class="hover:text-white transition-colors"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" style="color:rgba(255,255,255,0.3); text-decoration:none;" class="hover:text-white transition-colors"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" style="color:rgba(255,255,255,0.3); text-decoration:none;" class="hover:text-white transition-colors"><i class="fab fa-pinterest-p"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-xs uppercase tracking-[0.15em] font-medium mb-5" style="color:var(--p);">Quick Links</h4>
+                <ul class="space-y-3">
+                    <li><a href="#treatments" class="text-sm font-light transition-colors hover:text-white" style="color:rgba(255,255,255,0.4); text-decoration:none;">Treatments</a></li>
+                    <li><a href="#about" class="text-sm font-light transition-colors hover:text-white" style="color:rgba(255,255,255,0.4); text-decoration:none;">About</a></li>
+                    <li><a href="#gallery" class="text-sm font-light transition-colors hover:text-white" style="color:rgba(255,255,255,0.4); text-decoration:none;">Gallery</a></li>
+                    <li><a href="#reviews" class="text-sm font-light transition-colors hover:text-white" style="color:rgba(255,255,255,0.4); text-decoration:none;">Reviews</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-xs uppercase tracking-[0.15em] font-medium mb-5" style="color:var(--p);">Contact</h4>
+                <ul class="space-y-3">
+                    <% if @demo.contact_email.present? %>
+                        <li class="text-sm font-light" style="color:rgba(255,255,255,0.4);"><%= @demo.contact_email %></li>
+                    <% end %>
+                    <% if @demo.contact_phone.present? %>
+                        <li class="text-sm font-light" style="color:rgba(255,255,255,0.4);"><%= @demo.contact_phone %></li>
+                    <% end %>
+                </ul>
+            </div>
+        </div>
+        <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4" style="border-top:1px solid rgba(var(--p-rgb),0.06);">
+            <p class="text-xs font-light" style="color:rgba(255,255,255,0.25);">&copy; <%= Time.current.year %> <%= @demo.site_title %>. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    const menuToggle = document.getElementById('menu-toggle');
+    const menuClose = document.getElementById('menu-close');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuToggle.addEventListener('click', () => mobileMenu.classList.add('open'));
+    menuClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+    mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.remove('open')));
+
+    function toggleFaq(btn) {
+        const answer = btn.nextElementSibling;
+        const isOpen = answer.classList.contains('open');
+        document.querySelectorAll('.faq-a.open').forEach(a => a.classList.remove('open'));
+        document.querySelectorAll('.faq-q.active').forEach(q => q.classList.remove('active'));
+        if (!isOpen) { answer.classList.add('open'); btn.classList.add('active'); }
+    }
+
+    AOS.init({ duration: 700, once: true, offset: 40 });
+</script>
+</body>
+</html>

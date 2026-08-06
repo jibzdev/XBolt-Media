@@ -1,0 +1,387 @@
+<% content_for :page_title, @business.name %>
+<% content_for :page_description, "Subdomain: #{@business.full_subdomain}" %>
+
+<div class="flex items-center gap-2 mb-5">
+  <%= link_to admin_businesses_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" do %>
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>All Tenants
+  <% end %>
+  <%= link_to edit_admin_business_path(@business), class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit
+  <% end %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+  <!-- ===== Column 1-2: Main ===== -->
+  <div class="lg:col-span-2 space-y-5">
+
+    <!-- Domain Setup -->
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="globe" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <h2 class="text-[13px] font-semibold text-zinc-700">Domain Setup</h2>
+      </div>
+
+      <div class="space-y-2.5">
+        <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3.5">
+          <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Platform subdomain</div>
+          <div class="font-mono text-[13px] text-zinc-800 break-all"><%= @business.full_subdomain %></div>
+        </div>
+
+        <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3.5">
+          <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Custom domain</div>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div class="font-mono text-[13px] text-zinc-800 break-all"><%= @business.custom_domain.presence || '(not set)' %></div>
+            <% if @business.custom_domain.present? %>
+              <% status_classes = {
+                'active' => 'bg-emerald-50 text-emerald-700',
+                'pending' => 'bg-amber-50 text-amber-700',
+                'failed' => 'bg-red-50 text-red-700',
+                'unverified' => 'bg-zinc-100 text-zinc-600'
+              } %>
+              <span class="self-start sm:self-auto px-2 py-0.5 rounded text-[11px] font-medium <%= status_classes.fetch(@business.custom_domain_status, 'bg-zinc-100 text-zinc-600') %>">
+                <%= @business.custom_domain_status.to_s.humanize %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3.5">
+          <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2.5">DNS instructions</div>
+          <div class="space-y-2.5">
+            <% if @business.custom_domain.present? %>
+              <div>
+                <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-0.5">Required TXT verification</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div class="rounded-lg border border-zinc-100 bg-white p-2.5">
+                    <div class="text-[10px] uppercase tracking-wider text-zinc-400 mb-1">Host / name</div>
+                    <div class="font-mono text-[12px] text-zinc-800 break-all"><%= @business.domain_verification_host %></div>
+                  </div>
+                  <div class="rounded-lg border border-zinc-100 bg-white p-2.5">
+                    <div class="text-[10px] uppercase tracking-wider text-zinc-400 mb-1">Value</div>
+                    <div class="font-mono text-[12px] text-zinc-800 break-all"><%= @business.domain_verification_value %></div>
+                  </div>
+                </div>
+                <p class="text-[11px] text-zinc-400 leading-relaxed mt-2">
+                  The app activates this custom domain from this TXT record only. HTTP redirects are ignored.
+                </p>
+              </div>
+            <% end %>
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-0.5">CNAME</div>
+                <div class="font-mono text-[13px] text-zinc-800">www &rarr; <%= @business.full_subdomain %></div>
+              </div>
+              <div class="text-[11px] text-zinc-400">For www.yourdomain.com</div>
+            </div>
+            <div class="text-[11px] text-zinc-400 leading-relaxed">
+              For the apex/root domain, use an <strong>ALIAS/ANAME</strong> record pointing to
+              <span class="font-mono font-medium text-zinc-600"><%= @business.full_subdomain %></span> (provider dependent).
+            </div>
+            <% if @business.custom_domain.present? %>
+              <%= button_to verify_custom_domain_admin_business_path(@business),
+                method: :post,
+                class: "w-full px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer" do %>
+                Verify TXT record
+              <% end %>
+
+              <% if @business.custom_domain_status == 'active' %>
+                <% sitemap_installed = @sitemap_path.present? && File.file?(@sitemap_path) %>
+                <% sitemap_url = "https://#{@business.custom_domain}/sitemap.xml" %>
+                <% if sitemap_installed %>
+                  <div class="w-full px-3.5 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] font-medium text-center">
+                    Sitemap installed
+                  </div>
+                <% else %>
+                  <div class="w-full px-3.5 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[13px] font-medium text-center">
+                    Sitemap not installed yet
+                  </div>
+                <% end %>
+                <%= button_to install_sitemap_admin_business_path(@business),
+                  method: :post,
+                  class: "w-full px-3.5 py-2 rounded-lg bg-emerald-600 text-white text-[13px] font-medium hover:bg-emerald-700 transition cursor-pointer" do %>
+                  Install/update sitemap
+                <% end %>
+                <p class="text-[11px] text-zinc-400 leading-relaxed">
+                  Sitemap URL: <span class="font-mono text-zinc-600"><%= sitemap_url %></span>. It is refreshed after ZIP deploys and website edits.
+                </p>
+              <% else %>
+                <div class="w-full px-3.5 py-2 rounded-lg bg-zinc-100 text-zinc-400 text-[13px] font-medium text-center">
+                  Verify custom domain to install its sitemap
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tenant Contact Email -->
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <div class="flex items-center justify-between gap-3 mb-1.5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="mail" class="w-3.5 h-3.5 text-zinc-400"></i>
+          <h2 class="text-[13px] font-semibold text-zinc-700">Tenant Contact Email</h2>
+        </div>
+        <% if @business.tenant_contact_configured? %>
+          <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700">Configured</span>
+        <% else %>
+          <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700">Not configured</span>
+        <% end %>
+      </div>
+      <p class="text-[11px] text-zinc-400 mb-4">
+        Configure Gmail sender + app password for this tenant's contact forms.
+      </p>
+
+      <%= form_with model: @business, url: admin_business_path(@business), method: :patch, local: true, class: "space-y-3" do |f| %>
+        <div>
+          <label class="block text-[13px] font-medium text-zinc-600 mb-1.5">Gmail sender</label>
+          <%= f.email_field :tenant_contact_sender_email, placeholder: "tenantsender@gmail.com", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        </div>
+
+        <div>
+          <label class="block text-[13px] font-medium text-zinc-600 mb-1.5">Gmail app password</label>
+          <%= f.password_field :tenant_contact_sender_password, placeholder: (@business.tenant_contact_sender_password.present? ? "Saved (leave blank to keep current)" : "xxxx xxxx xxxx xxxx"), class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        </div>
+
+        <div>
+          <label class="block text-[13px] font-medium text-zinc-600 mb-1.5">Recipient email</label>
+          <%= f.email_field :tenant_contact_recipient_email, placeholder: "owner@tenant.com", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        </div>
+
+        <button type="submit" class="w-full px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer">
+          Save email config
+        </button>
+      <% end %>
+    </div>
+
+    <!-- Deploy Site -->
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <div class="flex items-center gap-2 mb-1.5">
+        <i data-lucide="upload" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <h2 class="text-[13px] font-semibold text-zinc-700">Deploy Site</h2>
+      </div>
+      <p class="text-[11px] text-zinc-400 mb-4">
+        Upload a ZIP of static files with <span class="font-mono font-medium text-zinc-600">index.html</span> at the root.
+      </p>
+
+      <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3.5 mb-4">
+        <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Tenant URL</div>
+        <div class="mt-1 font-mono text-[13px] text-zinc-800 break-all"><%= @business.full_subdomain %></div>
+      </div>
+
+      <%= form_with url: deploy_site_admin_business_path(@business), method: :post, multipart: true, local: true, class: "space-y-3" do %>
+        <input
+          type="file"
+          name="site_zip"
+          accept=".zip,application/zip"
+          class="block w-full text-[13px] rounded-lg cursor-pointer focus:outline-none py-2 px-3 border border-zinc-200/70 bg-white text-zinc-800"
+        >
+        <button type="submit" class="w-full px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer">
+          Deploy ZIP
+        </button>
+        <%= link_to "Download current site (.zip)",
+          download_site_zip_admin_business_path(@business),
+          class: "w-full inline-flex items-center justify-center px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition",
+          data: { turbo: false } %>
+        <div class="text-[11px] text-zinc-400">
+          Files are deployed to: <span class="font-mono text-zinc-600">/public/tenant_sites/<%= @business.subdomain %>/</span>
+        </div>
+      <% end %>
+
+      <div class="mt-5 pt-4 border-t border-zinc-100">
+        <div class="flex items-center gap-2 mb-1.5">
+          <i data-lucide="badge-check" class="w-3.5 h-3.5 text-zinc-400"></i>
+          <h3 class="text-[13px] font-semibold text-zinc-700">XBolt Watermark</h3>
+        </div>
+        <p class="text-[11px] text-zinc-400 mb-3">
+          Adds a small floating badge to every page that expands to &ldquo;Powered by XBolt Media&rdquo; on hover.
+        </p>
+
+        <% if @site_deployed %>
+          <% if @watermark_installed %>
+            <div class="w-full px-3.5 py-2 mb-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] font-medium text-center">
+              Watermark installed
+            </div>
+          <% else %>
+            <div class="w-full px-3.5 py-2 mb-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[13px] font-medium text-center">
+              Watermark not installed yet
+            </div>
+          <% end %>
+
+          <%= button_to install_watermark_admin_business_path(@business),
+            method: :post,
+            class: "w-full px-3.5 py-2 rounded-lg bg-emerald-600 text-white text-[13px] font-medium hover:bg-emerald-700 transition cursor-pointer" do %>
+            Install/update watermark
+          <% end %>
+
+          <p class="text-[11px] text-zinc-400 leading-relaxed mt-2">
+            Served at <span class="font-mono text-zinc-600">/<%= TenantWatermarkInstaller::SCRIPT_FILENAME %></span>.
+            Re-install after a ZIP deploy, which replaces the tenant's HTML.
+          </p>
+        <% else %>
+          <div class="w-full px-3.5 py-2 rounded-lg bg-zinc-100 text-zinc-400 text-[13px] font-medium text-center">
+            Deploy a website to install the watermark
+          </div>
+        <% end %>
+      </div>
+
+      <div class="mt-5 pt-4 border-t border-zinc-100">
+        <div class="text-[13px] font-medium text-red-600 mb-1.5">Danger zone</div>
+        <p class="text-[11px] text-zinc-400 mb-3">
+          This removes the deployed static site. The subdomain will revert to the default page.
+        </p>
+        <%= button_to delete_site_admin_business_path(@business),
+          method: :delete,
+          data: { turbo_confirm: "Delete the deployed website for #{@business.name}? This cannot be undone." },
+          class: "w-full px-3.5 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-[13px] font-medium hover:bg-red-100 transition" do %>
+          Delete website
+        <% end %>
+
+        <div class="mt-3 pt-3 border-t border-zinc-100">
+          <p class="text-[11px] text-zinc-400 mb-3">
+            Permanently deletes the business and all its analytics data.
+          </p>
+          <%= button_to admin_business_path(@business),
+            method: :delete,
+            data: { turbo_confirm: "Delete business #{@business.name}? This will remove the business and all its data." },
+            class: "w-full px-3.5 py-2 rounded-lg bg-red-600 text-white text-[13px] font-medium hover:bg-red-700 transition" do %>
+            Delete business
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Column 3: Sidebar ===== -->
+  <div class="space-y-5">
+
+    <!-- Business Account -->
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <div class="flex items-center gap-2 mb-1">
+        <i data-lucide="key" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <h2 class="text-[13px] font-semibold text-zinc-700">Business Account</h2>
+      </div>
+      <p class="text-[11px] text-zinc-400 mb-4">Login for the client dashboard.</p>
+
+      <% if defined?(@new_business_account) && @new_business_account.present? %>
+        <div class="mb-4 bg-emerald-50 border border-emerald-200 rounded-lg p-3.5">
+          <div class="text-[13px] font-medium text-emerald-900">Account created</div>
+          <div class="text-[11px] text-emerald-700 mt-0.5">Copy these credentials now — shown only once.</div>
+          <textarea id="new-business-account" readonly class="mt-2.5 w-full h-20 font-mono text-[12px] p-2.5 rounded-lg bg-white border border-emerald-200 text-zinc-900"><%= "Login URL: #{@new_business_account['login_url']}\nUsername: #{@new_business_account['username']}\nPassword: #{@new_business_account['password']}\n" %></textarea>
+          <div class="mt-2.5 flex items-center gap-2.5">
+            <button type="button" id="copy-new-business-account" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[12px] font-medium hover:bg-emerald-700 transition">Copy</button>
+            <div id="copy-business-status" class="text-[11px] text-emerald-700"></div>
+          </div>
+        </div>
+
+        <script>
+          (function () {
+            const btn = document.getElementById("copy-new-business-account");
+            const ta = document.getElementById("new-business-account");
+            const status = document.getElementById("copy-business-status");
+            if (!btn || !ta) return;
+            btn.addEventListener("click", async () => {
+              try {
+                ta.select();
+                ta.setSelectionRange(0, ta.value.length);
+                await navigator.clipboard.writeText(ta.value);
+                if (status) status.textContent = "Copied.";
+              } catch (e) {
+                if (status) status.textContent = "Copy failed — select text and copy manually.";
+              }
+            });
+          })();
+        </script>
+      <% end %>
+
+      <% if defined?(@business_user_password_reset) && @business_user_password_reset.present? %>
+        <div class="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3.5">
+          <div class="text-[13px] font-medium text-amber-900">Password reset</div>
+          <div class="text-[11px] text-amber-700 mt-0.5">Copy these credentials now — shown only once.</div>
+          <textarea id="reset-business-account" readonly class="mt-2.5 w-full h-20 font-mono text-[12px] p-2.5 rounded-lg bg-white border border-amber-200 text-zinc-900"><%= "Login URL: #{@business_user_password_reset['login_url']}\nUsername: #{@business_user_password_reset['username']}\nPassword: #{@business_user_password_reset['password']}\n" %></textarea>
+          <div class="mt-2.5 flex items-center gap-2.5">
+            <button type="button" id="copy-reset-business-account" class="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-[12px] font-medium hover:bg-amber-700 transition">Copy</button>
+            <div id="copy-reset-status" class="text-[11px] text-amber-700"></div>
+          </div>
+        </div>
+
+        <script>
+          (function () {
+            const btn = document.getElementById("copy-reset-business-account");
+            const ta = document.getElementById("reset-business-account");
+            const status = document.getElementById("copy-reset-status");
+            if (!btn || !ta) return;
+            btn.addEventListener("click", async () => {
+              try {
+                ta.select();
+                ta.setSelectionRange(0, ta.value.length);
+                await navigator.clipboard.writeText(ta.value);
+                if (status) status.textContent = "Copied.";
+              } catch (e) {
+                if (status) status.textContent = "Copy failed — select text and copy manually.";
+              }
+            });
+          })();
+        </script>
+      <% end %>
+
+      <% if @business_user.present? %>
+        <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3.5">
+          <div class="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Username</div>
+          <div class="mt-1 font-mono text-[13px] text-zinc-800">@<%= @business_user.username %></div>
+        </div>
+
+        <div class="mt-3">
+          <%= button_to reset_business_password_admin_business_path(@business),
+            method: :post,
+            data: { turbo_confirm: "Reset password for @#{@business_user.username}?" },
+            class: "w-full px-3.5 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[13px] font-medium hover:bg-amber-100 transition" do %>
+            Reset password
+          <% end %>
+        </div>
+      <% else %>
+        <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3.5 text-[13px] text-zinc-400">
+          No account found for this business.
+        </div>
+        <div class="mt-3">
+          <%= button_to create_business_login_admin_business_path(@business),
+            method: :post,
+            data: { turbo_confirm: "Create a new dashboard login for #{@business.name}?" },
+            class: "w-full px-3.5 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] font-medium hover:bg-emerald-100 transition" do %>
+            Create login
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Analytics -->
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <h2 class="text-[13px] font-semibold text-zinc-700">Analytics</h2>
+      </div>
+      <div class="space-y-2.5">
+        <%
+          analytics = [
+            { label: "Page views (24h)", value: @page_views_24h, icon: "eye" },
+            { label: "Page views (7d)", value: @page_views_7d, icon: "bar-chart-3" },
+            { label: "Page views (30d)", value: @page_views_30d, icon: "calendar" },
+            { label: "Unique visitors (7d)", value: @unique_visitors_7d, icon: "user" }
+          ]
+        %>
+        <% analytics.each do |a| %>
+          <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3.5 xb-card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[11px] text-zinc-400"><%= a[:label] %></div>
+                <div class="text-[15px] font-semibold text-zinc-900 tabular-nums mt-0.5"><%= number_with_delimiter(a[:value]) %></div>
+              </div>
+              <i data-lucide="<%= a[:icon] %>" class="w-3.5 h-3.5 text-zinc-300"></i>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

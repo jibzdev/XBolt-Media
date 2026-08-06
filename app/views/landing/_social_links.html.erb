@@ -1,0 +1,8 @@
+<% links = social_links %>
+<% if links.any? %>
+  <div class="flex gap-2 <%= local_assigns[:wrapper_class] %>">
+    <% links.each do |link| %>
+      <a href="<%= link[:url] %>" target="_blank" rel="noopener noreferrer" aria-label="<%= link[:label] %>" title="<%= link[:label] %>" class="w-8 h-8 border border-white/[0.06] rounded-lg flex items-center justify-center text-zinc-600 hover:text-amber-400 hover:border-amber-500/20 transition text-sm"><i class='bx <%= link[:icon] %>'></i></a>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,517 @@
+<% content_for :page_title, "Overview" %>
+<% content_for :page_description, "Platform analytics and insights" %>
+
+<%
+  pv_change_24  = percent_change(@page_views_24h, @prev_views_24h)
+  pv_change_7d  = percent_change(@page_views_7d, @prev_views_7d)
+  pv_change_30d = percent_change(@page_views_30d, @prev_views_30d)
+  uv_change_24  = percent_change(@unique_visitors_24h, @prev_unique_24h)
+  uv_change_7d  = percent_change(@unique_visitors_7d, @prev_unique_7d)
+  uv_change_30d = percent_change(@unique_visitors_30d, @prev_unique_30d)
+%>
+
+<style>
+  /* ApexCharts on this page — use admin theme CSS variables */
+  .apexcharts-tooltip{background:var(--xbolt-surface)!important;color:var(--xbolt-text)!important;border:1px solid var(--xbolt-border)!important;box-shadow:0 4px 16px -2px rgb(var(--xbolt-text-rgb) / .06)!important;border-radius:8px!important;font-size:12px!important}
+  .apexcharts-tooltip .apexcharts-tooltip-title{background:var(--xbolt-surface-alt)!important;color:var(--xbolt-text-muted)!important;border-bottom:1px solid var(--xbolt-border)!important;font-weight:500!important;font-size:11px!important}
+  .apexcharts-tooltip .apexcharts-tooltip-text,.apexcharts-tooltip .apexcharts-tooltip-text-y-value,.apexcharts-tooltip .apexcharts-tooltip-text-y-label{color:var(--xbolt-text)!important}
+  .apexcharts-xaxistooltip{background:var(--xbolt-primary)!important;color:var(--xbolt-on-primary)!important;border:none!important;border-radius:6px!important;font-size:11px!important}
+  .apexcharts-xaxistooltip::before,.apexcharts-xaxistooltip::after{border-bottom-color:var(--xbolt-primary)!important}
+</style>
+
+<div class="flex items-center justify-between mb-5">
+  <div>
+    <h2 class="text-[15px] font-semibold text-zinc-900">Welcome back, <%= current_user.username %></h2>
+    <p class="text-[11px] text-zinc-400 mt-0.5">Platform overview and analytics</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <select id="periodSelect" class="rounded-lg border border-zinc-200/80 bg-white text-[12px] text-zinc-600 font-medium pl-3 pr-7 py-1.5 focus:outline-none focus:ring-1 focus:ring-zinc-300 cursor-pointer">
+      <option value="24h">Last 24 hours</option>
+      <option value="7d" selected>Last 7 days</option>
+      <option value="30d">Last 30 days</option>
+    </select>
+    <%= link_to admin_activity_live_view_path, class: "hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-[12px] font-medium hover:bg-zinc-800 transition" do %>
+      <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>Live
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-2.5">
+      <span class="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">Page Views</span>
+      <i data-lucide="eye" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"
+         data-metric="views"
+         data-val-24h="<%= @page_views_24h %>" data-val-7d="<%= @page_views_7d %>" data-val-30d="<%= @page_views_30d %>"
+         data-fmt-24h="<%= number_with_delimiter(@page_views_24h) %>" data-fmt-7d="<%= number_with_delimiter(@page_views_7d) %>" data-fmt-30d="<%= number_with_delimiter(@page_views_30d) %>">
+      <%= number_with_delimiter(@page_views_7d) %>
+    </div>
+    <div class="mt-1.5 flex items-center gap-1.5">
+      <span class="period-change text-[10px] font-semibold"
+            data-change-24h="<%= pv_change_24 %>" data-change-7d="<%= pv_change_7d %>" data-change-30d="<%= pv_change_30d %>"></span>
+      <span class="text-[10px] text-zinc-400 period-label">vs previous period</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-2.5">
+      <span class="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">Visitors</span>
+      <i data-lucide="user" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"
+         data-metric="visitors"
+         data-val-24h="<%= @unique_visitors_24h %>" data-val-7d="<%= @unique_visitors_7d %>" data-val-30d="<%= @unique_visitors_30d %>"
+         data-fmt-24h="<%= number_with_delimiter(@unique_visitors_24h) %>" data-fmt-7d="<%= number_with_delimiter(@unique_visitors_7d) %>" data-fmt-30d="<%= number_with_delimiter(@unique_visitors_30d) %>">
+      <%= number_with_delimiter(@unique_visitors_7d) %>
+    </div>
+    <div class="mt-1.5 flex items-center gap-1.5">
+      <span class="period-change text-[10px] font-semibold"
+            data-change-24h="<%= uv_change_24 %>" data-change-7d="<%= uv_change_7d %>" data-change-30d="<%= uv_change_30d %>"></span>
+      <span class="text-[10px] text-zinc-400 period-label">vs previous period</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-2.5">
+      <span class="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">Phone Clicks</span>
+      <i data-lucide="phone" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"
+         data-metric="phone"
+         data-val-24h="<%= @phone_clicks_24h %>" data-val-7d="<%= @phone_clicks_7d %>" data-val-30d="<%= @phone_clicks_30d %>"
+         data-fmt-24h="<%= number_with_delimiter(@phone_clicks_24h) %>" data-fmt-7d="<%= number_with_delimiter(@phone_clicks_7d) %>" data-fmt-30d="<%= number_with_delimiter(@phone_clicks_30d) %>">
+      <%= number_with_delimiter(@phone_clicks_7d) %>
+    </div>
+    <div class="mt-1.5">
+      <span class="text-[10px] text-zinc-400">lead events</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-2.5">
+      <span class="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">Contact Forms</span>
+      <i data-lucide="mail" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"
+         data-metric="contacts"
+         data-val-24h="<%= @contact_submits_24h %>" data-val-7d="<%= @contact_submits_7d %>" data-val-30d="<%= @contact_submits_30d %>"
+         data-fmt-24h="<%= number_with_delimiter(@contact_submits_24h) %>" data-fmt-7d="<%= number_with_delimiter(@contact_submits_7d) %>" data-fmt-30d="<%= number_with_delimiter(@contact_submits_30d) %>">
+      <%= number_with_delimiter(@contact_submits_7d) %>
+    </div>
+    <div class="mt-1.5">
+      <span class="text-[10px] text-zinc-400">submissions</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-3 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 px-4 py-3 flex items-center gap-3 xb-card-hover">
+    <i data-lucide="building-2" class="w-4 h-4 text-zinc-400 flex-shrink-0"></i>
+    <div>
+      <div class="text-base font-semibold text-zinc-900 tabular-nums leading-tight"><%= number_with_delimiter(@total_businesses) %></div>
+      <div class="text-[10px] text-zinc-400">Businesses</div>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 px-4 py-3 flex items-center gap-3 xb-card-hover">
+    <i data-lucide="users" class="w-4 h-4 text-zinc-400 flex-shrink-0"></i>
+    <div>
+      <div class="text-base font-semibold text-zinc-900 tabular-nums leading-tight"><%= number_with_delimiter(@total_users) %></div>
+      <div class="text-[10px] text-zinc-400">Users (<%= @active_users %> active)</div>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 px-4 py-3 flex items-center gap-3 xb-card-hover">
+    <i data-lucide="briefcase" class="w-4 h-4 text-zinc-400 flex-shrink-0"></i>
+    <div>
+      <div class="text-base font-semibold text-zinc-900 tabular-nums leading-tight"><%= @active_services %><span class="text-zinc-400 text-[13px] font-medium"> / <%= @total_services %></span></div>
+      <div class="text-[10px] text-zinc-400">Active Services</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-5 gap-3 mb-5">
+  <div class="xl:col-span-3 bg-white rounded-xl border border-zinc-200/70 p-4">
+    <div class="flex items-center justify-between mb-1">
+      <h3 class="text-[13px] font-medium text-zinc-700">Traffic</h3>
+      <span class="text-[10px] text-zinc-400" id="trafficSubtitle">Last 7 days</span>
+    </div>
+    <div id="pageViewsChart" style="height: 240px;"></div>
+  </div>
+  <div class="xl:col-span-2 bg-white rounded-xl border border-zinc-200/70 p-4">
+    <div class="flex items-center justify-between mb-1">
+      <h3 class="text-[13px] font-medium text-zinc-700" id="trendTitle">Trend</h3>
+      <span class="inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded hidden" id="trendBadge">
+        <i data-lucide="trending-up" class="w-3 h-3"></i><span id="trendBadgeValue"></span>
+      </span>
+    </div>
+    <div id="weeklyChart" style="height: 240px;"></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+  <% [
+    { id: "deviceChart", title: "Devices", data: @device_breakdown },
+    { id: "browserChart", title: "Browsers", data: @browser_breakdown },
+    { id: "osChart", title: "Operating Systems", data: @os_breakdown }
+  ].each do |chart| %>
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+      <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5"><%= chart[:title] %></h3>
+      <p class="text-[10px] text-zinc-400 mb-2">Last 7 days</p>
+      <% if chart[:data].present? && chart[:data].values.sum > 0 %>
+        <div id="<%= chart[:id] %>" style="height: 190px;"></div>
+      <% else %>
+        <div class="flex flex-col items-center justify-center h-[190px]">
+          <i data-lucide="pie-chart" class="w-6 h-6 text-zinc-200 mb-1"></i>
+          <span class="text-[11px] text-zinc-400">No data yet</span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-5">
+  <%
+    tables = [
+      { title: "Top Pages", data: @top_pages, color: "bg-zinc-900", linkable: true },
+      { title: "Traffic Sources", data: @top_referrers, color: "bg-zinc-800", linkable: false },
+      { title: "Countries", data: @country_breakdown, color: "bg-zinc-700", linkable: false, country: true }
+    ]
+  %>
+  <% tables.each do |t| %>
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+      <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5"><%= t[:title] %></h3>
+      <p class="text-[10px] text-zinc-400 mb-3">Last 7 days</p>
+      <% if t[:data].present? %>
+        <% max_val = t[:data].values.max.to_f %>
+        <div class="space-y-2">
+          <% t[:data].each do |key, count| %>
+            <div>
+              <div class="flex items-center justify-between mb-0.5">
+                <% if t[:country] %>
+                  <div class="flex items-center gap-1.5">
+                    <% code = (key.presence || 'XX').upcase %>
+                    <span class="text-[13px] leading-none"><%= code.chars.map { |c| (c.ord + 127397).chr('UTF-8') }.join rescue '--' %></span>
+                    <span class="text-[12px] text-zinc-600"><%= code == 'XX' ? 'Unknown' : code %></span>
+                  </div>
+                <% elsif t[:linkable] %>
+                  <%= link_to admin_page_insights_path(path: key), class: "text-[12px] text-zinc-600 font-mono truncate max-w-[65%] hover:text-zinc-900 transition block" do %><%= key %><% end %>
+                <% else %>
+                  <span class="text-[12px] text-zinc-600 truncate max-w-[65%]"><%= key.presence || 'Direct / None' %></span>
+                <% end %>
+                <span class="text-[11px] font-medium text-zinc-500 tabular-nums"><%= number_with_delimiter(count) %></span>
+              </div>
+              <div class="w-full bg-zinc-100 rounded-full h-[3px]">
+                <div class="<%= t[:color] %> h-[3px] rounded-full transition-all duration-500" style="width:<%= max_val > 0 ? (count / max_val * 100).round(1) : 0 %>%"></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="flex flex-col items-center justify-center py-6">
+          <i data-lucide="bar-chart-3" class="w-6 h-6 text-zinc-200 mb-1"></i>
+          <span class="text-[11px] text-zinc-400">No data yet</span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-[13px] font-medium text-zinc-700">Top Businesses</h3>
+      <%= link_to admin_businesses_path, class: "text-[11px] text-zinc-400 hover:text-zinc-600 transition" do %>View all<% end %>
+    </div>
+    <% if @top_businesses.present? && @top_businesses.any? %>
+      <div class="space-y-0.5">
+        <% @top_businesses.each_with_index do |biz, i| %>
+          <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-zinc-50 transition group xb-row-hover">
+            <span class="w-5 h-5 rounded bg-zinc-100 flex items-center justify-center text-[10px] font-semibold text-zinc-400 flex-shrink-0"><%= i + 1 %></span>
+            <div class="flex-1 min-w-0">
+              <%= link_to admin_business_path(biz), class: "text-[13px] font-medium text-zinc-800 group-hover:text-zinc-600 transition truncate block" do %><%= biz.name %><% end %>
+              <div class="text-[10px] text-zinc-400 font-mono truncate"><%= biz.subdomain %></div>
+            </div>
+            <span class="text-[12px] font-semibold text-zinc-500 tabular-nums"><%= number_with_delimiter(biz.views_count) %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="flex flex-col items-center justify-center py-6">
+        <i data-lucide="building-2" class="w-6 h-6 text-zinc-200 mb-1"></i>
+        <span class="text-[11px] text-zinc-400">No traffic yet</span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-[13px] font-medium text-zinc-700">Recent Activity</h3>
+      <%= link_to admin_activity_live_view_path, class: "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition" do %>
+        <span class="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>Live
+      <% end %>
+    </div>
+    <% if @recent_activity.blank? %>
+      <div class="flex flex-col items-center justify-center py-6">
+        <i data-lucide="activity" class="w-6 h-6 text-zinc-200 mb-1"></i>
+        <span class="text-[11px] text-zinc-400">No recent activity</span>
+      </div>
+    <% else %>
+      <div class="space-y-0.5">
+        <% @recent_activity.each do |activity| %>
+          <div class="flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-zinc-50 transition xb-row-hover">
+            <div class="w-6 h-6 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-[9px] font-semibold text-white"><%= activity.user&.username&.first&.upcase || '?' %></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <% if activity.user.present? %>
+                  <%= link_to edit_admin_user_path(activity.user), class: "text-[13px] font-medium text-zinc-800 hover:text-zinc-600 transition truncate" do %>@<%= activity.user.username %><% end %>
+                <% else %>
+                  <span class="text-[13px] font-medium text-zinc-500 truncate">@deleted-user</span>
+                <% end %>
+                <time class="text-[10px] text-zinc-400 whitespace-nowrap"><%= time_ago_in_words(activity.created_at) %></time>
+              </div>
+              <p class="text-[11px] text-zinc-400 mt-0.5 truncate"><%= activity.description %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <%= link_to admin_activity_live_view_path, class: "mt-2.5 w-full flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg border border-zinc-200/70 hover:bg-zinc-50 text-zinc-500 text-[12px] font-medium transition" do %>
+        View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+(function () {
+  window.__xboltOverviewCharts = window.__xboltOverviewCharts || null;
+
+  function destroyOverviewCharts() {
+    var overviewCharts = window.__xboltOverviewCharts;
+    if (!overviewCharts) return;
+    try {
+      if (overviewCharts.traffic) overviewCharts.traffic.destroy();
+      if (overviewCharts.trend) overviewCharts.trend.destroy();
+      (overviewCharts.donuts || []).forEach(function (d) { try { d.destroy(); } catch (e) {} });
+    } catch (e) {}
+    window.__xboltOverviewCharts = null;
+  }
+
+  function clearOverviewChartContainers() {
+    ['pageViewsChart', 'weeklyChart', 'deviceChart', 'browserChart', 'osChart'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.innerHTML = '';
+    });
+  }
+
+  document.addEventListener('turbo:before-cache', destroyOverviewCharts);
+
+  function initOverviewDashboard() {
+    if (!document.getElementById('pageViewsChart')) return;
+    destroyOverviewCharts();
+    clearOverviewChartContainers();
+
+    if (window.lucide) window.lucide.createIcons();
+
+    if (!window.ApexCharts) {
+      ['pageViewsChart', 'weeklyChart', 'deviceChart', 'browserChart', 'osChart'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = '<div class="flex h-full min-h-[180px] items-center justify-center text-[11px] text-zinc-400">Charts are unavailable right now.</div>';
+      });
+      return;
+    }
+
+    var select = document.getElementById('periodSelect');
+    var metricEls = document.querySelectorAll('[data-metric]');
+    var changeEls = document.querySelectorAll('.period-change');
+    var trafficSubtitle = document.getElementById('trafficSubtitle');
+    var trendTitle = document.getElementById('trendTitle');
+    var trendBadge = document.getElementById('trendBadge');
+    var trendBadgeValue = document.getElementById('trendBadgeValue');
+
+    function formatNumber(n) { return Number(n).toLocaleString(); }
+
+    function parseDisplayedNumber(text) {
+      var parsed = Number(String(text || '').replace(/[^0-9.-]/g, ''));
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function animateMetricValue(el, toValue) {
+      if (!el) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        el.textContent = formatNumber(Math.round(toValue));
+        return;
+      }
+      var fromValue = parseDisplayedNumber(el.textContent);
+      var start = performance.now();
+      var duration = 320;
+      if (el._metricRaf) cancelAnimationFrame(el._metricRaf);
+      var step = function(ts) {
+        var t = Math.min(1, (ts - start) / duration);
+        var eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = formatNumber(Math.round(fromValue + (toValue - fromValue) * eased));
+        if (t < 1) el._metricRaf = requestAnimationFrame(step);
+      };
+      el._metricRaf = requestAnimationFrame(step);
+    }
+
+    var cs = getComputedStyle(document.documentElement);
+    var primary = (cs.getPropertyValue('--xbolt-primary') || '#18181b').trim();
+    var muted = (cs.getPropertyValue('--xbolt-text-muted') || '#a1a1aa').trim();
+    var brd = (cs.getPropertyValue('--xbolt-border') || '#f4f4f5').trim();
+    var surface = (cs.getPropertyValue('--xbolt-surface') || '#ffffff').trim();
+
+    var axis = { labels: { style: { colors: muted, fontSize: '10px', fontWeight: 400 } }, axisBorder: { show: false }, axisTicks: { show: false } };
+    var grid = { borderColor: brd, strokeDashArray: 3, padding: { top: -10, right: 0, bottom: -6, left: 4 } };
+
+    var trafficDatasets = {
+      '24h': {
+        categories: <%= raw(@views_last_24h.keys.map { |t| t.strftime('%H:%M') }.to_json) %>,
+        data: <%= raw(@views_last_24h.values.to_json) %>,
+        subtitle: 'Hourly — last 24h', tickAmount: 8
+      },
+      '7d': {
+        categories: <%= raw(@views_last_7d.keys.map { |d| d.strftime('%b %-d') }.to_json) %>,
+        data: <%= raw(@views_last_7d.values.to_json) %>,
+        subtitle: 'Daily — last 7 days', tickAmount: 7
+      },
+      '30d': {
+        categories: <%= raw(@views_last_30d.keys.map { |d| d.strftime('%b %-d') }.to_json) %>,
+        data: <%= raw(@views_last_30d.values.to_json) %>,
+        subtitle: 'Daily — last 30 days', tickAmount: 10
+      }
+    };
+
+    var viewChanges = { '24h': <%= pv_change_24 %>, '7d': <%= pv_change_7d %>, '30d': <%= pv_change_30d %> };
+
+    var trafficChart = new ApexCharts(document.querySelector('#pageViewsChart'), {
+      chart: { type: 'area', height: 240, fontFamily: 'Inter, system-ui, sans-serif', toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 400 } },
+      series: [{ name: 'Views', data: trafficDatasets['7d'].data }],
+      xaxis: Object.assign({}, axis, { categories: trafficDatasets['7d'].categories, tickAmount: trafficDatasets['7d'].tickAmount }),
+      yaxis: Object.assign({}, axis, { labels: { style: axis.labels.style, formatter: function(v) { return Math.round(v).toLocaleString(); } } }),
+      tooltip: { theme: false, style: { fontSize: '11px' }, y: { title: { formatter: function() { return 'Views:'; } } } },
+      colors: [primary],
+      fill: { type: 'gradient', gradient: { type: 'vertical', opacityFrom: 0.15, opacityTo: 0.01, stops: [0, 100] } },
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 1.5 },
+      grid: grid,
+      markers: { size: 0, hover: { size: 3 } }
+    });
+    trafficChart.render();
+
+    var trendChart = new ApexCharts(document.querySelector('#weeklyChart'), {
+      chart: { type: 'bar', height: 240, fontFamily: 'Inter, system-ui, sans-serif', toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 400 } },
+      series: [{ name: 'Views', data: trafficDatasets['7d'].data }],
+      plotOptions: { bar: { borderRadius: 4, columnWidth: '45%' } },
+      xaxis: Object.assign({}, axis, { categories: trafficDatasets['7d'].categories }),
+      yaxis: Object.assign({}, axis, { labels: { style: axis.labels.style, formatter: function(v) { return Math.round(v).toLocaleString(); } } }),
+      tooltip: { theme: false, style: { fontSize: '11px' }, y: { title: { formatter: function() { return 'Views:'; } } } },
+      colors: [primary],
+      fill: { type: 'gradient', gradient: { type: 'vertical', opacityFrom: 1, opacityTo: 0.85, stops: [0, 100] } },
+      dataLabels: { enabled: false },
+      grid: grid
+    });
+    trendChart.render();
+
+    function updateChartsForPeriod(period) {
+      var selected = trafficDatasets[period] || trafficDatasets['7d'];
+      trafficChart.updateOptions({ xaxis: Object.assign({}, axis, { categories: selected.categories, tickAmount: selected.tickAmount }) }, false, true);
+      trafficChart.updateSeries([{ name: 'Views', data: selected.data }], true);
+      trendChart.updateOptions({ xaxis: Object.assign({}, axis, { categories: selected.categories }) }, false, true);
+      trendChart.updateSeries([{ name: 'Views', data: selected.data }], true);
+      if (trafficSubtitle) trafficSubtitle.textContent = selected.subtitle;
+      if (trendTitle) trendTitle.textContent = 'Trend (' + period + ')';
+      if (trendBadge && trendBadgeValue) {
+        var change = Number(viewChanges[period] || 0);
+        if (change === 0) {
+          trendBadge.classList.add('hidden');
+        } else {
+          trendBadge.classList.remove('hidden');
+          trendBadge.className = 'inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded ' +
+            (change > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500');
+          trendBadgeValue.textContent = Math.abs(change) + '%';
+        }
+      }
+    }
+
+    function applyPeriod(period) {
+      metricEls.forEach(function(el) {
+        animateMetricValue(el, Number(el.dataset['val-' + period] || '0'));
+      });
+      changeEls.forEach(function(el) {
+        var val = parseFloat(el.dataset['change-' + period] || '0');
+        var label = el.nextElementSibling;
+        if (val === 0) {
+          el.textContent = '';
+          el.className = 'period-change text-[10px] font-semibold';
+          if (label) label.textContent = '';
+        } else {
+          el.innerHTML = '<svg class="w-3 h-3 mr-0.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="' + (val > 0 ? '22 7 13.5 15.5 8.5 10.5 2 17' : '22 17 13.5 8.5 8.5 13.5 2 7') + '"></polyline></svg>' + Math.abs(val) + '%';
+          el.className = 'period-change inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded ' +
+            (val > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500');
+          if (label) label.textContent = 'vs previous period';
+        }
+      });
+      updateChartsForPeriod(period);
+    }
+
+    window.__xboltOverviewApplyPeriod = function (period) {
+      applyPeriod(period);
+    };
+    if (!window.__xboltOverviewPeriodDelegated) {
+      window.__xboltOverviewPeriodDelegated = true;
+      document.addEventListener('change', function (e) {
+        var t = e.target;
+        if (t && t.id === 'periodSelect' && window.__xboltOverviewApplyPeriod) {
+          window.__xboltOverviewApplyPeriod(t.value);
+        }
+      });
+    }
+    if (select) applyPeriod(select.value);
+
+    var palette = [primary, '#6366f1', '#8b5cf6', '#0ea5e9', '#f59e0b', '#ef4444', '#10b981', '#ec4899'];
+    var donuts = [];
+
+    function renderDonut(el, rawData) {
+      var container = document.querySelector(el);
+      if (!container) return;
+      container.innerHTML = '';
+
+      var labels = Object.keys(rawData).map(function(k) { return k || 'Unknown'; });
+      var series = Object.values(rawData);
+      if (!series.length) return;
+      var chart = new ApexCharts(container, {
+        chart: { type: 'donut', height: 190, fontFamily: 'Inter, system-ui, sans-serif', animations: { enabled: true, speed: 400 } },
+        labels: labels, series: series,
+        colors: palette.slice(0, labels.length),
+        stroke: { width: 2, colors: [surface] },
+        plotOptions: { pie: { donut: { size: '74%', labels: { show: true, total: { show: true, label: 'Total', fontSize: '11px', fontWeight: 500, color: muted, formatter: function(w) { return w.globals.seriesTotals.reduce(function(a, b) { return a + b; }, 0); } } } } } },
+        legend: { position: 'bottom', fontSize: '10px', fontWeight: 400, markers: { width: 6, height: 6, radius: 2 }, itemMargin: { horizontal: 5 } },
+        dataLabels: { enabled: false },
+        tooltip: { theme: false, style: { fontSize: '11px' } }
+      });
+      chart.render();
+      donuts.push(chart);
+    }
+
+    <% if @device_breakdown.present? && @device_breakdown.values.sum > 0 %>
+    renderDonut('#deviceChart', <%= raw(@device_breakdown.to_json) %>);
+    <% end %>
+    <% if @browser_breakdown.present? && @browser_breakdown.values.sum > 0 %>
+    renderDonut('#browserChart', <%= raw(@browser_breakdown.to_json) %>);
+    <% end %>
+    <% if @os_breakdown.present? && @os_breakdown.values.sum > 0 %>
+    renderDonut('#osChart', <%= raw(@os_breakdown.to_json) %>);
+    <% end %>
+
+    window.__xboltOverviewCharts = { traffic: trafficChart, trend: trendChart, donuts: donuts };
+  }
+
+  document.addEventListener('DOMContentLoaded', initOverviewDashboard);
+  document.addEventListener('turbo:load', initOverviewDashboard);
+})();
+</script>

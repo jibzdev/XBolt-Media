@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%= seo_meta_tags('landing') %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="preload" href="<%= brand_logo_url %>" as="image">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: #09090b; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #fff; }
+
+        /* ── Fade-up ── */
+        [data-anim] {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+        }
+        [data-anim].is-visible { opacity: 1; transform: none; }
+
+        /* ── Stagger ── */
+        [data-stagger] > * {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1), transform 0.75s cubic-bezier(0.16,1,0.3,1);
+        }
+        [data-stagger].is-visible > *:nth-child(1) { transition-delay: 0s; }
+        [data-stagger].is-visible > *:nth-child(2) { transition-delay: 0.12s; }
+        [data-stagger].is-visible > *:nth-child(3) { transition-delay: 0.24s; }
+        [data-stagger].is-visible > *:nth-child(4) { transition-delay: 0.36s; }
+        [data-stagger].is-visible > * { opacity: 1; transform: none; }
+
+        /* ── Gradient text ── */
+        .xb-grad-amber {
+            background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .xb-grad-white {
+            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.55) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* ── Glass card ── */
+        .xb-glass {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+        }
+        .xb-glass:hover {
+            background: rgba(251,191,36,0.04);
+            border-color: rgba(251,191,36,0.18);
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6), 0 0 40px -10px rgba(251,191,36,0.06);
+        }
+
+        /* ── Stat block ── */
+        .xb-stat { position: relative; }
+        .xb-stat-num { font-variant-numeric: tabular-nums; transition: color 0.3s; }
+        .xb-stat.is-done .xb-stat-num { color: #fff; transition: color 0.8s; }
+
+        /* ── Marquee ── */
+        @keyframes xbMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .xb-marquee { overflow: hidden; }
+        .xb-marquee-inner { display: flex; width: max-content; animation: xbMarquee 50s linear infinite; }
+        .xb-marquee-inner:hover { animation-play-state: paused; }
+
+        /* ── Pulse ── */
+        @keyframes xbPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.5); } 50% { box-shadow: 0 0 0 6px rgba(251,191,36,0); } }
+        .xb-pulse { animation: xbPulse 2s ease-in-out infinite; }
+
+        /* ── Sections sit above the lighting canvas ── */
+        main > section, main > div { position: relative; }
+        footer { position: relative; }
+
+        /* ── Separator ── */
+        .xb-sep { height: 1px; background: linear-gradient(90deg, transparent 5%, rgba(251,191,36,0.15) 50%, transparent 95%); }
+
+        /* ── Process connector line ── */
+        .xb-process-line {
+            position: absolute; top: 22px; left: calc(50% + 24px); right: calc(-50% + 24px);
+            height: 1px; background: linear-gradient(90deg, rgba(251,191,36,0.2), rgba(251,191,36,0.05));
+        }
+
+        @media (max-width: 767px) { .xb-process-line { display: none; } }
+
+        /* ── Hero staggered entrance ── */
+        .xb-hero-stagger > * {
+            opacity: 0; transform: translateY(32px);
+            transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+        }
+        .xb-hero-stagger.is-visible > * { opacity: 1; transform: none; }
+
+        /* ── Floating cards ── */
+        .xb-float-cards {
+            position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+        }
+        .xb-float-card {
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1.2s cubic-bezier(0.16,1,0.3,1), transform 1.2s cubic-bezier(0.16,1,0.3,1);
+            will-change: transform, opacity;
+        }
+        .xb-float-card.is-shown { opacity: 1; }
+        .xb-fc-inner {
+            background: rgba(255,255,255,0.022);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 14px 16px;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+        .xb-fc-dots { display: flex; gap: 4px; margin-bottom: 10px; }
+        .xb-fc-dots span { width: 5px; height: 5px; border-radius: 50%; }
+        .xb-fc-dots span:nth-child(1) { background: #ef4444; opacity: 0.6; }
+        .xb-fc-dots span:nth-child(2) { background: #eab308; opacity: 0.6; }
+        .xb-fc-dots span:nth-child(3) { background: #22c55e; opacity: 0.6; }
+        .xb-fc-line { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.06); margin-bottom: 6px; }
+        .xb-fc-bar-row { display: flex; align-items: flex-end; gap: 4px; margin-top: 8px; }
+        .xb-fc-bar { flex: 1; border-radius: 2px 2px 0 0; background: linear-gradient(180deg, rgba(251,191,36,0.35), rgba(251,191,36,0.1)); }
+        .xb-fc-swatch-row { display: flex; gap: 5px; }
+        .xb-fc-swatch-row span { width: 22px; height: 22px; border-radius: 6px; }
+        .xb-fc-code { font-family: 'Courier New', monospace; font-size: 10px; color: rgba(255,255,255,0.4); line-height: 1.7; }
+        .xb-fc-kw { color: #c084fc; }
+        .xb-fc-str { color: #34d399; }
+        .xb-fc-metric { display: flex; align-items: baseline; gap: 6px; }
+        .xb-fc-metric-num { font-size: 16px; font-weight: 800; color: #34d399; }
+        .xb-fc-metric-label { font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.05em; }
+        .xb-fc-progress { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.06); margin-top: 4px; }
+        .xb-fc-progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #34d399, #22c55e); }
+        .xb-fc-avatar-row { display: flex; gap: -4px; }
+        .xb-fc-avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #000; margin-right: -4px; border: 2px solid rgba(9,9,11,0.8); }
+        .xb-fc-check-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+        .xb-fc-check { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid rgba(255,255,255,0.12); flex-shrink: 0; }
+        .xb-fc-check.done { background: #34d399; border-color: #34d399; }
+        .xb-fc-check-text { font-size: 10px; color: rgba(255,255,255,0.3); }
+        .xb-fc-check-text.xb-fc-active { color: #fbbf24; }
+
+        @media (max-width: 767px) {
+            .xb-fc-hide-mobile { display: none; }
+            .xb-float-card { transform: scale(0.8); }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .xb-float-card { transform: scale(0.85); }
+        }
+
+        /* ── Section accents ── */
+        .xb-section-glow {
+            position: absolute; border-radius: 50%; pointer-events: none; filter: blur(120px); opacity: 0.5;
+        }
+
+        /* ── Process step enhanced ── */
+        .xb-process-step { position: relative; }
+        .xb-process-step::before {
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 44px; height: 44px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        /* ── CTA shimmer ── */
+        @keyframes xbShimmer {
+            0% { transform: translateX(-100%) rotate(12deg); }
+            100% { transform: translateX(100%) rotate(12deg); }
+        }
+        .xb-cta-border {
+            position: relative; overflow: hidden;
+            border: 1px solid rgba(251,191,36,0.1); border-radius: 24px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(251,191,36,0.04) 0%, transparent 50%, rgba(251,191,36,0.04) 100%);
+        }
+        .xb-cta-border::before {
+            content: ''; position: absolute; inset: -2px;
+            background: linear-gradient(90deg, transparent 30%, rgba(251,191,36,0.12) 50%, transparent 70%);
+            animation: xbShimmer 4s ease-in-out infinite;
+        }
+        .xb-cta-inner {
+            position: relative; background: rgba(9,9,11,0.95); border-radius: 22px;
+            padding: 3.5rem 2rem;
+        }
+        @media (min-width: 640px) { .xb-cta-inner { padding: 5rem 3rem; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .xb-hero-stagger > *, [data-anim], [data-stagger] > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+            .xb-marquee-inner { animation: none !important; }
+            .xb-float-card { opacity: 1 !important; transition: none !important; }
+            .xb-cta-border::before { animation: none !important; }
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden">
+
+    <%= render 'landing/navbar' %>
+
+    <main>
+
+        <!-- ════════════════════════════════════════════════
+             HERO
+             ════════════════════════════════════════════════ -->
+        <section class="xbolt-hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
+            <canvas id="xb-lighting-canvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;"></canvas>
+
+            <!-- Floating card blocks -->
+            <div class="xb-float-cards" aria-hidden="true">
+                <div class="xb-float-card" data-speed="0.04" data-rotate="12" style="top:12%;left:6%;width:180px;">
+                    <div class="xb-fc-inner">
+                        <div class="xb-fc-dots"><span></span><span></span><span></span></div>
+                        <div class="xb-fc-line w-3/4"></div>
+                        <div class="xb-fc-line w-1/2" style="opacity:0.5"></div>
+                        <div class="xb-fc-bar-row"><div class="xb-fc-bar" style="height:18px"></div><div class="xb-fc-bar" style="height:28px"></div><div class="xb-fc-bar" style="height:22px"></div><div class="xb-fc-bar" style="height:32px"></div></div>
+                    </div>
+                </div>
+                <div class="xb-float-card" data-speed="0.07" data-rotate="-8" style="top:22%;right:5%;width:160px;">
+                    <div class="xb-fc-inner">
+                        <div class="xb-fc-dots"><span></span><span></span><span></span></div>
+                        <div class="xb-fc-swatch-row">
+                            <span style="background:#fbbf24"></span><span style="background:#f59e0b"></span><span style="background:#d97706"></span><span style="background:#92400e"></span>
+                        </div>
+                        <div class="xb-fc-line w-full" style="margin-top:8px"></div>
+                        <div class="xb-fc-line w-2/3" style="opacity:0.4"></div>
+                    </div>
+                </div>
+                <div class="xb-float-card" data-speed="0.05" data-rotate="6" style="bottom:22%;left:4%;width:170px;">
+                    <div class="xb-fc-inner">
+                        <div class="xb-fc-dots"><span></span><span></span><span></span></div>
+                        <div class="xb-fc-code"><span class="xb-fc-kw">const</span> site = <span class="xb-fc-str">"live"</span>;</div>
+                        <div class="xb-fc-code"><span class="xb-fc-kw">await</span> deploy();</div>
+                        <div class="xb-fc-code" style="opacity:0.4">// shipped <i class='bx bx-check' style="color:#34d399;font-size:11px"></i></div>
+                    </div>
+                </div>
+                <div class="xb-float-card" data-speed="0.09" data-rotate="-14" style="bottom:18%;right:7%;width:150px;">
+                    <div class="xb-fc-inner">
+                        <div class="xb-fc-dots"><span></span><span></span><span></span></div>
+                        <div class="xb-fc-metric"><span class="xb-fc-metric-num">98</span><span class="xb-fc-metric-label">Performance</span></div>
+                        <div class="xb-fc-progress"><div class="xb-fc-progress-fill" style="width:98%"></div></div>
+                        <div class="xb-fc-metric" style="margin-top:6px"><span class="xb-fc-metric-num">100</span><span class="xb-fc-metric-label">Accessibility</span></div>
+                        <div class="xb-fc-progress"><div class="xb-fc-progress-fill" style="width:100%"></div></div>
+                    </div>
+                </div>
+                <div class="xb-float-card xb-fc-hide-mobile" data-speed="0.03" data-rotate="4" style="top:55%;left:12%;width:130px;">
+                    <div class="xb-fc-inner">
+                        <div class="xb-fc-avatar-row">
+                            <div class="xb-fc-avatar" style="background:#fbbf24">X</div>
+                            <div class="xb-fc-avatar" style="background:#3b82f6">B</div>
+                            <div class="xb-fc-avatar" style="background:#a78bfa">M</div>
+                        </div>
+                        <div class="xb-fc-line w-full" style="margin-top:8px"></div>
+                        <div class="xb-fc-line w-1/2" style="opacity:0.4"></div>
+                    </div>
+                </div>
+                <div class="xb-float-card xb-fc-hide-mobile" data-speed="0.06" data-rotate="-5" style="top:8%;left:38%;width:120px;">
+                    <div class="xb-fc-inner" style="padding:10px 12px;">
+                        <div class="xb-fc-check-row"><span class="xb-fc-check done"></span><span class="xb-fc-check-text">Design</span></div>
+                        <div class="xb-fc-check-row"><span class="xb-fc-check done"></span><span class="xb-fc-check-text">Develop</span></div>
+                        <div class="xb-fc-check-row"><span class="xb-fc-check"></span><span class="xb-fc-check-text xb-fc-active">Deploy</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="xb-hero-root" class="xb-hero-content xb-hero-stagger relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center pt-28 pb-16 will-change-transform">
+
+                <!-- Headline -->
+                <h1 class="text-[clamp(2.8rem,7.5vw,6rem)] font-extrabold tracking-[-0.045em] leading-[0.92] max-w-4xl mx-auto mb-0 mt-4" style="transition-delay: 0.3s;">
+                    <span class="xb-grad-white">Premium websites,</span><br>
+                    <span class="xb-grad-amber">shipped fast.</span>
+                </h1>
+
+                <p class="mt-7 text-base sm:text-lg text-zinc-500 leading-relaxed max-w-lg mx-auto" style="transition-delay: 0.6s;">
+                    We design and build high-performance websites for ambitious businesses. Live in under a week.
+                </p>
+
+                <!-- CTAs -->
+                <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3" style="transition-delay: 0.8s;">
+                    <a href="<%= contact_path %>" class="group relative inline-flex items-center gap-2 px-7 py-4 rounded-xl bg-amber-500 text-zinc-950 text-sm font-bold hover:bg-amber-400 transition-all shadow-[0_0_28px_rgba(251,191,36,0.35)] hover:shadow-[0_0_44px_rgba(251,191,36,0.5)] hover:scale-[1.02] active:scale-[0.98]">
+                        Start a project
+                        <i class='bx bx-right-arrow-alt text-base transition-transform group-hover:translate-x-1'></i>
+                    </a>
+                    <a href="<%= work_path %>" class="inline-flex items-center gap-2 px-7 py-4 rounded-xl border border-amber-500/15 text-zinc-400 text-sm font-semibold hover:text-amber-400 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all">
+                        See our work
+                    </a>
+                </div>
+
+                <!-- Stats row -->
+                <div class="mt-20 flex flex-wrap items-center justify-center gap-6 sm:gap-10 max-w-3xl mx-auto" style="transition-delay: 1s;">
+                    <div class="xb-stat flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-600/5 border border-amber-500/10 flex items-center justify-center flex-shrink-0">
+                            <i class='bx bx-globe text-lg text-amber-400/80'></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="xb-stat-num text-xl sm:text-2xl font-extrabold leading-none" data-target="<%= @launches_count.to_i %>" data-suffix="+">0</div>
+                            <div class="text-[10px] text-zinc-600 mt-0.5 tracking-wide uppercase font-medium">Deployed</div>
+                        </div>
+                    </div>
+                    <div class="w-px h-8 bg-white/[0.06] hidden sm:block"></div>
+                    <div class="xb-stat flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 border border-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                            <i class='bx bx-check-shield text-lg text-emerald-400/80'></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="xb-stat-num text-xl sm:text-2xl font-extrabold leading-none" data-target="99" data-suffix=".9%" data-prefix="">0</div>
+                            <div class="text-[10px] text-zinc-600 mt-0.5 tracking-wide uppercase font-medium">Uptime</div>
+                        </div>
+                    </div>
+                    <div class="w-px h-8 bg-white/[0.06] hidden sm:block"></div>
+                    <div class="xb-stat flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/15 to-sky-600/5 border border-sky-500/10 flex items-center justify-center flex-shrink-0">
+                            <i class='bx bx-timer text-lg text-sky-400/80'></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="xb-stat-num text-xl sm:text-2xl font-extrabold leading-none" data-target="2" data-suffix="s" data-prefix="<">0</div>
+                            <div class="text-[10px] text-zinc-600 mt-0.5 tracking-wide uppercase font-medium">Load time</div>
+                        </div>
+                    </div>
+                    <div class="w-px h-8 bg-white/[0.06] hidden sm:block"></div>
+                    <div class="xb-stat flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-violet-600/5 border border-violet-500/10 flex items-center justify-center flex-shrink-0">
+                            <i class='bx bx-rocket text-lg text-violet-400/80'></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="xb-stat-num text-xl sm:text-2xl font-extrabold leading-none" data-target="7" data-suffix="d" data-prefix="<">0</div>
+                            <div class="text-[10px] text-zinc-600 mt-0.5 tracking-wide uppercase font-medium">To launch</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="xb-sep"></div>
+
+        <!-- ════════════════════════════════════════════════
+             SERVICES
+             ════════════════════════════════════════════════ -->
+        <section id="services" class="relative py-28 sm:py-40 overflow-hidden">
+            <div class="xb-section-glow" style="width:500px;height:500px;top:-100px;left:-150px;background:rgba(251,191,36,0.03);"></div>
+            <div class="xb-section-glow" style="width:400px;height:400px;bottom:-100px;right:-100px;background:rgba(251,191,36,0.025);"></div>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl mx-auto text-center mb-20" data-anim>
+                    <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-amber-500/70 mb-4">
+                        <span class="w-6 h-px bg-amber-500/40"></span> What we build <span class="w-6 h-px bg-amber-500/40"></span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl md:text-[3.25rem] font-extrabold tracking-[-0.03em] xb-grad-white leading-tight">Design. Code. Launch.</h2>
+                    <p class="mt-5 text-base sm:text-lg text-zinc-500 max-w-md mx-auto leading-relaxed">End-to-end web solutions, built for speed and scale.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto" data-stagger>
+                    <div class="xb-glass rounded-2xl p-8 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/[0.06] transition-colors duration-700"></div>
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/15 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <i class='bx bx-palette text-xl text-amber-400'></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-3">Design</h3>
+                            <p class="text-sm text-zinc-500 leading-relaxed mb-5">Pixel-perfect interfaces with consistent design systems, responsive layouts, and intentional motion.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">UI/UX</span>
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">Branding</span>
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">Motion</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="xb-glass rounded-2xl p-8 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/[0.06] transition-colors duration-700"></div>
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/15 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <i class='bx bx-code-block text-xl text-amber-400'></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-3">Engineering</h3>
+                            <p class="text-sm text-zinc-500 leading-relaxed mb-5">Fast, SEO-ready architecture that handles real traffic from day one with modern tooling.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">Rails</span>
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">SEO</span>
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">Speed</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="xb-glass rounded-2xl p-8 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/[0.06] transition-colors duration-700"></div>
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/15 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <i class='bx bx-line-chart text-xl text-amber-400'></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-3">Analytics</h3>
+                            <p class="text-sm text-zinc-500 leading-relaxed mb-5">Dashboards that surface what matters — real-time traffic, lead capture, and conversion tracking.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">Tracking</span>
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">Reports</span>
+                                <span class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-medium text-zinc-500">Insights</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-12" data-anim>
+                    <a href="<%= services_path %>" class="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-amber-500/15 text-sm font-medium text-amber-500/80 hover:text-amber-400 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all">
+                        View all services & pricing <i class='bx bx-right-arrow-alt text-base transition-transform group-hover:translate-x-1'></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <div class="xb-sep"></div>
+
+        <!-- ════════════════════════════════════════════════
+             PROCESS
+             ════════════════════════════════════════════════ -->
+        <section class="relative py-28 sm:py-40 overflow-hidden">
+            <div class="xb-section-glow" style="width:600px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(251,191,36,0.02);"></div>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl mx-auto text-center mb-20" data-anim>
+                    <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-amber-500/70 mb-4">
+                        <span class="w-6 h-px bg-amber-500/40"></span> Process <span class="w-6 h-px bg-amber-500/40"></span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl md:text-[3.25rem] font-extrabold tracking-[-0.03em] xb-grad-white leading-tight">Idea to live in three steps</h2>
+                    <p class="mt-5 text-base text-zinc-500 max-w-md mx-auto leading-relaxed">A streamlined workflow that takes you from concept to production, fast.</p>
+                </div>
+
+                <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0" data-stagger>
+                    <div class="xb-process-step relative text-center px-4">
+                        <div class="hidden md:block xb-process-line"></div>
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/25 text-sm font-extrabold text-amber-400 mb-6 relative z-10 shadow-[0_0_20px_rgba(251,191,36,0.1)]">01</div>
+                        <h3 class="text-lg font-bold text-white mb-3">Plan</h3>
+                        <p class="text-sm text-zinc-500 leading-relaxed max-w-[240px] mx-auto">Align on goals, map user flows, pick technology, and lock a clear timeline.</p>
+                    </div>
+                    <div class="xb-process-step relative text-center px-4">
+                        <div class="hidden md:block xb-process-line"></div>
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/25 text-sm font-extrabold text-amber-400 mb-6 relative z-10 shadow-[0_0_20px_rgba(251,191,36,0.1)]">02</div>
+                        <h3 class="text-lg font-bold text-white mb-3">Build</h3>
+                        <p class="text-sm text-zinc-500 leading-relaxed max-w-[240px] mx-auto">Design, develop, and iterate with performance and mobile-first baked in.</p>
+                    </div>
+                    <div class="xb-process-step relative text-center px-4">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/25 text-sm font-extrabold text-amber-400 mb-6 relative z-10 shadow-[0_0_20px_rgba(251,191,36,0.1)]">03</div>
+                        <h3 class="text-lg font-bold text-white mb-3">Scale</h3>
+                        <p class="text-sm text-zinc-500 leading-relaxed max-w-[240px] mx-auto">Connect domains, monitor analytics, capture leads, and iterate on real data.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="xb-sep"></div>
+
+        <!-- ════════════════════════════════════════════════
+             REVIEWS
+             ════════════════════════════════════════════════ -->
+        <% if @reviews.present? %>
+        <section class="relative py-28 sm:py-40 overflow-hidden">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+                <div class="max-w-2xl mx-auto text-center" data-anim>
+                    <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-amber-500/70 mb-4">
+                        <span class="w-6 h-px bg-amber-500/40"></span> Reviews <span class="w-6 h-px bg-amber-500/40"></span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl md:text-[3.25rem] font-extrabold tracking-[-0.03em] xb-grad-white leading-tight">Trusted by founders</h2>
+                    <p class="mt-4 text-base text-zinc-500">What our clients say about working with us.</p>
+                </div>
+            </div>
+
+            <div class="xb-marquee">
+                <div class="xb-marquee-inner">
+                    <% (@reviews + @reviews).each do |review| %>
+                        <div class="flex-shrink-0 w-[360px] mx-2.5">
+                            <div class="xb-glass rounded-2xl p-6 h-full">
+                                <div class="flex items-center gap-0.5 mb-3">
+                                    <% review.rating.times do %><i class='bx bxs-star text-amber-400 text-sm'></i><% end %>
+                                    <% (5 - review.rating).times do %><i class='bx bxs-star text-zinc-700 text-sm'></i><% end %>
+                                </div>
+                                <p class="text-sm text-zinc-400 leading-relaxed line-clamp-3 mb-5">"<%= review.review_text %>"</p>
+                                <div class="flex items-center gap-3">
+                                    <% avatar = review.display_avatar_url %>
+                                    <% if avatar.present? %>
+                                        <img src="<%= avatar %>" alt="<%= review.reviewer_name %>" class="w-10 h-10 rounded-full object-cover ring-2 ring-amber-500/20">
+                                    <% else %>
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center ring-2 ring-amber-500/20 flex-shrink-0">
+                                            <span class="text-xs font-bold text-amber-400"><%= review.initials %></span>
+                                        </div>
+                                    <% end %>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-bold text-white truncate"><%= review.reviewer_name %></div>
+                                        <% if review.display_company.present? %>
+                                            <div class="text-xs text-zinc-500 truncate"><%= review.display_company %></div>
+                                        <% end %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% end %>
+                </div>
+            </div>
+
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-14 text-center" data-anim>
+                <a href="<%= reviews_path %>" class="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-amber-500/15 text-zinc-400 text-sm font-semibold hover:text-amber-400 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all">
+                    Read all reviews
+                    <i class='bx bx-right-arrow-alt text-base transition-transform group-hover:translate-x-1'></i>
+                </a>
+            </div>
+        </section>
+        <div class="xb-sep"></div>
+        <% end %>
+
+        <!-- ════════════════════════════════════════════════
+             CTA
+             ════════════════════════════════════════════════ -->
+        <section class="relative overflow-hidden pt-32 sm:pt-44 pb-32 sm:pb-40">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full bg-amber-500/[0.08] blur-[150px] pointer-events-none"></div>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div class="max-w-2xl mx-auto xb-cta-border" data-anim>
+                    <div class="xb-cta-inner text-center">
+                        <h2 class="text-3xl sm:text-4xl md:text-[3.25rem] font-extrabold tracking-[-0.03em] leading-tight">
+                            <span class="xb-grad-white">Let's build something</span><br>
+                            <span class="xb-grad-amber">worth talking about.</span>
+                        </h2>
+                        <p class="mt-6 text-base sm:text-lg text-zinc-500 max-w-md mx-auto leading-relaxed">
+                            Tell us what you need. We'll design, build, and ship — fast.
+                        </p>
+                        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <a href="<%= contact_path %>" class="group inline-flex items-center gap-2 px-7 py-4 rounded-xl bg-amber-500 text-zinc-950 text-sm font-bold hover:bg-amber-400 transition-all shadow-[0_0_28px_rgba(251,191,36,0.35)] hover:shadow-[0_0_44px_rgba(251,191,36,0.5)] hover:scale-[1.02] active:scale-[0.98]">
+                                Start a project
+                                <i class='bx bx-right-arrow-alt text-base transition-transform group-hover:translate-x-1'></i>
+                            </a>
+                            <a href="<%= work_path %>" class="inline-flex items-center gap-2 px-7 py-4 rounded-xl border border-amber-500/15 text-zinc-400 text-sm font-semibold hover:text-amber-400 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all">
+                                See work
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <%= render 'landing/footer' %>
+    <%= javascript_include_tag "landing" %>
+    <%= render 'layouts/toast' %>
+</body>
+</html>

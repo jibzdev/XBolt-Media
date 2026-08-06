@@ -1,0 +1,13 @@
+<% content_for :page_title, "Edit Business" %>
+<% content_for :page_description, @business.full_subdomain %>
+
+<div class="max-w-2xl">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <%= render "form",
+      business: @business,
+      url: admin_business_path(@business),
+      method: :patch,
+      submit_label: "Save",
+      cancel_path: admin_business_path(@business) %>
+  </div>
+</div>

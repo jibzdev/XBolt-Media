@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= @general_setting&.application_name || 'XBolt' %> | Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= javascript_importmap_tags %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <%= render "layouts/theme" %>
+  <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+  <style>
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgb(var(--xbolt-border-rgb) / 0.85);border-radius:10px}
+    ::-webkit-scrollbar-thumb:hover{background:rgb(var(--xbolt-text-muted-rgb) / 0.45)}
+    [data-lucide]{display:inline-block;flex-shrink:0}
+    .turbo-progress-bar{background:var(--xbolt-primary)!important;height:2px!important;box-shadow:0 0 12px rgb(var(--xbolt-primary-rgb) / 0.35)}
+    @media (prefers-reduced-motion:no-preference){
+      #admin-main{transition:opacity .22s ease,filter .22s ease}
+    }
+    #admin-main.admin-main--loading{opacity:.52;filter:grayscale(.12) blur(.3px);pointer-events:none}
+    @media (prefers-reduced-motion:reduce){
+      #admin-main{transition:none}
+      #admin-main.admin-main--loading{opacity:.85;filter:none}
+    }
+    @media (prefers-reduced-motion:no-preference){
+      @keyframes admin-main-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+      #admin-main>*{animation:admin-main-in .32s cubic-bezier(.22,1,.36,1) both}
+    }
+    #sidebar nav a:hover{transform:translateX(2px)}
+    #sidebar .border-b{border-color:rgb(var(--xbolt-border-rgb) / 0.35)}
+    #sidebar .border-t{border-color:rgb(var(--xbolt-border-rgb) / 0.35)}
+  </style>
+</head>
+<body class="bg-zinc-50 text-zinc-800 font-sans antialiased">
+<% if impersonating? %>
+  <div class="fixed top-3 left-1/2 -translate-x-1/2 z-[70] rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 shadow-lg flex items-center gap-3">
+    <div class="text-[12px] text-amber-800">
+      Logged in as <span class="font-semibold"><%= current_user.username %></span>
+      from <span class="font-semibold"><%= current_impersonator.username %></span>
+    </div>
+    <%= button_to stop_impersonating_path,
+      method: :post,
+      class: "px-2.5 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-medium hover:bg-amber-700 transition" do %>
+      Return to Super Admin
+    <% end %>
+  </div>
+<% end %>
+<div id="admin-app-shell" class="h-screen flex">
+
+  <div id="admin-sidebar-overlay" class="fixed inset-0 bg-black/10 backdrop-blur-[1px] opacity-0 pointer-events-none transition-all duration-200 z-40 lg:hidden"></div>
+
+  <aside id="sidebar" class="fixed lg:static w-[232px] bg-white border-r border-zinc-200/70 flex flex-col h-screen z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+
+    <div class="flex items-center justify-between h-[52px] px-4 border-b border-zinc-100">
+      <%= link_to admin_dashboard_path, class: "flex items-center gap-2" do %>
+        <img src="<%= brand_logo_url %>" alt="Logo" class="w-7 h-5 object-contain">
+        <span class="text-[13px] font-semibold tracking-tight text-zinc-800">XBolt <span class="text-zinc-400 font-normal">Media</span></span>
+      <% end %>
+      <button id="close-admin-sidebar" class="lg:hidden p-1 rounded-md hover:bg-zinc-100 transition">
+        <i data-lucide="x" class="w-4 h-4 text-zinc-400"></i>
+      </button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-3 py-3.5">
+      <div class="space-y-5">
+
+        <div>
+          <p class="text-[10px] font-medium text-zinc-400 uppercase tracking-[0.08em] mb-1 px-2">Dashboard</p>
+          <%= link_to admin_dashboard_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path == '/dashboard' || request.path == '/dashboard/overview' ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+            <i data-lucide="layout-dashboard" class="w-[15px] h-[15px]"></i>
+            <span>Overview</span>
+          <% end %>
+        </div>
+
+        <% if current_user&.staff_admin? %>
+          <% unread_messages_count = can_access_admin_area?(:messages) ? ContactMessage.where(business_id: nil).visible_to(current_user).unread.count : 0 %>
+
+          <div>
+            <p class="text-[10px] font-medium text-zinc-400 uppercase tracking-[0.08em] mb-1 px-2">Management</p>
+            <div class="space-y-px">
+              <% if current_user&.full_admin? %>
+                <%= link_to admin_businesses_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/businesses') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="building-2" class="w-[15px] h-[15px]"></i>
+                  <span>Tenants</span>
+                <% end %>
+              <% end %>
+              <% if can_access_admin_area?(:users) %>
+                <%= link_to admin_users_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/users') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="users" class="w-[15px] h-[15px]"></i>
+                  <span>Users</span>
+                <% end %>
+              <% end %>
+              <% if can_access_admin_area?(:messages) %>
+                <%= link_to admin_messages_path, class: "flex items-center justify-between px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/messages') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <span class="flex items-center gap-2.5">
+                    <i data-lucide="message-square" class="w-[15px] h-[15px]"></i>
+                    <span>Messages</span>
+                  </span>
+                  <% if unread_messages_count.positive? %>
+                    <span class="min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold inline-flex items-center justify-center leading-none"><%= unread_messages_count %></span>
+                  <% end %>
+                <% end %>
+              <% end %>
+              <% if current_user&.full_admin? %>
+                <%= link_to admin_invoices_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/invoices') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="file-text" class="w-[15px] h-[15px]"></i>
+                  <span>Invoices</span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-[10px] font-medium text-zinc-400 uppercase tracking-[0.08em] mb-1 px-2">Content</p>
+            <div class="space-y-px">
+              <% if can_access_admin_area?(:services) %>
+                <%= link_to admin_services_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/services') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="briefcase" class="w-[15px] h-[15px]"></i>
+                  <span>Services</span>
+                <% end %>
+              <% end %>
+              <% if current_user&.full_admin? %>
+                <%= link_to admin_work_cards_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/work_cards') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="layers" class="w-[15px] h-[15px]"></i>
+                  <span>Work Cards</span>
+                <% end %>
+              <% end %>
+              <% if can_access_admin_area?(:reviews) %>
+                <%= link_to admin_reviews_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/reviews') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="message-circle" class="w-[15px] h-[15px]"></i>
+                  <span>Reviews</span>
+                <% end %>
+              <% end %>
+              <% if can_access_admin_area?(:demo_website) %>
+                <%= link_to admin_demo_website_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/demo_website') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="monitor" class="w-[15px] h-[15px]"></i>
+                  <span>Demo Website</span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-[10px] font-medium text-zinc-400 uppercase tracking-[0.08em] mb-1 px-2">Settings</p>
+            <div class="space-y-px">
+              <% if can_access_admin_area?(:settings) %>
+                <%= link_to admin_settings_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/settings') && !request.path.include?('seo') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="settings" class="w-[15px] h-[15px]"></i>
+                  <span>General</span>
+                <% end %>
+              <% end %>
+              <% if current_user&.full_admin? %>
+                <%= link_to admin_seo_settings_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.include?('seo') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="search" class="w-[15px] h-[15px]"></i>
+                  <span>SEO</span>
+                <% end %>
+              <% end %>
+              <% if can_access_admin_area?(:theme) %>
+                <%= link_to edit_admin_theme_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/theme') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="paintbrush" class="w-[15px] h-[15px]"></i>
+                  <span>Theme</span>
+                <% end %>
+              <% end %>
+              <% if current_user&.full_admin? %>
+                <%= link_to admin_ip_bans_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/ip-bans') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                  <i data-lucide="shield-off" class="w-[15px] h-[15px]"></i>
+                  <span>IP Bans</span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+        <% else %>
+
+          <div>
+            <p class="text-[10px] font-medium text-zinc-400 uppercase tracking-[0.08em] mb-1 px-2">Tenant</p>
+            <div class="space-y-px">
+              <%= link_to admin_dashboard_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path == '/dashboard' || request.path == '/dashboard/overview' ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                <i data-lucide="layout-dashboard" class="w-[15px] h-[15px]"></i>
+                <span>Overview</span>
+              <% end %>
+              <%= link_to admin_assets_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/assets') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                <i data-lucide="folder-open" class="w-[15px] h-[15px]"></i>
+                <span>Assets</span>
+              <% end %>
+              <%= link_to admin_website_path, class: "flex items-center gap-2.5 px-2 py-[6px] rounded-lg text-[13px] transition-all #{request.path.start_with?('/dashboard/website') ? 'bg-zinc-900 text-white font-medium' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 font-normal'}" do %>
+                <i data-lucide="panel-top" class="w-[15px] h-[15px]"></i>
+                <span>Website Editor</span>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="px-2">
+            <div class="p-3 rounded-lg bg-zinc-50 border border-zinc-100 text-[12px]">
+              <div class="font-medium text-zinc-600">Website tools</div>
+              <div class="mt-0.5 text-[11px] text-zinc-400">Upload assets, edit pages, and publish your site.</div>
+            </div>
+          </div>
+
+        <% end %>
+      </div>
+    </nav>
+
+    <div class="border-t border-zinc-100 px-3 py-2.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+            <span class="text-white font-medium text-[10px]"><%= current_user.username.first(1).upcase %></span>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[12px] font-medium text-zinc-700 truncate"><%= current_user.username %></p>
+            <p class="text-[10px] text-zinc-400 leading-tight"><%= current_user&.admin_role_label || 'Business' %></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-0.5">
+          <%= link_to password_admin_account_path, class: "p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition", title: "Change Password" do %>
+            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+          <% end %>
+          <%= link_to logout_path, method: :get, class: "p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition", "data-turbo": "false", title: "Log out" do %>
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-hidden w-full">
+
+    <header class="bg-white/80 backdrop-blur-sm border-b border-zinc-200/60 px-5 h-[52px] flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <button id="open-admin-sidebar" class="lg:hidden p-1.5 rounded-md hover:bg-zinc-100 transition">
+          <i data-lucide="menu" class="w-4 h-4 text-zinc-500"></i>
+        </button>
+        <div>
+          <h1 class="text-[15px] font-semibold text-zinc-900 leading-tight"><%= yield :page_title %></h1>
+          <% desc = yield(:page_description).presence %>
+          <% if desc %>
+            <p class="text-[11px] text-zinc-400 hidden sm:block leading-tight"><%= desc %></p>
+          <% end %>
+        </div>
+      </div>
+      <div class="flex items-center">
+        <%= link_to(current_user&.admin? ? root_path : business_site_url(current_user&.business),
+          class: "inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-zinc-400 hover:text-zinc-700 rounded-md hover:bg-zinc-50 transition",
+          "data-turbo": "false", target: "_blank", rel: "noopener") do %>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">View Site</span>
+        <% end %>
+      </div>
+    </header>
+
+    <main id="admin-main" class="flex-1 overflow-y-auto bg-zinc-50 p-5 sm:p-6">
+      <%= yield %>
+    </main>
+  </div>
+</div>
+
+<%= render 'layouts/toast' if defined?(render) %>
+<%= render 'layouts/confirm_modal' %>
+
+</body>
+</html>

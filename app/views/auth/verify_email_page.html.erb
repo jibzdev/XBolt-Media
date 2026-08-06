@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Email Verification - XBolt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: #09090b; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #fff; }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+
+    <div class="fixed inset-0 -z-10" style="background: radial-gradient(ellipse at 50% 30%, rgba(251,191,36,0.06) 0%, transparent 60%)"></div>
+
+    <nav class="relative z-50 px-4 sm:px-6 py-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="flex items-center justify-between">
+                <a href="<%= root_path %>" class="flex items-center gap-3">
+                    <img src="<%= brand_logo_url %>" alt="Logo" class="w-10 h-7 object-contain">
+                    <span class="text-sm font-semibold tracking-tight text-white">XBolt <span class="text-zinc-500 font-medium">Media</span></span>
+                </a>
+                <a href="<%= root_path %>" class="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-amber-400 transition-colors">
+                    <i class='bx bx-arrow-back'></i>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="relative z-10 min-h-[calc(100vh-100px)] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+        <div class="w-full max-w-md">
+            <div class="bg-white/[0.03] border border-white/[0.06] backdrop-blur-xl rounded-2xl p-8 sm:p-10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.5)]">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/15 mb-6">
+                        <i class='bx bx-envelope text-emerald-400 text-2xl'></i>
+                    </div>
+                    <h1 class="text-2xl font-bold tracking-tight text-white mb-1.5">Verify your email</h1>
+                    <p class="text-sm text-zinc-500">We've sent a verification link to</p>
+                    <p class="text-sm text-amber-400 font-medium mt-1"><%= @user.email %></p>
+                </div>
+
+                <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 mb-7">
+                    <h3 class="text-white font-semibold text-sm mb-3 flex items-center">
+                        <i class="bx bx-info-circle text-zinc-500 mr-2"></i>
+                        What to do next
+                    </h3>
+                    <ol class="text-zinc-400 text-sm space-y-2">
+                        <li class="flex items-start">
+                            <span class="text-amber-400 font-semibold mr-2 mt-0.5 text-xs">1.</span>
+                            <span>Check your email inbox (and spam folder)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-amber-400 font-semibold mr-2 mt-0.5 text-xs">2.</span>
+                            <span>Click the verification link in the email</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-amber-400 font-semibold mr-2 mt-0.5 text-xs">3.</span>
+                            <span>You'll be redirected to your dashboard</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <%= form_with url: resend_verification_email_path, method: :post, local: true do |form| %>
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold py-2.5 px-6 rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(251,191,36,0.25)] flex items-center justify-center gap-2 text-sm cursor-pointer">
+                        <i class="bx bx-refresh"></i>
+                        <span>Resend verification email</span>
+                    </button>
+                <% end %>
+
+                <% if @user.verification_sent_at && Time.current < @user.verification_sent_at + 2.minutes %>
+                    <div class="bg-amber-500/[0.06] border border-amber-500/15 rounded-xl p-3.5 mt-4">
+                        <p class="text-amber-400/80 text-xs text-center flex items-center justify-center gap-2">
+                            <i class="bx bx-time"></i>
+                            <span>Please wait <%= ((@user.verification_sent_at + 2.minutes) - Time.current).to_i %> seconds before requesting another email</span>
+                        </p>
+                    </div>
+                <% end %>
+
+                <div class="text-center mt-5">
+                    <p class="text-xs text-zinc-600">Didn't receive the email? Check your spam folder.</p>
+                </div>
+
+                <div class="mt-7 pt-7 border-t border-white/[0.06] text-center">
+                    <p class="text-xs text-zinc-600 mb-3">Need to use a different email?</p>
+                    <%= link_to logout_path, method: :get, class: "inline-flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-amber-400 transition-colors" do %>
+                        <i class="bx bx-log-out"></i>
+                        <span>Sign out and try again</span>
+                    <% end %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%= render 'layouts/toast' if defined?(render) %>
+</body>
+</html>

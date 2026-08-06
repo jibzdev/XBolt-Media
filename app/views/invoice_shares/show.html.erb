@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= @invoice.invoice_number %> &middot; Invoice</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+  </head>
+  <body class="bg-zinc-50 text-zinc-900 antialiased">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+      <div class="bg-white border border-zinc-200/70 rounded-xl p-5 sm:p-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <img src="<%= brand_logo_url %>" alt="Logo" class="h-8 w-auto object-contain">
+            <div>
+              <div class="text-[13px] font-medium text-zinc-700"><%= current_general_setting.application_name.presence || "XBolt" %></div>
+              <div class="text-[11px] text-zinc-400">XBolt Media</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-[15px] font-semibold text-zinc-800">Invoice</div>
+            <div class="text-[12px] text-zinc-500"><%= @invoice.invoice_number %></div>
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[12px]">
+          <div>
+            <div class="text-zinc-400">Business</div>
+            <div class="font-semibold text-zinc-800 mt-0.5"><%= @invoice.business.name %></div>
+          </div>
+          <div>
+            <div class="text-zinc-400">Issue date</div>
+            <div class="font-semibold text-zinc-800 mt-0.5"><%= @invoice.issue_date %></div>
+          </div>
+          <div>
+            <div class="text-zinc-400">Due date</div>
+            <div class="font-semibold text-zinc-800 mt-0.5"><%= @invoice.due_date %></div>
+          </div>
+          <div>
+            <div class="text-zinc-400">Status</div>
+            <div class="font-semibold text-zinc-800 mt-0.5"><%= @invoice.status.titleize %></div>
+          </div>
+        </div>
+
+        <!-- Line items -->
+        <div class="mt-5 space-y-4">
+          <% grouped_items = @invoice.grouped_line_items %>
+          <% [['One-time payments', 'one_time'], ['Monthly payments', 'monthly']].each do |section_title, section_key| %>
+            <% items = grouped_items[section_key] || [] %>
+            <% next if items.blank? %>
+            <div class="border border-zinc-200/70 rounded-xl overflow-hidden">
+              <div class="px-4 py-2.5 bg-zinc-50 border-b border-zinc-200/70 text-[12px] font-semibold text-zinc-700"><%= section_title %></div>
+              <table class="min-w-full">
+                <thead class="bg-zinc-50 border-b border-zinc-200/70">
+                  <tr>
+                    <th class="px-4 py-2.5 text-left text-[11px] uppercase tracking-wider text-zinc-500">Item</th>
+                    <th class="px-4 py-2.5 text-right text-[11px] uppercase tracking-wider text-zinc-500">Qty</th>
+                    <th class="px-4 py-2.5 text-right text-[11px] uppercase tracking-wider text-zinc-500">Unit</th>
+                    <th class="px-4 py-2.5 text-right text-[11px] uppercase tracking-wider text-zinc-500">Total</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-200/70">
+                  <% items.each do |item| %>
+                    <% qty = item["quantity"].to_f %>
+                    <% unit = item["unit_price"].to_f %>
+                    <tr class="hover:bg-zinc-50 transition-colors">
+                      <td class="px-4 py-2.5 text-[12px] text-zinc-800"><%= item["description"] %></td>
+                      <td class="px-4 py-2.5 text-[12px] text-right text-zinc-500 tabular-nums"><%= qty %></td>
+                      <td class="px-4 py-2.5 text-[12px] text-right text-zinc-500 tabular-nums"><%= number_to_currency(unit, unit: '£') %></td>
+                      <td class="px-4 py-2.5 text-[12px] text-right font-semibold text-zinc-800 tabular-nums"><%= number_to_currency(qty * unit, unit: '£') %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+              <div class="px-4 py-2.5 border-t border-zinc-200/70 text-right text-[12px] text-zinc-600">
+                <span class="font-semibold">Section subtotal:</span>
+                <span class="font-semibold text-zinc-800 tabular-nums"><%= number_to_currency(items.sum { |item| item['quantity'].to_f * item['unit_price'].to_f }, unit: '£') %></span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Totals -->
+        <div class="mt-5 flex justify-end">
+          <div class="w-full max-w-xs space-y-1.5 text-[12px]">
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-500">Subtotal</span>
+              <span class="font-semibold text-zinc-800 tabular-nums"><%= number_to_currency(@invoice.subtotal, unit: '£') %></span>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-zinc-200/70">
+              <span class="text-zinc-800 font-semibold">Total</span>
+              <span class="text-zinc-800 font-semibold tabular-nums"><%= number_to_currency(@invoice.total, unit: '£') %></span>
+            </div>
+          </div>
+        </div>
+
+        <% if @invoice.notes.present? %>
+          <div class="mt-5 pt-4 border-t border-zinc-200/70">
+            <div class="text-[12px] font-semibold text-zinc-700">Notes</div>
+            <p class="text-[12px] text-zinc-500 mt-1 whitespace-pre-wrap"><%= @invoice.notes %></p>
+          </div>
+        <% end %>
+
+        <div class="mt-5 flex justify-end">
+          <%= link_to "Download PDF", shared_invoice_pdf_path(token: @invoice.share_token), class: "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

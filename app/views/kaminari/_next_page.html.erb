@@ -1,0 +1,6 @@
+<li>
+  <%= link_to_unless current_page.last?, raw('<i class="bx bx-chevron-right text-sm"></i>'), url,
+    rel: 'next',
+    remote: remote,
+    class: "inline-flex items-center justify-center w-8 h-8 text-xs font-semibold rounded-lg text-zinc-600 bg-white border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 hover:border-zinc-300 transition-all duration-150" %>
+</li>

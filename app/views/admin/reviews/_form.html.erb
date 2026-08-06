@@ -1,0 +1,65 @@
+<div class="max-w-2xl">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <%= form_with model: [:admin, review], local: true, class: "space-y-4" do |f| %>
+      <% if review.errors.any? %>
+        <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <p class="text-[12px] font-medium text-red-600"><%= review.errors.full_messages.to_sentence %></p>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <%= f.label :reviewer_name, "Reviewer Name", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+          <%= f.text_field :reviewer_name, required: true, placeholder: "John Smith", class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition" %>
+        </div>
+        <div>
+          <%= f.label :company_name, "Company Name", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+          <%= f.text_field :company_name, placeholder: "Acme Ltd (or select business below)", class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition" %>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :business_id, "Link to Business (optional)", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+        <%= f.select :business_id, @businesses.map { |b| [b.name, b.id] }, { include_blank: "— No business linked —" }, class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition" %>
+        <p class="text-[10px] text-zinc-400 mt-1">Links avatar to the business logo. You can also set a custom avatar URL below.</p>
+      </div>
+
+      <div>
+        <%= f.label :review_text, "Review Text", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+        <%= f.text_area :review_text, required: true, rows: 4, placeholder: "Write the client's review...", class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition resize-none" %>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div>
+          <%= f.label :rating, "Rating", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+          <%= f.select :rating, (1..5).map { |n| ["#{'★' * n}#{'☆' * (5 - n)}  (#{n})", n] }, {}, class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition" %>
+        </div>
+        <div>
+          <%= f.label :source, "Source", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+          <%= f.select :source, [["Google", "google"], ["Direct / private", "direct"]], {}, class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition" %>
+        </div>
+        <div>
+          <%= f.label :position, "Position", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+          <%= f.number_field :position, min: 0, class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition" %>
+        </div>
+        <div class="flex items-end pb-0.5">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <%= f.check_box :active, class: "w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-300" %>
+            <span class="text-[12px] font-medium text-zinc-600">Visible on site</span>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :avatar_url, "Custom Avatar URL (optional)", class: "block text-[12px] font-medium text-zinc-600 mb-1" %>
+        <%= f.url_field :avatar_url, placeholder: "https://example.com/avatar.jpg", class: "w-full px-3 py-2 text-[13px] bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 transition" %>
+        <p class="text-[10px] text-zinc-400 mt-1">Overrides the linked business avatar. Use tenant asset URLs like <code class="text-zinc-500">/tenant_sites/{subdomain}/assets/logo.png</code></p>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <%= f.submit review.persisted? ? "Save Changes" : "Create Review", class: "inline-flex items-center px-4 py-2 rounded-lg bg-zinc-900 text-white text-[12px] font-medium hover:bg-zinc-800 transition cursor-pointer" %>
+        <%= link_to "Cancel", admin_reviews_path, class: "text-[12px] text-zinc-400 hover:text-zinc-600 transition" %>
+      </div>
+    <% end %>
+  </div>
+</div>

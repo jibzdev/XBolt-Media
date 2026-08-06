@@ -1,0 +1,58 @@
+<% content_for :page_title, "Message from #{@message.name}" %>
+<% content_for :page_description, "Contact form submission details" %>
+
+<div class="flex items-center gap-2 mb-5">
+  <%= link_to admin_messages_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition", style: "border:1px solid var(--xbolt-border);color:var(--xbolt-text);background:var(--xbolt-surface)" do %>
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+    <span>Back</span>
+  <% end %>
+  <% unless @message.read? %>
+    <%= button_to mark_read_admin_message_path(@message), method: :patch, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-white text-[13px] font-medium transition", style: "background:var(--xbolt-primary)", form: { class: "inline-block" } do %>
+      <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+      <span>Mark read</span>
+    <% end %>
+  <% end %>
+  <%= button_to admin_message_path(@message), method: :delete, data: { turbo_confirm: "Delete this message?" }, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-50 text-red-600 text-[13px] font-medium hover:bg-red-100 transition", form: { class: "inline-block" } do %>
+    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+    <span>Delete</span>
+  <% end %>
+</div>
+
+<div class="rounded-xl p-4 xb-card-hover" style="background:var(--xbolt-surface);border:1px solid var(--xbolt-border)">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <% [
+      ["Name", @message.name, true],
+      ["Email", @message.email, false],
+      ["Phone", @message.phone.presence || "-", false],
+      ["Received", @message.created_at.strftime("%Y-%m-%d %H:%M:%S"), false],
+      ["IP address", @message.ip_address, false],
+    ].each do |label, value, bold| %>
+      <div>
+        <div class="text-[11px] font-medium uppercase tracking-wider" style="color:var(--xbolt-text-muted)"><%= label %></div>
+        <div class="mt-1 text-[13px] <%= 'font-medium' if bold %> <%= 'font-mono' if label == 'IP address' %>" style="color:var(--xbolt-text)"><%= value %></div>
+      </div>
+    <% end %>
+    <div>
+      <div class="text-[11px] font-medium uppercase tracking-wider" style="color:var(--xbolt-text-muted)">Status</div>
+      <div class="mt-1">
+        <% if @message.read? %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium" style="background:var(--xbolt-surface-alt);color:var(--xbolt-text-muted);border:1px solid var(--xbolt-border)">Read</span>
+        <% else %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Unread</span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 pt-5" style="border-top:1px solid var(--xbolt-border)">
+    <div class="text-[11px] font-medium uppercase tracking-wider" style="color:var(--xbolt-text-muted)">Message</div>
+    <p class="mt-2 text-[13px] whitespace-pre-wrap leading-relaxed" style="color:var(--xbolt-text)"><%= @message.message %></p>
+  </div>
+
+  <% if @message.user_agent.present? %>
+    <div class="mt-5 pt-5" style="border-top:1px solid var(--xbolt-border)">
+      <div class="text-[11px] font-medium uppercase tracking-wider" style="color:var(--xbolt-text-muted)">User agent</div>
+      <p class="mt-2 text-[12px] break-all" style="color:var(--xbolt-text-muted)"><%= @message.user_agent %></p>
+    </div>
+  <% end %>
+</div>

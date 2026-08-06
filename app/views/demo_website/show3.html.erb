@@ -1,0 +1,746 @@
+<% primary_rgb = @theme[:primary].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<% accent_rgb  = @theme[:accent].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @demo.site_title %></title>
+  <meta name="description" content="<%= @demo.hero_subheading %>">
+  <meta name="theme-color" content="<%= @theme[:primary] %>">
+  <meta property="og:title" content="<%= @demo.site_title %>">
+  <meta property="og:description" content="<%= @demo.hero_subheading %>">
+  <meta property="og:type" content="website">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p:   <%= @theme[:primary] %>;
+      --a:   <%= @theme[:accent] %>;
+      --bg:  <%= @theme[:bg] %>;
+      --p-rgb: <%= primary_rgb %>;
+      --a-rgb: <%= accent_rgb %>;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: #f4f4f5;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise texture overlay ───────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.25;
+    }
+
+    /* ── Navbar ──────────────────────────────────────────────── */
+    #nav3 {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+      border-bottom: 1px solid transparent;
+    }
+    #nav3.scrolled {
+      background: rgba(var(--p-rgb), 0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-color: rgba(var(--p-rgb), 0.15);
+      box-shadow: 0 1px 40px rgba(0,0,0,0.4);
+    }
+
+    /* ── Nav links ───────────────────────────────────────────── */
+    .nl {
+      position: relative;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.2s;
+      padding-bottom: 2px;
+    }
+    .nl::after {
+      content: '';
+      position: absolute; left: 0; bottom: -2px;
+      width: 0; height: 1.5px;
+      background: var(--p);
+      transition: width 0.3s ease;
+    }
+    .nl:hover, .nl.active { color: #fff; }
+    .nl:hover::after, .nl.active::after { width: 100%; }
+
+    /* ── Mobile menu ─────────────────────────────────────────── */
+    #mob3 {
+      display: none;
+      background: rgba(8,8,12,0.97);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(var(--p-rgb), 0.12);
+    }
+    #mob3.open { display: block; }
+
+    /* ── Scroll reveal ───────────────────────────────────────── */
+    .sr {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+    }
+    .sr.vis { opacity: 1; transform: none; }
+    .sr-d1 { transition-delay: 0.1s; }
+    .sr-d2 { transition-delay: 0.2s; }
+    .sr-d3 { transition-delay: 0.3s; }
+    .sr-d4 { transition-delay: 0.4s; }
+
+    /* ── Hero marquee ────────────────────────────────────────── */
+    .marquee-track {
+      display: flex; white-space: nowrap;
+      animation: marquee 22s linear infinite;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── Section number ──────────────────────────────────────── */
+    .sec-num {
+      font-size: 7rem; font-weight: 900; line-height: 1;
+      background: linear-gradient(135deg, rgba(var(--p-rgb),0.18), rgba(var(--a-rgb),0.10));
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      user-select: none; pointer-events: none;
+    }
+
+    /* ── Gradient text ───────────────────────────────────────── */
+    .grad-text {
+      background: linear-gradient(135deg, var(--p), var(--a));
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ── CTA primary button ──────────────────────────────────── */
+    .btn-p {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.875rem 2rem;
+      background: var(--p);
+      color: #fff; font-weight: 700; font-size: 0.9rem;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 24px rgba(var(--p-rgb), 0.35);
+    }
+    .btn-p:hover {
+      filter: brightness(1.12);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(var(--p-rgb), 0.45);
+    }
+
+    /* ── CTA outline button ──────────────────────────────────── */
+    .btn-o {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.875rem 2rem;
+      border: 1.5px solid rgba(var(--a-rgb), 0.5);
+      color: var(--a); font-weight: 700; font-size: 0.9rem;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .btn-o:hover {
+      background: rgba(var(--a-rgb), 0.1);
+      border-color: var(--a);
+      transform: translateY(-2px);
+    }
+
+    /* ── Card ────────────────────────────────────────────────── */
+    .card3 {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1.25rem;
+      background: rgba(255,255,255,0.025);
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+    }
+    .card3:hover {
+      border-color: rgba(var(--p-rgb), 0.35);
+      box-shadow: 0 0 0 1px rgba(var(--p-rgb), 0.12), 0 24px 48px rgba(0,0,0,0.3);
+      transform: translateY(-4px);
+    }
+
+    /* ── Stat counter ────────────────────────────────────────── */
+    .stat-num {
+      font-size: 3rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--p), var(--a));
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    /* ── Thin divider line ───────────────────────────────────── */
+    .divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(var(--p-rgb),0.3), rgba(var(--a-rgb),0.2), transparent);
+    }
+
+    /* ── Process step connector ──────────────────────────────── */
+    .step-line::after {
+      content: '';
+      position: absolute; top: 1.5rem; left: calc(100% + 0px); width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, rgba(var(--p-rgb),0.4), transparent);
+    }
+
+    /* ── Contact input ───────────────────────────────────────── */
+    .inp3 {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0.625rem;
+      padding: 0.875rem 1rem;
+      color: #f4f4f5;
+      font-size: 0.875rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      font-family: inherit;
+    }
+    .inp3::placeholder { color: rgba(255,255,255,0.3); }
+    .inp3:focus {
+      border-color: var(--p);
+      box-shadow: 0 0 0 3px rgba(var(--p-rgb), 0.15);
+    }
+
+    /* ── Floating glow orbs (subtle background atmosphere) ───── */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(100px); pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ NAVBAR ═══════════════════════════════════ -->
+<nav id="nav3">
+  <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+    <!-- Logo -->
+    <a href="#hero3" class="flex items-center gap-3 group">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm" style="background: var(--p);">
+        <%= @demo.site_title.first.upcase %>
+      </div>
+      <span class="font-bold text-white tracking-tight"><%= @demo.site_title %></span>
+    </a>
+
+    <!-- Desktop links -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#hero3"    class="nl">Home</a>
+      <a href="#about3"   class="nl">About</a>
+      <a href="#work3"    class="nl">Work</a>
+      <a href="#contact3" class="nl">Contact</a>
+    </div>
+
+    <!-- CTA + hamburger -->
+    <div class="flex items-center gap-4">
+      <a href="#contact3" class="hidden md:inline-flex btn-p text-sm py-2.5 px-5">
+        <%= @demo.cta_primary_text %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+      <button id="ham3" aria-label="Menu" class="md:hidden text-white p-2">
+        <svg id="ham3-bars" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg id="ham3-x" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mob3">
+    <div class="max-w-7xl mx-auto px-6 py-4 space-y-1">
+      <a href="#hero3"    class="mob-nl block py-3 text-white/70 hover:text-white text-sm font-medium border-b border-white/5">Home</a>
+      <a href="#about3"   class="mob-nl block py-3 text-white/70 hover:text-white text-sm font-medium border-b border-white/5">About</a>
+      <a href="#work3"    class="mob-nl block py-3 text-white/70 hover:text-white text-sm font-medium border-b border-white/5">Work</a>
+      <a href="#contact3" class="mob-nl block py-3 text-white/70 hover:text-white text-sm font-medium">Contact</a>
+      <div class="pt-4 pb-2">
+        <a href="#contact3" class="btn-p w-full justify-center text-sm">
+          <%= @demo.cta_primary_text %>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════ HERO ════════════════════════════════════ -->
+<section id="hero3" class="relative min-h-screen flex flex-col justify-center overflow-hidden pt-24 pb-16">
+  <!-- Atmosphere orbs -->
+  <div class="orb w-[600px] h-[600px] -top-32 -left-32 opacity-30" style="background: var(--p);"></div>
+  <div class="orb w-[400px] h-[400px] top-1/2 -right-40 opacity-20" style="background: var(--a);"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+    <!-- Left: text -->
+    <div>
+      <!-- Badge -->
+      <div class="sr inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-8" style="border-color: rgba(var(--a-rgb),0.4); background: rgba(var(--a-rgb),0.07);">
+        <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: var(--a);"></span>
+        <span class="text-xs font-semibold uppercase tracking-widest" style="color: var(--a);"><%= @demo.hero_badge %></span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="sr sr-d1 text-4xl sm:text-6xl xl:text-7xl font-black leading-[1.05] tracking-tight">
+        <span class="block text-white"><%= @demo.site_title %></span>
+        <span class="block grad-text mt-1"><%= @demo.hero_heading %></span>
+      </h1>
+
+      <!-- Sub -->
+      <p class="sr sr-d2 mt-6 text-lg text-zinc-300 max-w-lg leading-relaxed">
+        <%= @demo.hero_subheading %>
+      </p>
+
+      <!-- CTAs -->
+      <div class="sr sr-d3 mt-10 flex flex-wrap gap-4">
+        <a href="#contact3" class="btn-p">
+          <%= @demo.cta_primary_text %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="#work3" class="btn-o">
+          <%= @demo.cta_secondary_text %>
+        </a>
+      </div>
+
+      <!-- Trust strip -->
+      <div class="sr sr-d4 mt-12 flex flex-wrap items-center gap-6 text-zinc-400 text-sm">
+        <% [["100%", "Client Satisfaction"], ["24/7", "Support"], ["10+", "Years Experience"]].each do |num, label| %>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white"><%= num %></span>
+            <span><%= label %></span>
+          </div>
+          <div class="w-px h-4 bg-white/15 last:hidden"></div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Right: visual panel -->
+    <div class="sr sr-d2 relative">
+      <!-- Outer glow -->
+      <div class="absolute -inset-6 rounded-3xl blur-2xl opacity-20" style="background: radial-gradient(circle, var(--p), var(--a));"></div>
+
+      <!-- Card grid -->
+      <div class="relative grid grid-cols-2 gap-3">
+        <!-- Big stat card -->
+        <div class="card3 p-6 col-span-2" style="background: rgba(var(--p-rgb),0.07); border-color: rgba(var(--p-rgb),0.2);">
+          <p class="text-xs uppercase tracking-widest text-zinc-400 mb-2">At a glance</p>
+          <div class="flex items-end gap-4">
+            <span class="stat-num">500+</span>
+            <span class="text-zinc-300 text-sm mb-1.5 leading-snug">projects<br>delivered</span>
+          </div>
+        </div>
+
+        <!-- Service chip 1 -->
+        <div class="card3 p-5 flex flex-col gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: rgba(var(--p-rgb),0.2);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--p);"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div>
+            <p class="font-bold text-white text-sm">Fast Delivery</p>
+            <p class="text-xs text-zinc-400 mt-1">On time, every time</p>
+          </div>
+        </div>
+
+        <!-- Service chip 2 -->
+        <div class="card3 p-5 flex flex-col gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: rgba(var(--a-rgb),0.2);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--a);"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <p class="font-bold text-white text-sm">Quality First</p>
+            <p class="text-xs text-zinc-400 mt-1">Premium finish</p>
+          </div>
+        </div>
+
+        <!-- Contact strip -->
+        <div class="card3 col-span-2 p-4 flex items-center gap-4">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background: var(--p);">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-zinc-400">Reach us directly</p>
+            <p class="text-sm font-semibold text-white truncate"><%= @demo.contact_email %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll cue -->
+  <div class="sr absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+    <span class="text-xs uppercase tracking-widest text-zinc-400">Scroll</span>
+    <div class="w-px h-10 animate-pulse" style="background: linear-gradient(to bottom, var(--p), transparent);"></div>
+  </div>
+</section>
+
+<!-- Marquee divider -->
+<div class="relative z-10 overflow-hidden py-4 border-y" style="border-color: rgba(var(--p-rgb),0.12); background: rgba(var(--p-rgb),0.04);">
+  <div class="marquee-track">
+    <% 6.times do %>
+      <span class="mx-8 text-xs font-bold uppercase tracking-[0.2em] text-white/30"><%= @demo.site_title %></span>
+      <span class="mx-6 opacity-20" style="color: var(--a);">✦</span>
+    <% end %>
+    <% 6.times do %>
+      <span class="mx-8 text-xs font-bold uppercase tracking-[0.2em] text-white/30"><%= @demo.site_title %></span>
+      <span class="mx-6 opacity-20" style="color: var(--a);">✦</span>
+    <% end %>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════ ABOUT ════════════════════════════════════ -->
+<section id="about3" class="relative py-28 overflow-hidden">
+  <div class="orb w-[500px] h-[500px] -right-40 top-0 opacity-15" style="background: var(--p);"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="flex flex-col lg:flex-row gap-16 items-start">
+      <!-- Left: large number + label -->
+      <div class="lg:w-56 flex-shrink-0 sr">
+        <div class="sec-num">01</div>
+        <div class="mt-2 text-xs font-bold uppercase tracking-widest" style="color: var(--p);">About us</div>
+        <div class="mt-4 divider"></div>
+      </div>
+
+      <!-- Right: content -->
+      <div class="flex-1">
+        <h2 class="sr sr-d1 text-3xl md:text-5xl xl:text-6xl font-black leading-tight text-white">
+          <%= @demo.about_title %>
+        </h2>
+        <p class="sr sr-d2 mt-6 text-zinc-300 text-lg leading-relaxed max-w-2xl"><%= @demo.about_body %></p>
+
+        <!-- Stats row -->
+        <div class="sr sr-d3 mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <% @demo.stat_items.each do |stat| %>
+            <div class="card3 p-5 text-center">
+              <div class="stat-num"><%= stat[:number] %></div>
+              <div class="mt-2 text-xs text-zinc-400 uppercase tracking-wider font-medium"><%= stat[:label] %></div>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Feature list -->
+        <div class="sr sr-d4 mt-10 grid sm:grid-cols-3 gap-4">
+          <% icons = [
+            "M13 10V3L4 14h7v7l9-11h-7z",
+            "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+            "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ] %>
+          <% @demo.feature_cards.first(3).each_with_index do |card, idx| %>
+            <div class="card3 p-5">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style="background: rgba(var(--p-rgb),0.18);">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--p);"><path stroke-linecap="round" stroke-linejoin="round" d="<%= icons[idx % icons.length] %>"/></svg>
+              </div>
+              <h3 class="font-bold text-white text-sm"><%= card[:title] %></h3>
+              <p class="text-zinc-400 text-xs mt-1.5 leading-relaxed"><%= card[:body] %></p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-7xl mx-auto px-6"><div class="divider"></div></div>
+
+
+<!-- ═══════════════════════════════════ PROCESS ══════════════════════════════════ -->
+<section class="relative py-28 overflow-hidden">
+  <div class="orb w-[450px] h-[450px] -left-40 bottom-0 opacity-15" style="background: var(--a);"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="flex flex-col lg:flex-row gap-16 items-start">
+      <!-- Left: large number + label -->
+      <div class="lg:w-56 flex-shrink-0 sr">
+        <div class="sec-num">02</div>
+        <div class="mt-2 text-xs font-bold uppercase tracking-widest" style="color: var(--p);">How we work</div>
+        <div class="mt-4 divider"></div>
+      </div>
+
+      <!-- Right: steps -->
+      <div class="flex-1">
+        <h2 class="sr sr-d1 text-3xl md:text-5xl font-black text-white leading-tight">
+          Our <span class="grad-text">Process</span>
+        </h2>
+        <p class="sr sr-d2 mt-4 text-zinc-400 max-w-xl">
+          A clear, repeatable workflow that keeps every project on time and on brief.
+        </p>
+
+        <div class="mt-12 space-y-4">
+          <% @demo.process_steps.each_with_index do |step, idx| %>
+            <div class="sr card3 p-6 flex gap-6 items-start" data-sr-delay="<%= idx * 100 %>">
+              <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-black text-sm" style="background: rgba(var(--p-rgb),0.15); color: var(--p);">
+                <%= idx + 1 %>
+              </div>
+              <div>
+                <h3 class="font-bold text-white text-base"><%= step[:title] %></h3>
+                <p class="text-zinc-400 text-sm mt-1.5 leading-relaxed"><%= step[:body] %></p>
+              </div>
+              <% if idx < 3 %>
+                <div class="ml-auto text-zinc-700">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/></svg>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-7xl mx-auto px-6"><div class="divider"></div></div>
+
+
+<!-- ═══════════════════════════════════ WORK ════════════════════════════════════ -->
+<section id="work3" class="relative py-28 overflow-hidden">
+  <div class="orb w-[500px] h-[500px] right-0 top-1/3 opacity-15" style="background: var(--p);"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="flex flex-col lg:flex-row gap-16 items-start">
+      <!-- Left: large number + label -->
+      <div class="lg:w-56 flex-shrink-0 sr">
+        <div class="sec-num">03</div>
+        <div class="mt-2 text-xs font-bold uppercase tracking-widest" style="color: var(--p);">Portfolio</div>
+        <div class="mt-4 divider"></div>
+      </div>
+
+      <!-- Right -->
+      <div class="flex-1">
+        <h2 class="sr sr-d1 text-3xl md:text-5xl font-black text-white leading-tight"><%= @demo.work_title %></h2>
+        <p class="sr sr-d2 mt-4 text-zinc-400 max-w-xl"><%= @demo.work_intro %></p>
+
+        <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <% @demo.project_cards.each_with_index do |project, i| %>
+            <article class="sr card3 overflow-hidden group" style="transition-delay: <%= (i % 3) * 100 %>ms;">
+              <div class="h-48 relative flex items-center justify-center" style="background: linear-gradient(145deg, rgba(var(--p-rgb),0.25) 0%, rgba(var(--a-rgb),0.15) 100%);">
+                <% project_image = @demo.image_for("project_#{i + 1}") %>
+                <% if project_image.present? %>
+                  <%= image_tag project_image, class: "w-full h-full object-cover", alt: project[:title] %>
+                <% else %>
+                  <span class="text-5xl font-black text-white/10"><%= i + 1 %></span>
+                <% end %>
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center" style="background: rgba(var(--p-rgb),0.15);">
+                  <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center" style="border-color: var(--p);">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="color: var(--p);"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="p-5">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-1.5 h-1.5 rounded-full" style="background: var(--a);"></span>
+                  <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--a);">Project</span>
+                </div>
+                <h3 class="font-bold text-white"><%= project[:title] %></h3>
+                <p class="text-zinc-400 text-sm mt-1.5"><%= project[:body] %></p>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-7xl mx-auto px-6"><div class="divider"></div></div>
+
+
+<!-- ══════════════════════════════ TESTIMONIALS ════════════════════════════════ -->
+<section class="relative py-28 overflow-hidden">
+  <div class="orb w-[400px] h-[400px] -left-32 top-1/2 opacity-15" style="background: var(--a);"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <div class="sr inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-4" style="border-color: rgba(var(--a-rgb),0.3); background: rgba(var(--a-rgb),0.06);">
+        <span class="text-xs font-bold uppercase tracking-widest" style="color: var(--a);">Testimonials</span>
+      </div>
+      <h2 class="sr sr-d1 text-3xl md:text-5xl font-black text-white"><%= @demo.testimonials_title %></h2>
+      <p class="sr sr-d2 mt-3 text-zinc-400 max-w-2xl mx-auto"><%= @demo.testimonials_intro %></p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <% @demo.testimonial_cards.each_with_index do |testimonial, idx| %>
+        <div class="sr card3 p-7" style="transition-delay: <%= idx * 120 %>ms;">
+          <!-- Stars -->
+          <div class="flex gap-1 mb-4">
+            <% 5.times do %>
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" style="color: var(--a);"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <% end %>
+          </div>
+          <p class="text-zinc-300 leading-relaxed text-sm">"<%= testimonial[:quote] %>"</p>
+          <div class="mt-6 flex items-center gap-3 border-t pt-5" style="border-color: rgba(255,255,255,0.07);">
+            <div class="w-9 h-9 rounded-full font-bold text-sm flex items-center justify-center" style="background: var(--p); color: #fff;">
+              <%= testimonial[:name].to_s.split.map(&:first).join.first(2).upcase %>
+            </div>
+            <div>
+              <div class="font-semibold text-white text-sm"><%= testimonial[:name] %></div>
+              <div class="text-zinc-500 text-xs"><%= testimonial[:role] %></div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-7xl mx-auto px-6"><div class="divider"></div></div>
+
+
+<!-- ══════════════════════════════════ CONTACT ════════════════════════════════ -->
+<section id="contact3" class="relative py-28 overflow-hidden">
+  <div class="orb w-[600px] h-[600px] right-0 bottom-0 opacity-20" style="background: var(--p);"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="flex flex-col lg:flex-row gap-16 items-start">
+      <!-- Left: large number + label -->
+      <div class="lg:w-56 flex-shrink-0 sr">
+        <div class="sec-num">04</div>
+        <div class="mt-2 text-xs font-bold uppercase tracking-widest" style="color: var(--p);">Contact</div>
+        <div class="mt-4 divider"></div>
+      </div>
+
+      <!-- Right: split contact -->
+      <div class="flex-1 grid lg:grid-cols-2 gap-10">
+        <!-- Info side -->
+        <div class="sr">
+          <h2 class="text-3xl md:text-4xl font-black text-white leading-tight"><%= @demo.contact_title %></h2>
+          <p class="mt-4 text-zinc-400 leading-relaxed">
+            <%= @demo.contact_intro %>
+          </p>
+
+          <div class="mt-8 space-y-5">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background: rgba(var(--p-rgb),0.15);">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="color: var(--p);"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <div>
+                <p class="text-xs text-zinc-500 uppercase tracking-wider">Email</p>
+                <p class="text-white font-medium"><%= @demo.contact_email %></p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background: rgba(var(--a-rgb),0.15);">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="color: var(--a);"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              </div>
+              <div>
+                <p class="text-xs text-zinc-500 uppercase tracking-wider">Phone</p>
+                <p class="text-white font-medium"><%= @demo.contact_phone %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form side -->
+        <div class="sr sr-d2">
+          <div class="card3 p-7" style="border-color: rgba(var(--p-rgb),0.2); background: rgba(var(--p-rgb),0.04);">
+            <form class="space-y-4" onsubmit="return false;">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Name</label>
+                  <input type="text" placeholder="Your name" class="inp3">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Email</label>
+                  <input type="email" placeholder="your@email.com" class="inp3">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Subject</label>
+                <input type="text" placeholder="What's this about?" class="inp3">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Message</label>
+                <textarea rows="4" placeholder="Tell us about your project..." class="inp3 resize-none"></textarea>
+              </div>
+              <button type="submit" class="btn-p w-full justify-center">
+                Send Message
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════ FOOTER ════════════════════════════════ -->
+<footer class="border-t py-8" style="border-color: rgba(255,255,255,0.07);">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs" style="background: var(--p);"><%= @demo.site_title.first.upcase %></div>
+      <span class="font-bold text-white text-sm"><%= @demo.site_title %></span>
+    </div>
+    <p class="text-zinc-500 text-sm">&copy; <%= Time.current.year %> <%= @demo.site_title %>. All rights reserved.</p>
+    <div class="flex gap-5 text-zinc-500 text-sm">
+      <a href="#about3"   class="hover:text-white transition-colors">About</a>
+      <a href="#work3"    class="hover:text-white transition-colors">Work</a>
+      <a href="#contact3" class="hover:text-white transition-colors">Contact</a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+(() => {
+  // ── Navbar scroll ─────────────────────────────────────────────────────────────
+  const nav = document.getElementById('nav3');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 50);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ── Hamburger / mobile menu ───────────────────────────────────────────────────
+  const ham  = document.getElementById('ham3');
+  const mob  = document.getElementById('mob3');
+  const bars = document.getElementById('ham3-bars');
+  const xIcon = document.getElementById('ham3-x');
+
+  ham?.addEventListener('click', () => {
+    const open = mob.classList.toggle('open');
+    bars.classList.toggle('hidden', open);
+    xIcon.classList.toggle('hidden', !open);
+  });
+  mob?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    mob.classList.remove('open');
+    bars.classList.remove('hidden');
+    xIcon.classList.add('hidden');
+  }));
+
+  // ── Active nav highlight ──────────────────────────────────────────────────────
+  const sections = document.querySelectorAll('section[id]');
+  const links    = document.querySelectorAll('.nl');
+  const navH     = nav.offsetHeight;
+
+  const setActive = () => {
+    let cur = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - navH - 60) cur = s.id; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${cur}`));
+  };
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+
+  // ── Scroll reveal ─────────────────────────────────────────────────────────────
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); } });
+  }, { threshold: 0.10 });
+  document.querySelectorAll('.sr').forEach(el => io.observe(el));
+
+  // ── Smooth scroll ─────────────────────────────────────────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (!t) return;
+      e.preventDefault();
+      window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - navH, behavior: 'smooth' });
+    });
+  });
+})();
+</script>
+</body>
+</html>

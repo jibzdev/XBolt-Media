@@ -1,0 +1,52 @@
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes loader {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-items {
+  position: relative;
+}
+
+.animate-items::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 3px solid rgba(128, 128, 128, 0.2);
+  border-top-color: var(--xbolt-primary, #8d5ac7);
+  border-radius: 50%;
+  animation: loader 0.6s linear infinite;
+  z-index: 10;
+}
+
+.animate-items > *:not(.pointer-events-none):not(.opacity-0) {
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-items::before {
+  opacity: 1;
+  animation: loader 0.6s linear infinite, fadeOut 0.2s ease forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}

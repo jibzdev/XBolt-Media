@@ -1,0 +1,18 @@
+<% content_for :page_title, "Edit SEO Setting" %>
+<% content_for :page_description, "Update SEO settings for #{@seo_setting.page_name.gsub('_', ' ').titleize}" %>
+
+<div class="flex items-center justify-between mb-5">
+  <div class="flex items-center gap-2.5">
+    <i data-lucide="search" class="w-4 h-4 text-zinc-500"></i>
+    <div>
+      <h1 class="text-[15px] font-semibold text-zinc-800">Edit SEO Setting</h1>
+      <p class="text-[12px] text-zinc-500"><%= @seo_setting.page_name.gsub('_', ' ').titleize %></p>
+    </div>
+  </div>
+  <%= link_to admin_seo_settings_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" do %>
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+    Back
+  <% end %>
+</div>
+
+<%= render 'form', seo_setting: @seo_setting %>

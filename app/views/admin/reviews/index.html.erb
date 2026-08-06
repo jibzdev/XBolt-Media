@@ -1,0 +1,67 @@
+<% content_for :page_title, "Reviews" %>
+<% content_for :page_description, "Manage client reviews displayed on the landing page" %>
+
+<div class="flex items-center justify-between mb-5">
+  <div>
+    <h2 class="text-[15px] font-semibold text-zinc-900">Client Reviews</h2>
+    <p class="text-[11px] text-zinc-400 mt-0.5"><%= @reviews.size %> review<%= @reviews.size == 1 ? '' : 's' %></p>
+  </div>
+  <%= link_to new_admin_review_path, class: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-[12px] font-medium hover:bg-zinc-800 transition" do %>
+    <i data-lucide="plus" class="w-3.5 h-3.5"></i>Add Review
+  <% end %>
+</div>
+
+<% if @reviews.any? %>
+  <div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+    <div class="divide-y divide-zinc-100">
+      <% @reviews.each do |review| %>
+        <div class="flex items-start gap-3.5 px-4 py-3.5 hover:bg-zinc-50/50 transition group xb-card-hover">
+          <% avatar = review.display_avatar_url %>
+          <% if avatar.present? %>
+            <img src="<%= avatar %>" alt="<%= review.reviewer_name %>" class="w-9 h-9 rounded-full object-cover border border-zinc-200 flex-shrink-0">
+          <% else %>
+            <div class="w-9 h-9 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+              <span class="text-[10px] font-semibold text-white"><%= review.initials %></span>
+            </div>
+          <% end %>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-[13px] font-medium text-zinc-800 truncate"><%= review.reviewer_name %></span>
+              <% if review.display_company.present? %>
+                <span class="text-[11px] text-zinc-400 truncate">&middot; <%= review.display_company %></span>
+              <% end %>
+              <% unless review.active? %>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-400">Hidden</span>
+              <% end %>
+            </div>
+            <div class="flex items-center gap-0.5 mt-0.5">
+              <% review.rating.times do %>
+                <i data-lucide="star" class="w-3 h-3 text-amber-400 fill-amber-400"></i>
+              <% end %>
+              <% (5 - review.rating).times do %>
+                <i data-lucide="star" class="w-3 h-3 text-zinc-200"></i>
+              <% end %>
+            </div>
+            <p class="text-[12px] text-zinc-500 mt-1 line-clamp-2"><%= review.review_text %></p>
+          </div>
+
+          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
+            <%= link_to edit_admin_review_path(review), class: "p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition" do %>
+              <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+            <% end %>
+            <%= link_to admin_review_path(review), method: :delete, class: "p-1.5 rounded-md text-zinc-400 hover:text-red-500 hover:bg-red-50 transition", data: { confirm_title: "Delete review?", confirm_message: "This will permanently remove the review from #{review.reviewer_name}.", turbo_method: :delete } do %>
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 text-center">
+    <i data-lucide="message-circle" class="w-8 h-8 text-zinc-200 mx-auto mb-2"></i>
+    <p class="text-[13px] text-zinc-500 font-medium">No reviews yet</p>
+    <p class="text-[11px] text-zinc-400 mt-0.5">Add reviews to display on the landing page.</p>
+  </div>
+<% end %>

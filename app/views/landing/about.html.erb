@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%= seo_meta_tags('about') %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #09090b; }
+        [data-anim] { opacity: 0; transform: translateY(36px); transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1), transform 0.85s cubic-bezier(0.16,1,0.3,1); }
+        [data-anim].is-visible { opacity: 1; transform: translateY(0); }
+        [data-stagger] > * { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+        [data-stagger].is-visible > *:nth-child(1) { transition-delay: 0s; } [data-stagger].is-visible > *:nth-child(2) { transition-delay: 0.1s; } [data-stagger].is-visible > *:nth-child(3) { transition-delay: 0.2s; }
+        [data-stagger].is-visible > * { opacity: 1; transform: translateY(0); }
+        .xb-grad-amber { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .xb-grad-white { background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .xb-glass {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            transition: border-color 0.4s ease, background 0.4s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s ease;
+        }
+        .xb-glass:hover {
+            background: rgba(251,191,36,0.04); border-color: rgba(251,191,36,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 24px 48px -16px rgba(0,0,0,0.5), 0 0 0 1px rgba(251,191,36,0.06);
+        }
+        .xb-sep { height: 1px; background: linear-gradient(90deg, transparent, rgba(251,191,36,0.12) 50%, transparent); }
+        @media (prefers-reduced-motion: reduce) { [data-anim], [data-stagger] > * { opacity: 1 !important; transform: none !important; transition: none !important; } .xb-glass:hover { transform: none !important; } }
+    </style>
+</head>
+<body class="text-white antialiased overflow-x-hidden">
+    <%= render 'landing/navbar' %>
+
+    <main>
+        <section class="pt-36 sm:pt-44 pb-20" style="background: #09090b;">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+                <div class="max-w-3xl mx-auto text-center mb-20" data-anim>
+                    <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-amber-500/70 mb-4">
+                        <span class="w-5 h-px bg-amber-500/40"></span> About <span class="w-5 h-px bg-amber-500/40"></span>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-[-0.04em] xb-grad-white">About XBolt Media</h1>
+                    <p class="mt-5 text-base sm:text-lg text-zinc-500 leading-relaxed max-w-xl mx-auto">
+                        We build premium web systems for modern businesses. Clean design, fast engineering, scalable architecture.
+                    </p>
+                </div>
+
+                <!-- Mission -->
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-start mb-24">
+                    <div data-anim>
+                        <h2 class="text-2xl font-bold text-white mb-5">Our Mission</h2>
+                        <p class="text-sm text-zinc-500 leading-relaxed mb-4">
+                            Every business deserves a website that works as hard as they do. We combine premium design with robust engineering to create digital experiences that convert visitors into customers.
+                        </p>
+                        <p class="text-sm text-zinc-500 leading-relaxed">
+                            Our multi-tenant platform lets us onboard clients quickly, manage multiple businesses efficiently, and deliver premium results at scale.
+                        </p>
+                    </div>
+                    <div class="space-y-4" data-anim style="transition-delay: 0.1s;">
+                        <div class="xb-glass rounded-xl p-5 flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/10 flex items-center justify-center flex-shrink-0"><i class='bx bx-rocket text-lg text-amber-400'></i></div>
+                            <div><h3 class="text-sm font-semibold text-white mb-0.5">Fast Delivery</h3><p class="text-xs text-zinc-500">Production-ready sites in days, not months.</p></div>
+                        </div>
+                        <div class="xb-glass rounded-xl p-5 flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/10 flex items-center justify-center flex-shrink-0"><i class='bx bx-palette text-lg text-amber-400'></i></div>
+                            <div><h3 class="text-sm font-semibold text-white mb-0.5">Premium Design</h3><p class="text-xs text-zinc-500">Clean UI that users love to interact with.</p></div>
+                        </div>
+                        <div class="xb-glass rounded-xl p-5 flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/10 flex items-center justify-center flex-shrink-0"><i class='bx bx-line-chart text-lg text-amber-400'></i></div>
+                            <div><h3 class="text-sm font-semibold text-white mb-0.5">Built to Scale</h3><p class="text-xs text-zinc-500">Architecture that grows with your business.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xb-sep mb-20"></div>
+
+                <!-- Values -->
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-12" data-anim>
+                        <h2 class="text-2xl sm:text-3xl font-bold xb-grad-white">What we stand for</h2>
+                    </div>
+                    <div class="grid sm:grid-cols-3 gap-4" data-stagger>
+                        <div class="xb-glass rounded-2xl p-6">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/10 flex items-center justify-center mb-4"><i class='bx bx-shield-quarter text-lg text-amber-400'></i></div>
+                            <h3 class="text-base font-semibold text-white mb-2">Quality First</h3>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Every line of code, every pixel, every interaction is crafted with care.</p>
+                        </div>
+                        <div class="xb-glass rounded-2xl p-6">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/10 flex items-center justify-center mb-4"><i class='bx bx-bulb text-lg text-amber-400'></i></div>
+                            <h3 class="text-base font-semibold text-white mb-2">Innovation</h3>
+                            <p class="text-sm text-zinc-500 leading-relaxed">We adopt new technologies that deliver real value to our clients.</p>
+                        </div>
+                        <div class="xb-glass rounded-2xl p-6">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/10 flex items-center justify-center mb-4"><i class='bx bx-heart text-lg text-amber-400'></i></div>
+                            <h3 class="text-base font-semibold text-white mb-2">Partnership</h3>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Your success is our success. We build long-term relationships.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xb-sep mt-24 mb-0"></div>
+
+                <!-- CTA -->
+                <div class="max-w-2xl mx-auto text-center mt-20" data-anim>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-[-0.02em]">
+                        <span class="xb-grad-white">Ready to work</span> <span class="xb-grad-amber">together?</span>
+                    </h2>
+                    <p class="mt-4 text-sm text-zinc-500 max-w-md mx-auto">Let's build something exceptional.</p>
+                    <div class="mt-8">
+                        <a href="<%= contact_path %>" class="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 text-zinc-950 text-sm font-bold hover:bg-amber-400 transition-all shadow-[0_0_24px_rgba(251,191,36,0.3)]">
+                            Start a conversation <i class='bx bx-right-arrow-alt text-base transition-transform group-hover:translate-x-1'></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <%= render 'landing/footer' %>
+    <%= javascript_include_tag "landing" %>
+    <%= render 'layouts/toast' %>
+</body>
+</html>

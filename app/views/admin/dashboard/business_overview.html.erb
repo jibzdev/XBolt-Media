@@ -1,0 +1,364 @@
+<% content_for :page_title, "Dashboard" %>
+<% content_for :page_description, "Your business analytics" %>
+
+<%
+  pv_change = percent_change(@page_views_24h, @prev_views_24h)
+  pv7_change = percent_change(@page_views_7d, @prev_views_7d)
+  uv_change = percent_change(@unique_visitors_24h, @prev_unique_24h)
+%>
+
+<style>
+  .apexcharts-tooltip { background: #fff !important; color: #18181b !important; border: 1px solid #e4e4e7 !important; box-shadow: 0 4px 12px -2px rgba(0,0,0,.12) !important; border-radius: 10px !important; }
+  .apexcharts-tooltip .apexcharts-tooltip-title { background: #f4f4f5 !important; color: #18181b !important; border-bottom: 1px solid #e4e4e7 !important; font-weight: 600 !important; }
+  .apexcharts-tooltip .apexcharts-tooltip-text,
+  .apexcharts-tooltip .apexcharts-tooltip-text-y-value,
+  .apexcharts-tooltip .apexcharts-tooltip-text-y-label,
+  .apexcharts-tooltip .apexcharts-tooltip-text-goals-label,
+  .apexcharts-tooltip .apexcharts-tooltip-text-goals-value,
+  .apexcharts-tooltip .apexcharts-tooltip-text-z-label,
+  .apexcharts-tooltip .apexcharts-tooltip-text-z-value { color: #18181b !important; }
+  .apexcharts-tooltip .apexcharts-tooltip-text-y-label { color: #52525b !important; }
+  .apexcharts-xaxistooltip { background: #18181b !important; color: #fff !important; border: none !important; border-radius: 8px !important; }
+  .apexcharts-xaxistooltip .apexcharts-xaxistooltip-text { color: #fff !important; }
+  .apexcharts-xaxistooltip::before, .apexcharts-xaxistooltip::after { border-bottom-color: #18181b !important; }
+</style>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 p-5 mb-5">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-zinc-900 flex items-center justify-center flex-shrink-0">
+        <span class="text-[13px] font-bold text-white"><%= @business.name.first.upcase %></span>
+      </div>
+      <div>
+        <h2 class="text-[15px] font-semibold text-zinc-800"><%= @business.name %></h2>
+        <div class="text-[12px] text-zinc-400 font-mono mt-0.5"><%= @business.full_subdomain %></div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <% if @site_deployed %>
+        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Live
+        </span>
+      <% else %>
+        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-amber-50 text-amber-700 text-[11px] font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+          Under construction
+        </span>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="flex items-center justify-between mb-2">
+      <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+        <i data-lucide="eye" class="w-3.5 h-3.5 text-blue-600"></i>
+      </div>
+      <% if pv_change != 0 %>
+        <span class="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded <%= pv_change > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600' %>">
+          <i data-lucide="trending-<%= pv_change > 0 ? 'up' : 'down' %>" class="w-3 h-3"></i>
+          <%= pv_change.abs %>%
+        </span>
+      <% end %>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@page_views_24h) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Page Views <span class="text-zinc-300">(24h)</span></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="flex items-center justify-between mb-2">
+      <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+        <i data-lucide="user" class="w-3.5 h-3.5 text-violet-600"></i>
+      </div>
+      <% if uv_change != 0 %>
+        <span class="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded <%= uv_change > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600' %>">
+          <i data-lucide="trending-<%= uv_change > 0 ? 'up' : 'down' %>" class="w-3 h-3"></i>
+          <%= uv_change.abs %>%
+        </span>
+      <% end %>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@unique_visitors_24h) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Unique Visitors <span class="text-zinc-300">(24h)</span></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="flex items-center justify-between mb-2">
+      <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-amber-600"></i>
+      </div>
+      <% if pv7_change != 0 %>
+        <span class="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded <%= pv7_change > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600' %>">
+          <i data-lucide="trending-<%= pv7_change > 0 ? 'up' : 'down' %>" class="w-3 h-3"></i>
+          <%= pv7_change.abs %>%
+        </span>
+      <% end %>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@page_views_7d) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Page Views <span class="text-zinc-300">(7d)</span></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="flex items-center justify-between mb-2">
+      <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+        <i data-lucide="calendar" class="w-3.5 h-3.5 text-emerald-600"></i>
+      </div>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@page_views_30d) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Page Views <span class="text-zinc-300">(30d)</span></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center mb-2">
+      <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-600"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@phone_clicks_7d) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Phone Clicks <span class="text-zinc-300">(7d)</span></div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center mb-2">
+      <i data-lucide="phone-call" class="w-3.5 h-3.5 text-green-600"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@phone_clicks_30d) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Phone Clicks <span class="text-zinc-300">(30d)</span></div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-2">
+      <i data-lucide="mail" class="w-3.5 h-3.5 text-blue-600"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@contact_submits_7d) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Contact Forms <span class="text-zinc-300">(7d)</span></div>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center mb-2">
+      <i data-lucide="send" class="w-3.5 h-3.5 text-indigo-600"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@contact_submits_30d) %></div>
+    <div class="text-[12px] text-zinc-400 mt-0.5">Contact Forms <span class="text-zinc-300">(30d)</span></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-3 mb-5">
+  <div class="xl:col-span-2 bg-white rounded-xl border border-zinc-200/70 p-4">
+    <div class="flex items-center justify-between mb-1">
+      <div>
+        <h3 class="text-[13px] font-medium text-zinc-700">Hourly Views</h3>
+        <p class="text-[11px] text-zinc-400 mt-0.5">Last 24 hours</p>
+      </div>
+      <div class="text-right">
+        <div class="text-[15px] font-semibold text-zinc-800"><%= number_with_delimiter(@page_views_24h) %></div>
+        <div class="text-[11px] text-zinc-400">today</div>
+      </div>
+    </div>
+    <div id="hourlyChart" class="mt-2" style="height: 260px;"></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <div class="flex items-center justify-between mb-1">
+      <div>
+        <h3 class="text-[13px] font-medium text-zinc-700">7-Day Trend</h3>
+        <p class="text-[11px] text-zinc-400 mt-0.5">Daily page views</p>
+      </div>
+    </div>
+    <div id="weeklyChart" class="mt-2" style="height: 260px;"></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5">Devices</h3>
+    <p class="text-[11px] text-zinc-400 mb-3">Last 7 days</p>
+    <% if @device_breakdown.present? && @device_breakdown.values.sum > 0 %>
+      <div id="deviceChart" style="height: 200px;"></div>
+    <% else %>
+      <div class="flex items-center justify-center h-[200px] text-[13px] text-zinc-400">No device data yet</div>
+    <% end %>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5">Browsers</h3>
+    <p class="text-[11px] text-zinc-400 mb-3">Last 7 days</p>
+    <% if @browser_breakdown.present? && @browser_breakdown.values.sum > 0 %>
+      <div id="browserChart" style="height: 200px;"></div>
+    <% else %>
+      <div class="flex items-center justify-center h-[200px] text-[13px] text-zinc-400">No browser data yet</div>
+    <% end %>
+  </div>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5">Operating Systems</h3>
+    <p class="text-[11px] text-zinc-400 mb-3">Last 7 days</p>
+    <% if @os_breakdown.present? && @os_breakdown.values.sum > 0 %>
+      <div id="osChart" style="height: 200px;"></div>
+    <% else %>
+      <div class="flex items-center justify-center h-[200px] text-[13px] text-zinc-400">No OS data yet</div>
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5">Top Pages</h3>
+    <p class="text-[11px] text-zinc-400 mb-3">Last 7 days</p>
+    <% if @top_pages.present? %>
+      <% max_val = @top_pages.values.max.to_f %>
+      <div class="space-y-2.5">
+        <% @top_pages.each do |path, count| %>
+          <div>
+            <div class="flex items-center justify-between mb-0.5">
+              <span class="text-[12px] text-zinc-600 font-mono truncate max-w-[70%]"><%= path %></span>
+              <span class="text-[12px] font-medium text-zinc-500 tabular-nums"><%= number_with_delimiter(count) %></span>
+            </div>
+            <div class="w-full bg-zinc-100 rounded-full h-1">
+              <div class="bg-zinc-700 h-1 rounded-full transition-all duration-500" style="width: <%= max_val > 0 ? (count / max_val * 100).round(1) : 0 %>%"></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-[13px] text-zinc-400 py-6 text-center">No page data yet</div>
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5">Traffic Sources</h3>
+    <p class="text-[11px] text-zinc-400 mb-3">Last 7 days</p>
+    <% if @top_referrers.present? %>
+      <% max_ref = @top_referrers.values.max.to_f %>
+      <div class="space-y-2.5">
+        <% @top_referrers.each do |domain, count| %>
+          <div>
+            <div class="flex items-center justify-between mb-0.5">
+              <span class="text-[12px] text-zinc-600 truncate max-w-[70%]"><%= domain.presence || 'Direct / None' %></span>
+              <span class="text-[12px] font-medium text-zinc-500 tabular-nums"><%= number_with_delimiter(count) %></span>
+            </div>
+            <div class="w-full bg-zinc-100 rounded-full h-1">
+              <div class="bg-violet-500 h-1 rounded-full transition-all duration-500" style="width: <%= max_ref > 0 ? (count / max_ref * 100).round(1) : 0 %>%"></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-[13px] text-zinc-400 py-6 text-center">No referrer data yet</div>
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4">
+    <h3 class="text-[13px] font-medium text-zinc-700 mb-0.5">Countries</h3>
+    <p class="text-[11px] text-zinc-400 mb-3">Last 7 days</p>
+    <% if @country_breakdown.present? %>
+      <% max_cc = @country_breakdown.values.max.to_f %>
+      <div class="space-y-2.5">
+        <% @country_breakdown.each do |cc, count| %>
+          <div>
+            <div class="flex items-center justify-between mb-0.5">
+              <div class="flex items-center gap-1.5">
+                <% code = (cc.presence || 'XX').upcase %>
+                <span class="text-sm leading-none"><%= code.chars.map { |c| (c.ord + 127397).chr('UTF-8') }.join rescue '--' %></span>
+                <span class="text-[12px] text-zinc-600"><%= code == 'XX' ? 'Unknown' : code %></span>
+              </div>
+              <span class="text-[12px] font-medium text-zinc-500 tabular-nums"><%= number_with_delimiter(count) %></span>
+            </div>
+            <div class="w-full bg-zinc-100 rounded-full h-1">
+              <div class="bg-zinc-900 h-1 rounded-full transition-all duration-500" style="width: <%= max_cc > 0 ? (count / max_cc * 100).round(1) : 0 %>%"></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-[13px] text-zinc-400 py-6 text-center">No country data yet</div>
+    <% end %>
+  </div>
+</div>
+
+<div class="bg-zinc-50 border border-zinc-200/70 rounded-xl p-4 flex items-center gap-3">
+  <div class="w-8 h-8 rounded-lg bg-zinc-200 flex items-center justify-center flex-shrink-0">
+    <i data-lucide="help-circle" class="w-3.5 h-3.5 text-zinc-500"></i>
+  </div>
+  <div>
+    <p class="text-[13px] font-medium text-zinc-700">Need changes to your site or access?</p>
+    <p class="text-[11px] text-zinc-400 mt-0.5">Contact an administrator for support.</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const s = getComputedStyle(document.documentElement);
+  const primary = (s.getPropertyValue('--xbolt-primary') || '#18181b').trim();
+  const textMuted = (s.getPropertyValue('--xbolt-text-muted') || '#52525b').trim();
+  const border = (s.getPropertyValue('--xbolt-border') || '#e4e4e7').trim();
+
+  const sharedAxis = {
+    labels: { style: { colors: textMuted, fontSize: '11px', fontWeight: 500 } },
+    axisBorder: { show: false },
+    axisTicks: { show: false }
+  };
+
+  const sharedGrid = { borderColor: border, strokeDashArray: 4, padding: { top: -8, right: 0, bottom: -8, left: 0 } };
+
+  const hourCats = <%= raw(@views_by_hour.keys.map { |t| t.strftime('%H:%M') }.to_json) %>;
+  const hourData = <%= raw(@views_by_hour.values.to_json) %>;
+
+  new ApexCharts(document.querySelector("#hourlyChart"), {
+    chart: { type: 'area', height: 260, fontFamily: 'Inter, system-ui, sans-serif', toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 600 } },
+    series: [{ name: 'Views', data: hourData }],
+    xaxis: { ...sharedAxis, categories: hourCats, tickAmount: 12 },
+    yaxis: { ...sharedAxis, labels: { ...sharedAxis.labels, formatter: v => Math.round(v) } },
+    tooltip: { theme: false, style: { fontSize: '13px' }, x: { show: true }, y: { title: { formatter: () => 'Views:' } } },
+    colors: [primary],
+    fill: { type: 'gradient', gradient: { type: 'vertical', opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 100] } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2.5 },
+    grid: sharedGrid,
+    markers: { size: 0, hover: { size: 5 } }
+  }).render();
+
+  const dayCats = <%= raw(@views_by_day.keys.map { |d| d.strftime('%b %d') }.to_json) %>;
+  const dayData = <%= raw(@views_by_day.values.to_json) %>;
+
+  new ApexCharts(document.querySelector("#weeklyChart"), {
+    chart: { type: 'bar', height: 260, fontFamily: 'Inter, system-ui, sans-serif', toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 600 } },
+    series: [{ name: 'Views', data: dayData }],
+    plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
+    xaxis: { ...sharedAxis, categories: dayCats },
+    yaxis: { ...sharedAxis, labels: { ...sharedAxis.labels, formatter: v => Math.round(v) } },
+    tooltip: { theme: false, style: { fontSize: '13px' }, y: { title: { formatter: () => 'Views:' } } },
+    colors: [primary],
+    fill: { type: 'gradient', gradient: { type: 'vertical', opacityFrom: 1, opacityTo: 0.85, stops: [0, 100] } },
+    dataLabels: { enabled: false },
+    grid: sharedGrid
+  }).render();
+
+  const palette = ['#18181b', '#6366f1', '#8b5cf6', '#0ea5e9', '#f59e0b', '#ef4444', '#10b981', '#ec4899'];
+
+  function renderDonut(el, rawData) {
+    const labels = Object.keys(rawData).map(k => k || 'Unknown');
+    const series = Object.values(rawData);
+    if (!series.length) return;
+
+    new ApexCharts(document.querySelector(el), {
+      chart: { type: 'donut', height: 200, fontFamily: 'Inter, system-ui, sans-serif', animations: { enabled: true, speed: 600 } },
+      labels: labels,
+      series: series,
+      colors: palette.slice(0, labels.length),
+      stroke: { width: 2, colors: ['#fff'] },
+      plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total', fontSize: '13px', fontWeight: 600, color: '#71717a', formatter: w => w.globals.seriesTotals.reduce((a, b) => a + b, 0) } } } } },
+      legend: { position: 'bottom', fontSize: '12px', fontWeight: 500, markers: { width: 8, height: 8, radius: 4 }, itemMargin: { horizontal: 8 } },
+      dataLabels: { enabled: false },
+      tooltip: { theme: false, style: { fontSize: '13px' } }
+    }).render();
+  }
+
+  <% if @device_breakdown.present? && @device_breakdown.values.sum > 0 %>
+    renderDonut('#deviceChart', <%= raw(@device_breakdown.to_json) %>);
+  <% end %>
+  <% if @browser_breakdown.present? && @browser_breakdown.values.sum > 0 %>
+    renderDonut('#browserChart', <%= raw(@browser_breakdown.to_json) %>);
+  <% end %>
+  <% if @os_breakdown.present? && @os_breakdown.values.sum > 0 %>
+    renderDonut('#osChart', <%= raw(@os_breakdown.to_json) %>);
+  <% end %>
+});
+</script>

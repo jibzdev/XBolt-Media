@@ -1,0 +1,146 @@
+<% content_for :page_title, "User Management" %>
+<% content_for :page_description, "Manage user accounts and permissions" %>
+
+<div class="flex items-center justify-end mb-5">
+  <% if current_user&.full_admin? %>
+    <%= link_to new_admin_user_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+      <span>New User</span>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Total Users</span>
+      <i data-lucide="users" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @users.total_count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Verified</span>
+      <i data-lucide="check-circle" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= User.where(status: 'verified').count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Unverified</span>
+      <i data-lucide="clock" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= User.where(status: 'unverified').count %></div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover xb-stat-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[11px] text-zinc-400">Staff</span>
+      <i data-lucide="crown" class="w-3.5 h-3.5 text-zinc-300"></i>
+    </div>
+    <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= User.where(admin: true).count %></div>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 p-4 mb-5">
+  <div class="flex flex-col sm:flex-row gap-3">
+    <div class="relative flex-1">
+      <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+      <input type="text" placeholder="Search users..." class="w-full pl-9 pr-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300">
+    </div>
+    <select class="px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300">
+      <option value="">All Status</option>
+      <option value="verified">Verified</option>
+      <option value="unverified">Unverified</option>
+    </select>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-zinc-200/70 overflow-hidden">
+  <% if @users.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-zinc-100">
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">User</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Status</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Role</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Joined</th>
+            <th class="px-4 py-3 text-left text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-100">
+          <% @users.each do |user| %>
+            <tr class="hover:bg-zinc-50/50 transition-colors xb-row-hover">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-medium text-[11px]"><%= user.username.first.upcase %></span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-[13px] font-medium text-zinc-800 truncate"><%= user.username %></div>
+                    <div class="text-[11px] text-zinc-400">ID: <%= user.id %></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <% if user.status == 'verified' %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700">
+                    <i data-lucide="check" class="w-3 h-3"></i>Verified
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700">
+                    <i data-lucide="clock" class="w-3 h-3"></i>Unverified
+                  </span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium <%= user.staff_admin? ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600' %>">
+                  <% if user.staff_admin? %><i data-lucide="crown" class="w-3 h-3"></i><% end %><%= user.admin_role_label %>
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-[13px] text-zinc-600"><%= user.created_at.strftime("%b %d, %Y") %></span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-1">
+                  <a href="<%= admin_user_path(user) %>" class="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg transition" title="View Details">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </a>
+                  <% if current_user&.full_admin? %>
+                    <a href="<%= edit_admin_user_path(user) %>" class="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg transition" title="Edit User">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </a>
+                  <% end %>
+                  <% if current_user&.full_admin? && user != current_user %>
+                    <%= button_to admin_user_path(user), method: :delete,
+                        data: { turbo_confirm: 'Are you sure you want to delete this user? This action cannot be undone.' },
+                        class: "p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition bg-transparent border-0",
+                        title: "Delete User",
+                        form: { style: 'display: inline;' } do %>
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <% end %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @users.respond_to?(:current_page) %>
+      <div class="px-4 py-3 border-t border-zinc-100">
+        <%= paginate @users %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-12">
+      <i data-lucide="user-x" class="w-7 h-7 text-zinc-200 mx-auto mb-1.5"></i>
+      <p class="text-[13px] font-medium text-zinc-500">No users found</p>
+      <p class="text-[12px] text-zinc-400 mt-0.5">No users match your current search criteria</p>
+    </div>
+  <% end %>
+</div>

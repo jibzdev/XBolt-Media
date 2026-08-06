@@ -1,0 +1,223 @@
+<%= form_with(model: [:admin, seo_setting], local: true, class: "space-y-5") do |f| %>
+  <% if seo_setting.errors.any? %>
+    <div class="bg-red-50 border border-red-200/70 rounded-lg px-3.5 py-2.5">
+      <div class="flex gap-2">
+        <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0"></i>
+        <div>
+          <h3 class="text-[13px] font-medium text-red-700">
+            <%= pluralize(seo_setting.errors.count, "error") %> prohibited this SEO setting from being saved:
+          </h3>
+          <ul class="mt-1.5 list-disc pl-4 space-y-0.5">
+            <% seo_setting.errors.full_messages.each do |message| %>
+              <li class="text-[12px] text-red-600"><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="search" class="w-4 h-4 text-zinc-500"></i>
+      <h3 class="text-[13px] font-semibold text-zinc-800">Basic SEO Information</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div>
+        <%= f.label :page_name, "Page Name", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.select :page_name,
+            options_for_select([
+              ['Landing Page', 'landing'],
+              ['Login Page', 'login'],
+              ['Register Page', 'register'],
+              ['Terms of Service', 'terms_of_service'],
+              ['Privacy Policy', 'privacy_policy']
+            ], seo_setting.page_name),
+            { prompt: 'Select a page' },
+            { class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" } %>
+      </div>
+
+      <div>
+        <%= f.label :author, "Author", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :author, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+      </div>
+
+      <div>
+        <%= f.label :title, "Page Title", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <div class="relative">
+          <%= f.text_field :title, maxlength: 60, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 pr-14" %>
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-zinc-400">
+            <%= (seo_setting.title&.length || 0) %>/60
+          </div>
+        </div>
+        <p class="text-[11px] text-zinc-400 mt-1">Recommended: 50-60 characters</p>
+      </div>
+
+      <div>
+        <%= f.label :robots, "Robots Directive", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.select :robots,
+            options_for_select([
+              ['index, follow', 'index, follow'],
+              ['noindex, follow', 'noindex, follow'],
+              ['index, nofollow', 'index, nofollow'],
+              ['noindex, nofollow', 'noindex, nofollow']
+            ], seo_setting.robots),
+            {},
+            { class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" } %>
+      </div>
+
+      <div class="md:col-span-2">
+        <%= f.label :description, "Meta Description", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <div class="relative">
+          <%= f.text_area :description, maxlength: 160, rows: 3, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none" %>
+          <div class="absolute right-3 bottom-2.5 text-[11px] text-zinc-400">
+            <%= (seo_setting.description&.length || 0) %>/160
+          </div>
+        </div>
+        <p class="text-[11px] text-zinc-400 mt-1">Recommended: 150-160 characters</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <%= f.label :keywords, "Keywords", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :keywords, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Separate keywords with commas</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="share-2" class="w-4 h-4 text-zinc-500"></i>
+      <h3 class="text-[13px] font-semibold text-zinc-800">Open Graph (Facebook)</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div>
+        <%= f.label :og_type, "Content Type", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.select :og_type,
+            options_for_select([
+              ['website', 'website'],
+              ['article', 'article'],
+              ['product', 'product'],
+              ['profile', 'profile']
+            ], seo_setting.og_type),
+            {},
+            { class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" } %>
+      </div>
+
+      <div>
+        <%= f.label :og_url, "Canonical URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :og_url, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+      </div>
+
+      <div>
+        <%= f.label :og_title, "OG Title", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :og_title, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Leave blank to use page title</p>
+      </div>
+
+      <div>
+        <%= f.label :og_image, "OG Image URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :og_image, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Recommended: 1200x630px</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <%= f.label :og_description, "OG Description", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_area :og_description, rows: 3, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Leave blank to use meta description</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="twitter" class="w-4 h-4 text-zinc-500"></i>
+      <h3 class="text-[13px] font-semibold text-zinc-800">Twitter Card</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div>
+        <%= f.label :twitter_card, "Card Type", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.select :twitter_card,
+            options_for_select([
+              ['summary', 'summary'],
+              ['summary_large_image', 'summary_large_image'],
+              ['app', 'app'],
+              ['player', 'player']
+            ], seo_setting.twitter_card),
+            {},
+            { class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" } %>
+      </div>
+
+      <div>
+        <%= f.label :twitter_url, "Twitter URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :twitter_url, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+      </div>
+
+      <div>
+        <%= f.label :twitter_title, "Twitter Title", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :twitter_title, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Leave blank to use page title</p>
+      </div>
+
+      <div>
+        <%= f.label :twitter_image, "Twitter Image URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :twitter_image, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Recommended: 1200x600px</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <%= f.label :twitter_description, "Twitter Description", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_area :twitter_description, rows: 3, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Leave blank to use meta description</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="settings" class="w-4 h-4 text-zinc-500"></i>
+      <h3 class="text-[13px] font-semibold text-zinc-800">Additional Settings</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div>
+        <%= f.label :favicon_url, "Favicon URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :favicon_url, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Recommended: 32x32px or 16x16px</p>
+      </div>
+
+      <div>
+        <%= f.label :apple_touch_icon_url, "Apple Touch Icon URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :apple_touch_icon_url, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Recommended: 180x180px</p>
+      </div>
+
+      <div>
+        <%= f.label :canonical_url, "Canonical URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_field :canonical_url, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+        <p class="text-[11px] text-zinc-400 mt-1">Preferred URL for this page</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <%= f.label :structured_data, "Structured Data (JSON-LD)", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+        <%= f.text_area :structured_data, rows: 6, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none font-mono" %>
+        <p class="text-[11px] text-zinc-400 mt-1">JSON-LD structured data for rich snippets</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between pt-2">
+    <%= link_to admin_seo_settings_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" do %>
+      <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+      Back
+    <% end %>
+
+    <div class="flex items-center gap-2">
+      <%= link_to "Cancel", admin_seo_settings_path, class: "px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" %>
+      <%= f.submit (seo_setting.persisted? ? 'Update SEO Settings' : 'Create SEO Settings'), class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer" %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%= seo_meta_tags('contact') %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #09090b; }
+        [data-anim] { opacity: 0; transform: translateY(36px); transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1), transform 0.85s cubic-bezier(0.16,1,0.3,1); }
+        [data-anim].is-visible { opacity: 1; transform: translateY(0); }
+        .xb-grad-amber { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .xb-grad-white { background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .xb-input { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #fff; transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; }
+        .xb-input::placeholder { color: rgba(255,255,255,0.25); }
+        .xb-input:focus { outline: none; border-color: rgba(251,191,36,0.3); box-shadow: 0 0 0 3px rgba(251,191,36,0.08); background: rgba(255,255,255,0.06); }
+        .xb-sep { height: 1px; background: linear-gradient(90deg, transparent, rgba(251,191,36,0.12) 50%, transparent); }
+        @media (prefers-reduced-motion: reduce) { [data-anim] { opacity: 1 !important; transform: none !important; transition: none !important; } }
+    </style>
+</head>
+<body class="text-white antialiased overflow-x-hidden">
+    <%= render 'landing/navbar' %>
+
+    <main>
+        <section class="pt-36 sm:pt-44 pb-24" style="background: #09090b;">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+                <div class="max-w-3xl mx-auto text-center mb-16" data-anim>
+                    <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-amber-500/70 mb-4">
+                        <span class="w-5 h-px bg-amber-500/40"></span> Contact <span class="w-5 h-px bg-amber-500/40"></span>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-[-0.04em] xb-grad-white">Get in touch</h1>
+                    <p class="mt-5 text-base sm:text-lg text-zinc-500 max-w-lg mx-auto">Have a project in mind? Let's talk.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-5 gap-10 lg:gap-14 max-w-5xl mx-auto">
+
+                    <div class="lg:col-span-2 space-y-8" data-anim>
+                        <% contact_email = @general_setting&.contact_email || 'info@xboltmedia.com' %>
+                        <% phone_number = @general_setting&.phone_number || '+447459731426' %>
+
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-amber-500/50 font-semibold mb-2">Email</div>
+                            <a href="mailto:<%= contact_email %>" class="text-base font-semibold text-white hover:text-amber-400 transition break-all"><%= contact_email %></a>
+                        </div>
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-amber-500/50 font-semibold mb-2">Phone</div>
+                            <a href="tel:<%= phone_number %>" class="text-base font-semibold text-white hover:text-amber-400 transition"><%= phone_number %></a>
+                        </div>
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-amber-500/50 font-semibold mb-2">Location</div>
+                            <p class="text-sm text-zinc-500 leading-relaxed">XBolt Media LTD<br>Portsmouth, Hampshire<br>United Kingdom</p>
+                        </div>
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.18em] text-amber-500/50 font-semibold mb-2">Hours</div>
+                            <div class="text-sm text-zinc-500 space-y-1">
+                                <div class="flex justify-between max-w-[200px]"><span>Mon – Fri</span><span class="text-white font-medium">9 – 6pm</span></div>
+                                <div class="flex justify-between max-w-[200px]"><span>Saturday</span><span class="text-white font-medium">10 – 4pm</span></div>
+                                <div class="flex justify-between max-w-[200px]"><span>Sunday</span><span class="text-zinc-600">Closed</span></div>
+                            </div>
+                        </div>
+
+                        <%= render 'landing/social_links', wrapper_class: 'pt-2' %>
+                    </div>
+
+                    <div class="lg:col-span-3" data-anim style="transition-delay: 0.1s;">
+                        <div class="rounded-2xl border border-amber-500/[0.08] bg-white/[0.02] backdrop-blur p-6 sm:p-8">
+                            <h2 class="text-lg font-bold text-white mb-6">Send a message</h2>
+
+                            <%= form_with url: contact_submit_path, method: :post, local: true, class: "space-y-4" do |form| %>
+                                <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+                                    <%= form.label :website, "Leave this field empty" %>
+                                    <%= form.text_field :website, autocomplete: "off", tabindex: -1 %>
+                                </div>
+                                <%= form.hidden_field :form_t, value: Time.current.to_i %>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <%= form.label :name, "Name", class: "block text-xs font-medium text-zinc-500 mb-1.5" %>
+                                        <%= form.text_field :name, required: true, placeholder: "Your name", class: "xb-input w-full px-3.5 py-2.5 text-sm rounded-xl" %>
+                                    </div>
+                                    <div>
+                                        <%= form.label :email, "Email", class: "block text-xs font-medium text-zinc-500 mb-1.5" %>
+                                        <%= form.email_field :email, required: true, placeholder: "you@example.com", class: "xb-input w-full px-3.5 py-2.5 text-sm rounded-xl" %>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <%= form.label :phone, "Phone (optional)", class: "block text-xs font-medium text-zinc-500 mb-1.5" %>
+                                    <%= form.telephone_field :phone, placeholder: "+44 1234 567890", class: "xb-input w-full px-3.5 py-2.5 text-sm rounded-xl" %>
+                                </div>
+
+                                <div>
+                                    <%= form.label :message, "Message", class: "block text-xs font-medium text-zinc-500 mb-1.5" %>
+                                    <%= form.text_area :message, required: true, rows: 5, placeholder: "Tell us about your project...", class: "xb-input w-full px-3.5 py-2.5 text-sm rounded-xl resize-none" %>
+                                </div>
+
+                                <%= form.submit "Send message", class: "w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold py-3 px-6 text-sm rounded-xl transition cursor-pointer shadow-[0_0_20px_rgba(251,191,36,0.2)]" %>
+                            <% end %>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%= render 'landing/footer' %>
+    <%= javascript_include_tag "landing" %>
+    <%= render 'layouts/toast' %>
+</body>
+</html>

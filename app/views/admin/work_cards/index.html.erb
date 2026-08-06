@@ -1,0 +1,52 @@
+<% content_for :page_title, "Work Cards" %>
+<% content_for :page_description, "Manage external showcase cards for the Work page" %>
+
+<div class="flex items-center justify-between mb-5">
+  <p class="text-[12px] text-zinc-500">These cards are for external businesses not tied to tenants.</p>
+  <%= link_to new_admin_work_card_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+    New Card
+  <% end %>
+</div>
+
+<% if @work_cards.any? %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+    <% @work_cards.each do |card| %>
+      <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <h3 class="text-[13px] font-semibold text-zinc-800 truncate"><%= card.name %></h3>
+            <div class="text-[11px] font-mono text-zinc-400 truncate mt-0.5"><%= card.domain_url %></div>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-medium flex-shrink-0 <%= card.active? ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-500' %>">
+            <%= card.active? ? "Active" : "Hidden" %>
+          </span>
+        </div>
+
+        <p class="text-[12px] text-zinc-500 mt-2.5 line-clamp-3"><%= card.description.presence || "No description" %></p>
+        <div class="text-[11px] text-zinc-400 mt-1.5">Position: <%= card.position %></div>
+
+        <div class="mt-3 flex items-center gap-2">
+          <%= link_to edit_admin_work_card_path(card), class: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200/70 text-zinc-600 text-[12px] font-medium hover:bg-zinc-50 transition" do %>
+            <i data-lucide="pencil" class="w-3 h-3"></i>Edit
+          <% end %>
+          <%= button_to admin_work_card_path(card), method: :delete, form: { data: { turbo_confirm: "Delete this work card?" } }, class: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200/70 text-[12px] font-medium hover:bg-red-100 transition" do %>
+            <i data-lucide="trash-2" class="w-3 h-3"></i>Delete
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-12 text-center">
+    <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-zinc-100 mb-3">
+      <i data-lucide="layers" class="w-4 h-4 text-zinc-400"></i>
+    </div>
+    <h3 class="text-[13px] font-semibold text-zinc-800 mb-1">No work cards yet</h3>
+    <p class="text-[12px] text-zinc-500 mb-4">Create cards for external businesses to display on the Work page.</p>
+    <%= link_to new_admin_work_card_path, class: "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+      Create Card
+    <% end %>
+  </div>
+<% end %>

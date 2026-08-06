@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><%= @login_seo&.title || @general_setting.application_name %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: #09090b; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #fff; }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+
+    <div class="fixed inset-0 -z-10" style="background: radial-gradient(ellipse at 50% 30%, rgba(251,191,36,0.06) 0%, transparent 60%)"></div>
+
+    <nav class="relative z-50 px-4 sm:px-6 py-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="flex items-center justify-between">
+                <a href="<%= root_path %>" class="flex items-center gap-3">
+                    <img src="<%= brand_logo_url %>" alt="Logo" class="w-10 h-7 object-contain">
+                    <span class="text-sm font-semibold tracking-tight text-white">XBolt <span class="text-zinc-500 font-medium">Media</span></span>
+                </a>
+                <a href="<%= root_path %>" class="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-amber-400 transition-colors">
+                    <i class='bx bx-arrow-back'></i>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="relative z-10 min-h-[calc(100vh-100px)] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+        <div class="w-full max-w-md">
+            <div class="bg-white/[0.03] border border-white/[0.06] backdrop-blur-xl rounded-2xl p-8 sm:p-10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.5)]">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/15 mb-6">
+                        <img src="<%= brand_favicon_url %>" alt="Logo" class="w-8 h-8 object-contain">
+                    </div>
+                    <h1 class="text-2xl font-bold tracking-tight text-white mb-1.5">Welcome back</h1>
+                    <p class="text-sm text-zinc-500">Sign in to <%= @general_setting.application_name %></p>
+                </div>
+
+                <%= form_with url: login_path, method: :post, local: true, class: "space-y-5" do |form| %>
+                    <%= form.hidden_field :authenticity_token, value: form_authenticity_token %>
+
+                    <div class="space-y-1.5">
+                        <%= form.label :username, "Username", class: "block text-sm font-medium text-zinc-400" %>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class='bx bx-user text-zinc-600'></i>
+                            </div>
+                            <%= form.text_field :username,
+                                required: true,
+                                placeholder: "username",
+                                class: "w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all text-sm" %>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <%= form.label :password, "Password", class: "block text-sm font-medium text-zinc-400" %>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class='bx bx-lock-alt text-zinc-600'></i>
+                            </div>
+                            <%= form.password_field :password,
+                                required: true,
+                                placeholder: "Enter your password",
+                                class: "w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all text-sm" %>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-sm">
+                        <div class="flex items-center">
+                            <%= form.check_box :remember_me, class: "h-3.5 w-3.5 text-amber-500 bg-transparent border-white/15 rounded focus:ring-amber-500/40" %>
+                            <%= form.label :remember_me, "Remember me", class: "ml-2 text-zinc-500 text-xs" %>
+                        </div>
+                        <a href="<%= forgot_password_path %>" class="text-xs text-zinc-500 hover:text-amber-400 transition-colors">Forgot password?</a>
+                    </div>
+
+                    <%= form.submit "Sign in",
+                        class: "w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold py-2.5 px-6 rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(251,191,36,0.25)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] text-sm cursor-pointer",
+                        data: { turbo: false } %>
+                <% end %>
+
+                <div class="text-center mt-6">
+                    <p class="text-xs text-zinc-600">Need access? Contact an administrator.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%= render 'layouts/toast' if defined?(render) %>
+</body>
+</html>

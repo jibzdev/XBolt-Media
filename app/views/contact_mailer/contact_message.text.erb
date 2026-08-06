@@ -1,0 +1,11 @@
+New message from the contact form
+
+Name: <%= @name %>
+Email: <%= @email %>
+<% if @phone.present? %>
+Phone: <%= @phone %>
+<% end %>
+
+Message:
+<%= @message %>
+

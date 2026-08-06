@@ -1,0 +1,595 @@
+<% primary_rgb = @theme[:primary].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<% accent_rgb  = @theme[:accent].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= @demo.site_title %></title>
+    <meta name="description" content="<%= @demo.hero_subheading %>">
+    <meta name="theme-color" content="<%= @theme[:primary] %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Raleway:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: { primary: '<%= @theme[:primary] %>', accent: '<%= @theme[:accent] %>' },
+                fontFamily: { heading: ['Playfair Display', 'serif'], sans: ['Raleway', 'sans-serif'] }
+            }}
+        }
+    </script>
+    <style>
+        :root {
+            --p: <%= @theme[:primary] %>;
+            --a: <%= @theme[:accent] %>;
+            --bg: <%= @theme[:bg] %>;
+            --p-rgb: <%= primary_rgb %>;
+            --a-rgb: <%= accent_rgb %>;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Raleway', sans-serif; background: var(--bg); color: #ddd8d3; overflow-x: hidden; font-weight: 300; }
+        h1,h2,h3,h4,h5 { font-family: 'Playfair Display', serif; font-weight: 500; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: rgba(var(--p-rgb), 0.3); }
+        ::selection { background: rgba(var(--p-rgb), 0.25); color: #fff; }
+
+        #navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; transition: all 0.4s ease; border-bottom: 1px solid transparent; }
+        #navbar.scrolled { background: rgba(0,0,0,0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom-color: rgba(var(--p-rgb), 0.1); }
+        .nav-link { color: rgba(255,255,255,0.5); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; transition: color 0.3s; }
+        .nav-link:hover { color: var(--p); }
+
+        #mobile-menu { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.96); backdrop-filter: blur(24px); flex-direction: column; align-items: center; justify-content: center; gap: 1.8rem; }
+        #mobile-menu.open { display: flex; }
+        #mobile-menu a { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.5rem; text-decoration: none; transition: color 0.3s; letter-spacing: 0.04em; }
+        #mobile-menu a:hover { color: var(--p); }
+
+        .btn-reserve { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.85rem 2.2rem; background: var(--p); color: #fff; font-weight: 500; font-size: 0.8rem; letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase; transition: all 0.3s; border: none; cursor: pointer; }
+        .btn-reserve:hover { background: var(--a); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(var(--p-rgb), 0.3); }
+        .btn-ghost { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.85rem 2.2rem; background: transparent; color: #fff; font-weight: 400; font-size: 0.8rem; letter-spacing: 0.1em; border: 1px solid rgba(var(--p-rgb), 0.35); text-decoration: none; text-transform: uppercase; transition: all 0.3s; cursor: pointer; }
+        .btn-ghost:hover { border-color: var(--p); background: rgba(var(--p-rgb), 0.06); }
+
+        .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(var(--p-rgb), 0.18), transparent); }
+        .divider-short { width: 60px; height: 1px; background: var(--p); }
+
+        .menu-card { background: rgba(var(--p-rgb), 0.02); border: 1px solid rgba(var(--p-rgb), 0.07); transition: all 0.4s ease; }
+        .menu-card:hover { border-color: rgba(var(--p-rgb), 0.2); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.25); }
+
+        .gallery-item { position: relative; overflow: hidden; aspect-ratio: 4/5; }
+        .gallery-item .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%); display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; opacity: 0; transition: opacity 0.4s; }
+        .gallery-item:hover .overlay { opacity: 1; }
+
+        .form-input { width: 100%; padding: 1rem; background: rgba(var(--p-rgb), 0.03); border: 1px solid rgba(var(--p-rgb), 0.1); color: #ddd8d3; font-family: 'Raleway', sans-serif; font-size: 0.9rem; font-weight: 300; transition: border-color 0.3s; outline: none; }
+        .form-input::placeholder { color: rgba(255,255,255,0.25); }
+        .form-input:focus { border-color: var(--p); }
+
+        .faq-item { border-bottom: 1px solid rgba(var(--p-rgb), 0.08); }
+        .faq-q { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; background: none; border: none; cursor: pointer; color: #ddd8d3; font-family: 'Raleway', sans-serif; font-size: 0.95rem; font-weight: 400; text-align: left; transition: color 0.3s; }
+        .faq-q:hover { color: var(--p); }
+        .faq-q .ic { transition: transform 0.35s ease; color: var(--p); font-size: 0.8rem; }
+        .faq-q.active .ic { transform: rotate(45deg); }
+        .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .faq-a.open { max-height: 400px; }
+
+        .warm-glow { background: radial-gradient(ellipse at center, rgba(var(--p-rgb), 0.06) 0%, transparent 70%); }
+    </style>
+</head>
+<body class="antialiased">
+
+<!-- ═══════════════════════ NAVBAR ═══════════════════════ -->
+<nav id="navbar" class="py-5">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <a href="#" class="flex items-center gap-3 text-white no-underline">
+            <i class="fas fa-utensils text-sm" style="color: var(--p);"></i>
+            <span class="font-heading text-xl tracking-wide"><%= @demo.site_title %></span>
+        </a>
+
+        <div class="hidden lg:flex items-center gap-10">
+            <a href="#menu" class="nav-link">Menu</a>
+            <a href="#about" class="nav-link">Story</a>
+            <a href="#gallery" class="nav-link">Gallery</a>
+            <a href="#testimonials" class="nav-link">Reviews</a>
+            <a href="#faq" class="nav-link">FAQ</a>
+            <a href="#contact" class="btn-reserve text-xs px-5 py-2.5"><%= @demo.cta_primary_text %></a>
+        </div>
+
+        <button onclick="document.getElementById('mobile-menu').classList.toggle('open')" class="lg:hidden text-white text-lg bg-transparent border-none cursor-pointer p-2">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobile-menu">
+    <button onclick="document.getElementById('mobile-menu').classList.remove('open')" class="absolute top-6 right-6 text-white text-xl bg-transparent border-none cursor-pointer">
+        <i class="fas fa-times"></i>
+    </button>
+    <a href="#menu" onclick="document.getElementById('mobile-menu').classList.remove('open')">Menu</a>
+    <a href="#about" onclick="document.getElementById('mobile-menu').classList.remove('open')">Our Story</a>
+    <a href="#gallery" onclick="document.getElementById('mobile-menu').classList.remove('open')">Gallery</a>
+    <a href="#testimonials" onclick="document.getElementById('mobile-menu').classList.remove('open')">Reviews</a>
+    <a href="#faq" onclick="document.getElementById('mobile-menu').classList.remove('open')">FAQ</a>
+    <a href="#contact" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="text-lg" style="color: var(--p);"><%= @demo.cta_primary_text %></a>
+</div>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section class="relative min-h-screen flex items-center overflow-hidden">
+    <div class="absolute inset-0 warm-glow"></div>
+    <div class="absolute top-1/4 right-0 w-[500px] h-[500px] opacity-[0.04]" style="border: 1px solid var(--p); transform: rotate(45deg); translate: 30% 0;"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 opacity-[0.03]" style="border: 1px solid var(--p); transform: rotate(12deg); translate: -30% 30%;"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-2 gap-16 items-center pt-28 pb-20">
+        <div>
+            <div data-aos="fade-up" data-aos-delay="100" class="mb-8">
+                <span class="inline-flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] px-5 py-2.5" style="color: var(--p); border: 1px solid rgba(var(--p-rgb), 0.2); background: rgba(var(--p-rgb), 0.04);">
+                    <i class="fas fa-wine-glass text-[10px]"></i>
+                    <%= @demo.hero_badge %>
+                </span>
+            </div>
+
+            <h1 data-aos="fade-up" data-aos-delay="200" class="font-heading text-5xl md:text-6xl lg:text-7xl text-white leading-[1.08] mb-6 italic">
+                <%= @demo.hero_heading %>
+            </h1>
+
+            <p data-aos="fade-up" data-aos-delay="300" class="text-lg text-white/40 leading-relaxed mb-10 max-w-lg font-light">
+                <%= @demo.hero_subheading %>
+            </p>
+
+            <div data-aos="fade-up" data-aos-delay="400" class="flex flex-wrap gap-4">
+                <a href="#contact" class="btn-reserve">
+                    <%= @demo.cta_primary_text %>
+                    <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+                <a href="#menu" class="btn-ghost">
+                    <%= @demo.cta_secondary_text %>
+                </a>
+            </div>
+        </div>
+
+        <div data-aos="fade-left" data-aos-delay="300" class="hidden lg:block relative">
+            <div class="aspect-[3/4] relative" style="background: linear-gradient(135deg, rgba(var(--p-rgb), 0.08), rgba(var(--a-rgb), 0.04)); border: 1px solid rgba(var(--p-rgb), 0.1);">
+                <% hero_visual = @demo.image_for("hero_visual") %>
+                <% if hero_visual.present? %>
+                  <%= image_tag hero_visual, class: "w-full h-full object-cover", alt: @demo.site_title %>
+                <% else %>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                      <i class="fas fa-utensils text-6xl" style="color: rgba(var(--p-rgb), 0.12);"></i>
+                  </div>
+                <% end %>
+                <div class="absolute -bottom-4 -left-4 px-6 py-4" style="background: var(--p);">
+                    <div class="text-white text-xs font-medium uppercase tracking-[0.15em]"><%= @demo.site_title %></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STATS ═══════════════════════ -->
+<section class="py-16 relative">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid grid-cols-2 lg:grid-cols-<%= [@demo.stat_items.length, 4].min %> gap-8">
+            <% @demo.stat_items.each_with_index do |stat, i| %>
+                <div data-aos="fade-up" data-aos-delay="<%= i * 100 %>" class="text-center py-6">
+                    <div class="font-heading text-4xl md:text-5xl mb-2 italic" style="color: var(--p);"><%= stat[:number] %></div>
+                    <div class="text-white/35 text-xs uppercase tracking-[0.2em] font-medium"><%= stat[:label] %></div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ MENU / SERVICES ═══════════════════════ -->
+<section id="menu" class="py-28 relative">
+    <div class="absolute inset-0 warm-glow"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="text-center max-w-2xl mx-auto mb-20" data-aos="fade-up">
+            <span class="text-xs font-medium uppercase tracking-[0.2em] mb-4 block" style="color: var(--p);">Our Offerings</span>
+            <h2 class="font-heading text-4xl md:text-5xl text-white mb-5 italic"><%= @demo.services_title %></h2>
+            <div class="divider-short mx-auto mb-6"></div>
+            <p class="text-white/40 text-base leading-relaxed font-light"><%= @demo.services_intro %></p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-px" style="background: rgba(var(--p-rgb), 0.06);">
+            <% menu_icons = ["fa-utensils", "fa-wine-glass", "fa-fire", "fa-pepper-hot", "fa-drumstick-bite", "fa-fish", "fa-bread-slice", "fa-mug-hot"] %>
+            <% @demo.feature_cards.each_with_index do |card, i| %>
+                <div data-aos="fade-up" data-aos-delay="<%= i * 80 %>" class="menu-card p-8 flex gap-6 items-start" style="background: var(--bg);">
+                    <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center" style="border: 1px solid rgba(var(--p-rgb), 0.15);">
+                        <i class="fas <%= menu_icons[i % menu_icons.length] %> text-base" style="color: var(--p);"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-heading text-xl text-white mb-2"><%= card[:title] %></h3>
+                        <p class="text-white/35 text-sm leading-relaxed font-light"><%= card[:body] %></p>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ ABOUT / OUR STORY ═══════════════════════ -->
+<section id="about" class="py-28 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-96 h-96 opacity-[0.03]" style="border: 1px solid var(--p); transform: rotate(45deg); translate: 40% -40%;"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="grid lg:grid-cols-2 gap-20 items-center">
+            <div data-aos="fade-right">
+                <span class="text-xs font-medium uppercase tracking-[0.2em] mb-4 block" style="color: var(--p);">Our Story</span>
+                <h2 class="font-heading text-4xl md:text-5xl text-white mb-5 italic"><%= @demo.about_title %></h2>
+                <div class="divider-short mb-8"></div>
+                <div class="text-white/40 leading-[1.85] text-base font-light space-y-4">
+                    <p><%= @demo.about_body %></p>
+                </div>
+                <a href="#contact" class="btn-reserve mt-10 inline-flex">
+                    <%= @demo.cta_primary_text %>
+                    <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+
+            <div data-aos="fade-left" class="relative">
+                <div class="p-10 relative" style="background: rgba(var(--p-rgb), 0.03); border: 1px solid rgba(var(--p-rgb), 0.08);">
+                    <div class="absolute -top-3 -right-3 w-16 h-16 opacity-30" style="border: 1px solid var(--p);"></div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <% @demo.stat_items.each_with_index do |stat, i| %>
+                            <div class="text-center py-6" style="border: 1px solid rgba(var(--p-rgb), 0.06);">
+                                <div class="font-heading text-3xl italic mb-1" style="color: var(--p);"><%= stat[:number] %></div>
+                                <div class="text-xs text-white/35 uppercase tracking-[0.15em]"><%= stat[:label] %></div>
+                            </div>
+                        <% end %>
+                    </div>
+                    <div class="mt-8 pt-6 flex items-center gap-4" style="border-top: 1px solid rgba(var(--p-rgb), 0.08);">
+                        <div class="w-11 h-11 flex items-center justify-center" style="background: rgba(var(--p-rgb), 0.08);">
+                            <i class="fas fa-fire text-sm" style="color: var(--p);"></i>
+                        </div>
+                        <div>
+                            <div class="text-white text-sm font-medium"><%= @demo.site_title %></div>
+                            <div class="text-white/30 text-xs font-light">Culinary Excellence</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ GALLERY / WORK ═══════════════════════ -->
+<section id="gallery" class="py-28 relative">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-2xl mx-auto mb-16" data-aos="fade-up">
+            <span class="text-xs font-medium uppercase tracking-[0.2em] mb-4 block" style="color: var(--p);">Gallery</span>
+            <h2 class="font-heading text-4xl md:text-5xl text-white mb-5 italic"><%= @demo.work_title %></h2>
+            <div class="divider-short mx-auto mb-6"></div>
+            <p class="text-white/40 text-base leading-relaxed font-light"><%= @demo.work_intro %></p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-1">
+            <% gallery_icons = ["fa-utensils", "fa-wine-glass", "fa-fire", "fa-pepper-hot", "fa-drumstick-bite", "fa-fish"] %>
+            <% @demo.project_cards.each_with_index do |card, i| %>
+                <div data-aos="fade-up" data-aos-delay="<%= i * 80 %>" class="gallery-item group">
+                    <% project_image = @demo.image_for("project_#{i + 1}") %>
+                    <% if project_image.present? %>
+                      <%= image_tag project_image, class: "absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105", alt: card[:title] %>
+                    <% else %>
+                      <div class="absolute inset-0 flex items-center justify-center" style="background: linear-gradient(135deg, rgba(var(--p-rgb), 0.08), rgba(var(--a-rgb), 0.04));">
+                          <i class="fas <%= gallery_icons[i % gallery_icons.length] %> text-5xl transition-transform duration-500 group-hover:scale-110" style="color: rgba(var(--p-rgb), 0.15);"></i>
+                      </div>
+                    <% end %>
+                    <div class="overlay">
+                        <span class="text-xs uppercase tracking-[0.15em] mb-2 font-medium" style="color: var(--p);"><%= card[:category] %></span>
+                        <h3 class="font-heading text-xl text-white"><%= card[:title] %></h3>
+                        <p class="text-white/40 text-sm font-light mt-1"><%= card[:body] %></p>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ PROCESS ═══════════════════════ -->
+<section class="py-28 relative">
+    <div class="absolute inset-0 warm-glow"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="text-center max-w-2xl mx-auto mb-20" data-aos="fade-up">
+            <span class="text-xs font-medium uppercase tracking-[0.2em] mb-4 block" style="color: var(--p);">How It Works</span>
+            <h2 class="font-heading text-4xl md:text-5xl text-white mb-5 italic">Your Experience</h2>
+            <div class="divider-short mx-auto mb-6"></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-<%= [@demo.process_steps.length, 4].min %> gap-12">
+            <% @demo.process_steps.each_with_index do |step, i| %>
+                <div data-aos="fade-up" data-aos-delay="<%= i * 120 %>" class="text-center relative">
+                    <div class="w-16 h-16 flex items-center justify-center mx-auto mb-6 font-heading text-2xl italic" style="border: 1px solid rgba(var(--p-rgb), 0.25); color: var(--p);">
+                        <%= format("%02d", i + 1) %>
+                    </div>
+                    <h3 class="font-heading text-xl text-white mb-3"><%= step[:title] %></h3>
+                    <p class="text-white/35 text-sm leading-relaxed font-light"><%= step[:body] %></p>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ TESTIMONIALS ═══════════════════════ -->
+<section id="testimonials" class="py-28 relative">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-2xl mx-auto mb-16" data-aos="fade-up">
+            <span class="text-xs font-medium uppercase tracking-[0.2em] mb-4 block" style="color: var(--p);">Guest Reviews</span>
+            <h2 class="font-heading text-4xl md:text-5xl text-white mb-5 italic"><%= @demo.testimonials_title %></h2>
+            <div class="divider-short mx-auto mb-6"></div>
+            <p class="text-white/40 text-base leading-relaxed font-light"><%= @demo.testimonials_intro %></p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px" style="background: rgba(var(--p-rgb), 0.06);">
+            <% @demo.testimonial_cards.each_with_index do |card, i| %>
+                <div data-aos="fade-up" data-aos-delay="<%= i * 100 %>" class="p-8 relative" style="background: var(--bg);">
+                    <div class="flex gap-1 mb-5">
+                        <% 5.times do %><i class="fas fa-star text-xs" style="color: var(--p);"></i><% end %>
+                    </div>
+                    <p class="text-white/45 text-sm leading-relaxed mb-8 font-light italic">&ldquo;<%= card[:quote] %>&rdquo;</p>
+                    <div class="flex items-center gap-3 pt-6" style="border-top: 1px solid rgba(var(--p-rgb), 0.06);">
+                        <div class="w-10 h-10 flex items-center justify-center text-sm font-medium text-white" style="background: rgba(var(--p-rgb), 0.12);">
+                            <%= card[:name].chars.first.upcase %>
+                        </div>
+                        <div>
+                            <div class="text-white text-sm font-medium"><%= card[:name] %></div>
+                            <div class="text-white/30 text-xs font-light"><%= card[:role] %></div>
+                        </div>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ FAQ ═══════════════════════ -->
+<section id="faq" class="py-28 relative">
+    <div class="max-w-3xl mx-auto px-6">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="text-xs font-medium uppercase tracking-[0.2em] mb-4 block" style="color: var(--p);">FAQ</span>
+            <h2 class="font-heading text-4xl md:text-5xl text-white mb-5 italic"><%= @demo.faq_title %></h2>
+            <div class="divider-short mx-auto mb-6"></div>
+            <p class="text-white/40 text-base leading-relaxed font-light"><%= @demo.faq_intro %></p>
+        </div>
+
+        <div data-aos="fade-up" data-aos-delay="100" style="border-top: 1px solid rgba(var(--p-rgb), 0.08);">
+            <% @demo.faq_items.each_with_index do |faq, i| %>
+                <div class="faq-item">
+                    <button onclick="toggleFaq(this)" class="faq-q">
+                        <span><%= faq[:question] %></span>
+                        <i class="fas fa-plus ic"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p class="text-white/35 text-sm leading-relaxed pb-5 font-light"><%= faq[:answer] %></p>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ CONTACT / RESERVATION ═══════════════════════ -->
+<section id="contact" class="py-28 relative overflow-hidden">
+    <div class="absolute inset-0 warm-glow"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="grid lg:grid-cols-2 gap-20">
+            <div data-aos="fade-right">
+                <span class="text-xs font-medium uppercase tracking-[0.2em] mb-4 block" style="color: var(--p);">Reservations</span>
+                <h2 class="font-heading text-4xl md:text-5xl text-white mb-5 italic"><%= @demo.contact_title %></h2>
+                <div class="divider-short mb-6"></div>
+                <p class="text-white/40 text-base leading-relaxed mb-10 font-light"><%= @demo.contact_intro %></p>
+
+                <div class="space-y-6 mb-12">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="border: 1px solid rgba(var(--p-rgb), 0.15);">
+                            <i class="fas fa-envelope text-sm" style="color: var(--p);"></i>
+                        </div>
+                        <div>
+                            <div class="text-white/30 text-xs uppercase tracking-[0.15em] mb-1 font-medium">Email</div>
+                            <div class="text-white text-sm"><%= @demo.contact_email %></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="border: 1px solid rgba(var(--p-rgb), 0.15);">
+                            <i class="fas fa-phone text-sm" style="color: var(--p);"></i>
+                        </div>
+                        <div>
+                            <div class="text-white/30 text-xs uppercase tracking-[0.15em] mb-1 font-medium">Phone</div>
+                            <div class="text-white text-sm"><%= @demo.contact_phone %></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opening Hours -->
+                <div data-aos="fade-up" data-aos-delay="200" class="p-8" style="background: rgba(var(--p-rgb), 0.03); border: 1px solid rgba(var(--p-rgb), 0.08);">
+                    <div class="flex items-center gap-3 mb-6">
+                        <i class="fas fa-clock text-sm" style="color: var(--p);"></i>
+                        <h3 class="font-heading text-xl text-white">Opening Hours</h3>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center pb-3" style="border-bottom: 1px solid rgba(var(--p-rgb), 0.06);">
+                            <span class="text-white/50 font-light">Monday — Friday</span>
+                            <span class="text-white font-medium">11:00 AM — 10:00 PM</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3" style="border-bottom: 1px solid rgba(var(--p-rgb), 0.06);">
+                            <span class="text-white/50 font-light">Saturday</span>
+                            <span class="text-white font-medium">10:00 AM — 11:00 PM</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/50 font-light">Sunday</span>
+                            <span class="text-white font-medium">10:00 AM — 9:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div data-aos="fade-left">
+                <form action="#contact" onsubmit="event.preventDefault(); this.querySelector('.submit-btn').textContent='Reserved!'" class="p-10" style="background: rgba(var(--p-rgb), 0.03); border: 1px solid rgba(var(--p-rgb), 0.08);">
+                    <h3 class="font-heading text-2xl text-white mb-2">Reserve a Table</h3>
+                    <p class="text-white/30 text-sm font-light mb-8">Fill in the details below and we will confirm your reservation.</p>
+
+                    <div class="grid sm:grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label class="block text-white/35 text-xs uppercase tracking-[0.15em] mb-2 font-medium">Name</label>
+                            <input type="text" class="form-input" placeholder="Full name">
+                        </div>
+                        <div>
+                            <label class="block text-white/35 text-xs uppercase tracking-[0.15em] mb-2 font-medium">Email</label>
+                            <input type="email" class="form-input" placeholder="Email address">
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label class="block text-white/35 text-xs uppercase tracking-[0.15em] mb-2 font-medium">Phone</label>
+                            <input type="tel" class="form-input" placeholder="Phone number">
+                        </div>
+                        <div>
+                            <label class="block text-white/35 text-xs uppercase tracking-[0.15em] mb-2 font-medium">Guests</label>
+                            <select class="form-input">
+                                <option value="" style="background: var(--bg);">Number of guests</option>
+                                <option value="1" style="background: var(--bg);">1 Guest</option>
+                                <option value="2" style="background: var(--bg);">2 Guests</option>
+                                <option value="3" style="background: var(--bg);">3 Guests</option>
+                                <option value="4" style="background: var(--bg);">4 Guests</option>
+                                <option value="5" style="background: var(--bg);">5 Guests</option>
+                                <option value="6+" style="background: var(--bg);">6+ Guests</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label class="block text-white/35 text-xs uppercase tracking-[0.15em] mb-2 font-medium">Date</label>
+                            <input type="date" class="form-input">
+                        </div>
+                        <div>
+                            <label class="block text-white/35 text-xs uppercase tracking-[0.15em] mb-2 font-medium">Time</label>
+                            <select class="form-input">
+                                <option value="" style="background: var(--bg);">Preferred time</option>
+                                <option value="11:00" style="background: var(--bg);">11:00 AM</option>
+                                <option value="12:00" style="background: var(--bg);">12:00 PM</option>
+                                <option value="13:00" style="background: var(--bg);">1:00 PM</option>
+                                <option value="17:00" style="background: var(--bg);">5:00 PM</option>
+                                <option value="18:00" style="background: var(--bg);">6:00 PM</option>
+                                <option value="19:00" style="background: var(--bg);">7:00 PM</option>
+                                <option value="20:00" style="background: var(--bg);">8:00 PM</option>
+                                <option value="21:00" style="background: var(--bg);">9:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-white/35 text-xs uppercase tracking-[0.15em] mb-2 font-medium">Special Requests</label>
+                        <textarea rows="3" class="form-input resize-none" placeholder="Allergies, celebrations, seating preferences..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn btn-reserve w-full justify-center text-sm">
+                        <%= @demo.cta_primary_text %>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="py-20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-12 mb-16">
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3 mb-5">
+                    <i class="fas fa-utensils text-sm" style="color: var(--p);"></i>
+                    <span class="font-heading text-xl text-white tracking-wide"><%= @demo.site_title %></span>
+                </div>
+                <p class="text-white/30 text-sm leading-relaxed max-w-sm font-light"><%= @demo.hero_subheading %></p>
+                <div class="flex items-center gap-5 mt-6">
+                    <a href="#" class="text-white/20 hover:text-white transition-colors"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white/20 hover:text-white transition-colors"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white/20 hover:text-white transition-colors"><i class="fab fa-tripadvisor"></i></a>
+                    <a href="#" class="text-white/20 hover:text-white transition-colors"><i class="fab fa-yelp"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-white text-xs font-medium uppercase tracking-[0.2em] mb-6">Explore</h4>
+                <div class="space-y-3">
+                    <a href="#menu" class="block text-white/30 text-sm hover:text-white transition-colors no-underline font-light">Menu</a>
+                    <a href="#about" class="block text-white/30 text-sm hover:text-white transition-colors no-underline font-light">Our Story</a>
+                    <a href="#gallery" class="block text-white/30 text-sm hover:text-white transition-colors no-underline font-light">Gallery</a>
+                    <a href="#testimonials" class="block text-white/30 text-sm hover:text-white transition-colors no-underline font-light">Reviews</a>
+                    <a href="#contact" class="block text-white/30 text-sm hover:text-white transition-colors no-underline font-light">Reservations</a>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-white text-xs font-medium uppercase tracking-[0.2em] mb-6">Menu</h4>
+                <div class="space-y-3">
+                    <% @demo.feature_cards.first(5).each do |card| %>
+                        <a href="#menu" class="block text-white/30 text-sm hover:text-white transition-colors no-underline font-light"><%= card[:title] %></a>
+                    <% end %>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4" style="border-top: 1px solid rgba(var(--p-rgb), 0.08);">
+            <p class="text-white/20 text-xs font-light">&copy; <%= Time.current.year %> <%= @demo.site_title %>. All rights reserved.</p>
+            <p class="text-white/20 text-xs font-light flex items-center gap-2">
+                <i class="fas fa-utensils text-[10px]" style="color: rgba(var(--p-rgb), 0.4);"></i>
+                Crafted with passion
+            </p>
+        </div>
+    </div>
+</footer>
+
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
+<script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    function toggleFaq(btn) {
+        const answer = btn.nextElementSibling;
+        const isOpen = answer.classList.contains('open');
+
+        document.querySelectorAll('.faq-a.open').forEach(a => {
+            a.classList.remove('open');
+            a.previousElementSibling.classList.remove('active');
+        });
+
+        if (!isOpen) {
+            answer.classList.add('open');
+            btn.classList.add('active');
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', e => {
+            const target = document.querySelector(link.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+</script>
+<script>AOS.init({ duration: 800, once: true, offset: 50 });</script>
+</body>
+</html>

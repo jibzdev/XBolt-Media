@@ -1,0 +1,1186 @@
+<% primary_rgb = @theme[:primary].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<% accent_rgb = @theme[:accent].delete("#").scan(/../).map { |hex| hex.to_i(16) }.join(", ") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= @demo.site_title %></title>
+    <link rel="icon" type="image/png" href="logo5.png">
+    <link rel="apple-touch-icon" href="logo5.png">
+	<link rel="icon" sizes="32x32" href="/logo5.png">
+	<link rel="icon" sizes="16x16" href="/logo5.png">
+    <meta name="description" content="<%= @demo.hero_subheading %>">
+	<meta name="theme-color" content="<%= @theme[:primary] %>">
+	<meta name="robots" content="index,follow">
+    <meta property="og:title" content="<%= @demo.site_title %>">
+    <meta property="og:description" content="<%= @demo.hero_subheading %>">
+	<meta property="og:image" content="/logo5.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= @demo.site_title %>">
+    <meta name="twitter:description" content="<%= @demo.hero_subheading %>">
+	<meta name="twitter:image" content="/logo5.png">
+	<link rel="manifest" href="/site.webmanifest">
+    <meta name="keywords" content="dry stone walling, stone walling, drone surveys, stone masonry, traditional walling, heritage stone work, wall restoration, Cotswolds, Cotswolds stone walling, Cotswolds drone services">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css">
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "LocalBusiness",
+		"name": "<%= @demo.site_title %>",
+		"url": "http://localhost:3000",
+		"logo": "http://localhost:3000/logo5.png",
+		"image": "http://localhost:3000/logo5.png",
+		"description": "<%= @demo.hero_subheading %>"
+	}
+	</script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '<%= @theme[:accent] %>',
+                            500: '<%= @theme[:primary] %>',
+                            600: '<%= @theme[:primary] %>',
+                            700: '<%= @theme[:primary] %>'
+                        },
+                        luxury: {
+                            dark: '#0A0A0A',
+                            darker: '#000000',
+                            light: '#1A1A1A'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --theme-primary: <%= @theme[:primary] %>;
+            --theme-accent: <%= @theme[:accent] %>;
+            --theme-bg: <%= @theme[:bg] %>;
+            --theme-primary-rgb: <%= primary_rgb %>;
+            --theme-accent-rgb: <%= accent_rgb %>;
+        }
+
+        body {
+            background-color: var(--theme-bg);
+            color: #FFFFFF;
+        }
+
+        /* Map existing gold utility classes to selected admin theme */
+        .text-gold-500, .hover\:text-gold-500:hover { color: var(--theme-primary) !important; }
+        .text-gold-400, .hover\:text-gold-400:hover { color: var(--theme-accent) !important; }
+        .bg-gold-500, .hover\:bg-gold-500:hover { background-color: var(--theme-primary) !important; }
+        .hover\:bg-gold-400:hover { background-color: var(--theme-accent) !important; }
+        .border-gold-500, .border-gold-500\/10, .border-gold-500\/20, .border-gold-500\/30, .border-gold-500\/50,
+        .hover\:border-gold-500:hover { border-color: color-mix(in srgb, var(--theme-primary) 60%, #111827) !important; }
+
+        .from-gold-500\/20 {
+            --tw-gradient-from: rgb(var(--theme-primary-rgb), 0.2) var(--tw-gradient-from-position) !important;
+            --tw-gradient-to: rgb(var(--theme-primary-rgb), 0) var(--tw-gradient-to-position) !important;
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+        }
+        
+        .text-shadow-gold {
+            text-shadow: 0 2px 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .border-gradient {
+            border-image: linear-gradient(135deg, #D4AF37 0%, #F4D03F 50%, #D4AF37 100%) 1;
+        }
+
+        .luxury-underline {
+            position: relative;
+        }
+
+        .luxury-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--theme-primary), transparent);
+        }
+
+        /* Navbar scroll state */
+        #navbar.nav-scrolled {
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(var(--theme-primary-rgb), 0.18);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        #navbar.nav-scrolled .h-20 { height: 4rem; transition: height 0.3s ease; }
+
+        /* Mobile menu */
+        #mobile-menu {
+            display: none;
+            background: rgba(0, 0, 0, 0.96);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(var(--theme-primary-rgb), 0.15);
+        }
+        #mobile-menu.open { display: block; }
+
+        /* Scroll-reveal animations */
+        [data-animate] {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        [data-animate].is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        [data-animate-delay="100"] { transition-delay: 0.10s; }
+        [data-animate-delay="200"] { transition-delay: 0.20s; }
+        [data-animate-delay="300"] { transition-delay: 0.30s; }
+        [data-animate-delay="400"] { transition-delay: 0.40s; }
+        [data-animate-delay="500"] { transition-delay: 0.50s; }
+
+        /* Active nav link */
+        .nav-link.active { color: var(--theme-primary) !important; }
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: -4px;
+            width: 0; height: 1px;
+            background: var(--theme-primary);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+    </style>
+</head>
+<body class="font-sans antialiased overflow-x-hidden">
+    
+    <!-- Navigation -->
+     <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-3 items-center h-20" >
+                <!-- Logo - Left -->
+                <div class="flex items-center justify-start">
+                    <a href="/" class="text-white">
+                        <div class="leading-none">
+                            <div class="text-2xl font-serif font-bold tracking-tight text-gold-500"><%= @demo.site_title %></div>
+                            <div class="text-xs font-sans font-light tracking-widest text-gray-300"><%= @demo.hero_badge %></div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Navigation Links - Center -->
+                <div class="hidden md:flex items-center justify-center">
+                    <div class="flex items-center space-x-8">
+                        <a href="/" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Home</a>
+                        <a href="#about" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">About</a>
+                        <a href="#services" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Services</a>
+                        <a href="/drone-services" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Drone Services</a>
+                        <a href="#contact" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Contact</a>
+                    </div>
+                </div>
+                
+                <!-- CTA Button - Right -->
+                <div class="hidden md:flex items-center justify-end">
+                    <a href="#contact" class="px-6 py-2.5 bg-gold-500 text-black font-semibold text-sm hover:bg-gold-400 transition-all duration-300">
+                        <span><%= @demo.cta_primary_text %></span>
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden col-span-2 flex justify-end">
+                    <button class="text-white hover:text-gold-500 p-2 transition-colors" id="mobile-menu-button" aria-expanded="false" aria-label="Toggle menu">
+                        <i class="fas fa-bars text-xl" id="mobile-menu-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu">
+            <div class="container mx-auto px-6 py-4 space-y-1">
+                <a href="#hero-section" class="mobile-nav-link block px-4 py-3 text-white text-sm font-medium border-b border-white/5 hover:text-gold-500 transition-colors">Home</a>
+                <a href="#about" class="mobile-nav-link block px-4 py-3 text-white text-sm font-medium border-b border-white/5 hover:text-gold-500 transition-colors">About</a>
+                <a href="#services" class="mobile-nav-link block px-4 py-3 text-white text-sm font-medium border-b border-white/5 hover:text-gold-500 transition-colors">Services</a>
+                <a href="#contact" class="mobile-nav-link block px-4 py-3 text-white text-sm font-medium border-b border-white/5 hover:text-gold-500 transition-colors">Contact</a>
+                <div class="pt-3 pb-2">
+                    <a href="#contact" class="block w-full text-center px-6 py-3 bg-gold-500 text-black font-semibold text-sm hover:bg-gold-400 transition-all">
+                        <%= @demo.cta_primary_text %>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero-section" class="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        <!-- Premium Stone Wall Background (CSS Only) -->
+        <div class="absolute inset-0 stone-wall-bg"></div>
+        
+        <!-- Stone texture overlay -->
+        <div class="absolute inset-0 stone-texture-layer"></div>
+        
+        <!-- Enhanced Gradient Overlay for Premium Depth & Readability -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/85 via-black/60 to-black/90"></div>
+        
+        <!-- Premium ambient lighting with gold wash -->
+        <div class="absolute inset-0 ambient-light"></div>
+        
+        <!-- Subtle edge vignette for focus -->
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 30%, rgba(0, 0, 0, 0.3) 100%);"></div>
+        
+        <!-- Main Content -->
+        <div class="relative z-10 text-center px-6 py-32">
+            <div class="max-w-5xl mx-auto">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-5 py-2 border border-gold-500/30 mb-8 backdrop-blur-md bg-black/40">
+                    <div class="w-2 h-2 bg-gold-500"></div>
+                    <span class="text-gold-500 text-xs font-medium tracking-widest"><%= @demo.hero_badge %></span>
+                </div>
+
+                <!-- Main Title -->
+                <h1 class="font-serif text-6xl md:text-7xl lg:text-8xl font-bold mb-6 text-white text-shadow-gold">
+                    <span class="block mb-2"><%= @demo.site_title %></span>
+                    <span class="block text-gold-500"><%= @demo.hero_heading %></span>
+                </h1>
+
+                <div class="w-24 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent mx-auto mb-8"></div>
+
+                <!-- Subtitle -->
+                <p class="text-xl md:text-2xl text-gray-300 font-light mb-4 max-w-3xl mx-auto">
+                    <%= @demo.hero_heading %>
+                </p>
+                
+                <p class="text-base text-gray-400 mb-8 max-w-2xl mx-auto">
+                    <%= @demo.hero_subheading %>
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8 text-gray-300">
+                    <div class="inline-flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt text-gold-500"></i>
+                        <span>The Cotswolds</span>
+                    </div>
+                    <span class="hidden sm:inline text-gold-500/30">|</span>
+                    <a href="tel:<%= @demo.contact_phone %>" class="inline-flex items-center gap-2 hover:text-gold-500 transition-colors">
+                        <i class="fas fa-phone"></i>
+                        <span><%= @demo.contact_phone %></span>
+                    </a>
+                    <span class="hidden sm:inline text-gold-500/30">|</span>
+                    <a href="mailto:<%= @demo.contact_email %>" class="inline-flex items-center gap-2 hover:text-gold-500 transition-colors">
+                        <i class="fas fa-envelope"></i>
+                        <span><%= @demo.contact_email %></span>
+                    </a>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                    <a href="#contact" class="px-8 py-4 bg-gold-500 text-black font-semibold hover:bg-gold-400 transition-all duration-300 inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-gold-500/50 hover:scale-105">
+                        <%= @demo.cta_primary_text %>
+                        <i class="fas fa-arrow-right text-sm"></i>
+                    </a>
+                    <a href="#gallery" class="px-8 py-4 border-2 border-gold-500/50 text-white font-semibold hover:border-gold-500 hover:bg-gold-500/10 transition-all duration-300 inline-flex items-center justify-center gap-2 backdrop-blur-md bg-black/20 hover:scale-105">
+                        <%= @demo.cta_secondary_text %>
+                        <i class="fas fa-images text-sm"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
+            <div class="w-6 h-10 border-2 border-gold-500/30 rounded-full flex justify-center">
+                <div class="w-1 h-2 bg-gold-500 rounded-full mt-2 animate-bounce"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About / Personal Story Section -->
+    <section id="about" class="py-32 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Left: Image -->
+                <div class="relative" data-animate>
+                    <div class="absolute -inset-4 bg-gradient-to-br from-gold-500/20 to-transparent blur-xl"></div>
+                    <div class="relative border-2 border-gold-500/20 p-2">
+                        <% about_img = @demo.image_for("about_main") %>
+                        <% if about_img.present? %>
+                            <%= image_tag about_img, alt: @demo.about_title, class: "w-full h-[600px] object-cover" %>
+                        <% else %>
+                            <div class="w-full h-[600px] bg-luxury-light flex items-center justify-center">
+                                <i class="fas fa-image text-6xl text-gold-500/20"></i>
+                            </div>
+                        <% end %>
+                    </div>
+                    <div class="absolute -bottom-6 -right-6 w-32 h-32 border-2 border-gold-500/30"></div>
+                </div>
+                
+                <!-- Right: Content -->
+                <div data-animate data-animate-delay="200">
+                    <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                        <span class="text-gold-500 text-xs tracking-widest font-medium">ABOUT US</span>
+                    </div>
+                    
+                    <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6 luxury-underline pb-4">
+                        <%= @demo.about_title %>
+                    </h2>
+                    
+                    <div class="space-y-6 text-gray-300 leading-relaxed">
+                        <p class="text-lg">
+                            <%= @demo.about_body %>
+                        </p>
+                        
+                        <p>
+                            Our journey began with a deep appreciation for traditional craftsmanship and a vision to bring these time-honored techniques to contemporary projects. Each stone is carefully selected and placed with precision, creating structures that stand the test of time.
+                        </p>
+                        
+                        <p>
+                            We've expanded our services to include professional drone surveying, allowing us to assess sites with unprecedented accuracy and provide our clients with detailed aerial perspectives of their projects. This combination of old-world skill and modern innovation sets us apart.
+                        </p>
+
+                        <div class="pt-8 grid grid-cols-2 gap-6">
+                            <div class="border-l-2 border-gold-500 pl-4">
+                                <div class="text-4xl font-bold text-gold-500 mb-2">15+</div>
+                                <div class="text-sm text-gray-400">Years Experience</div>
+                            </div>
+                            <div class="border-l-2 border-gold-500 pl-4">
+                                <div class="text-4xl font-bold text-gold-500 mb-2">500+</div>
+                                <div class="text-sm text-gray-400">Projects Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-32 relative overflow-hidden bg-black">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <!-- Section Header -->
+            <div class="text-center mb-20">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">WHAT WE DO</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6 luxury-underline pb-4">
+                    <%= @demo.services_title %>
+                </h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                    <%= @demo.services_intro %>
+                </p>
+            </div>
+            
+            <!-- Services Grid -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Service 1 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-luxury-dark" data-animate>
+                    <div class="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-gold-500/50"></div>
+                    <div class="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-gold-500/50"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-layer-group text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4"><%= @demo.feature_cards.fetch(0, @demo.feature_cards.last)[:title] %></h3>
+                        
+                        <p class="text-gray-400 mb-6 leading-relaxed"><%= @demo.feature_cards.fetch(0, @demo.feature_cards.last)[:body] %></p>
+                        
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                New Wall Construction
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Wall Restoration & Repair
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Heritage & Listed Buildings
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Retaining Walls
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-luxury-dark" data-animate data-animate-delay="200">
+                    <div class="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-gold-500/50"></div>
+                    <div class="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-gold-500/50"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-helicopter text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4"><%= @demo.feature_cards.fetch(1, @demo.feature_cards.last)[:title] %></h3>
+                        
+                        <p class="text-gray-400 mb-4 leading-relaxed"><%= @demo.feature_cards.fetch(1, @demo.feature_cards.last)[:body] %></p>
+                        
+                        <div class="bg-gold-500/10 border border-gold-500/30 px-4 py-3 mb-6">
+                            <p class="text-gold-500 text-sm font-semibold">
+                                Residential Properties: £180 - £280 (depending on size)
+                            </p>
+                        </div>
+                        
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Site Assessment & Planning
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Aerial Photography & Video
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Progress Documentation
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                3D Mapping & Modeling
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-luxury-dark" data-animate>
+                    <div class="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-gold-500/50"></div>
+                    <div class="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-gold-500/50"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-landmark text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4"><%= @demo.feature_cards.fetch(2, @demo.feature_cards.last)[:title] %></h3>
+                        
+                        <p class="text-gray-400 mb-6 leading-relaxed"><%= @demo.feature_cards.fetch(2, @demo.feature_cards.last)[:body] %></p>
+                        
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Garden Walls & Features
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Stone Steps & Pathways
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Raised Planting Beds
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Decorative Stone Work
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-luxury-dark" data-animate data-animate-delay="200">
+                    <div class="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-gold-500/50"></div>
+                    <div class="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-gold-500/50"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-tools text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4"><%= @demo.feature_cards.fetch(3, @demo.feature_cards.last)[:title] %></h3>
+                        
+                        <p class="text-gray-400 mb-6 leading-relaxed"><%= @demo.feature_cards.fetch(3, @demo.feature_cards.last)[:body] %></p>
+                        
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Design Consultation
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Stone Selection Guidance
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Project Management
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <div class="w-1 h-1 bg-gold-500"></div>
+                                Heritage Compliance
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Drone Services Highlight Section -->
+    <section class="py-32 relative overflow-hidden bg-black">
+        <div class="absolute inset-0">
+            <div class="absolute inset-0 bg-gradient-to-r from-black via-gold-500/5 to-black"></div>
+        </div>
+        
+        <div class="container mx-auto px-6 max-w-6xl relative z-10">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Left: Image -->
+                <div class="relative order-2 lg:order-1">
+                    <div class="absolute -inset-6 bg-gradient-to-br from-gold-500/30 to-transparent blur-2xl"></div>
+                    <div class="relative">
+                        <div class="border-2 border-gold-500/30 p-4">
+                            <% drone_img = @demo.image_for("drone_feature") %>
+                            <% if drone_img.present? %>
+                                <%= image_tag drone_img, alt: "Professional Drone Services", class: "w-full h-[500px] object-cover" %>
+                            <% else %>
+                                <div class="w-full h-[500px] bg-luxury-light flex items-center justify-center">
+                                    <i class="fas fa-helicopter text-6xl text-gold-500/20"></i>
+                                </div>
+                            <% end %>
+                        </div>
+                        <!-- Floating badge -->
+                        <div class="absolute -bottom-6 -right-6 bg-gold-500 text-black px-8 py-4">
+                            <div class="text-xs font-semibold tracking-wider mb-1">ADVANCED</div>
+                            <div class="text-2xl font-bold">DRONE TECH</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Content -->
+                <div class="order-1 lg:order-2">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 border border-gold-500/30 mb-6">
+                        <i class="fas fa-helicopter text-gold-500"></i>
+                        <span class="text-gold-500 text-xs tracking-widest font-medium">PREMIUM SERVICE</span>
+                    </div>
+                    
+                    <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                        Aerial Surveying <span class="text-gold-500">Redefined</span>
+                    </h2>
+                    
+                    <p class="text-xl text-gray-300 mb-6 leading-relaxed">
+                        Cutting-edge drone technology for comprehensive site surveys, stunning aerial photography, and precision 3D mapping.
+                    </p>
+                    
+                    <p class="text-gray-400 mb-8 leading-relaxed">
+                        Our professional drone services complement our stonework expertise, providing clients with detailed site analysis, progress monitoring, and breathtaking visual documentation. From construction monitoring to property marketing, we deliver unparalleled aerial perspectives.
+                    </p>
+
+                    <!-- Features List -->
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 border border-gold-500/50 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-video text-gold-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-white font-semibold text-sm">4K Video</div>
+                                <div class="text-gray-500 text-xs">Ultra HD Capture</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 border border-gold-500/50 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-cube text-gold-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-white font-semibold text-sm">3D Mapping</div>
+                                <div class="text-gray-500 text-xs">Precision Models</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 border border-gold-500/50 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-map-marked-alt text-gold-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-white font-semibold text-sm">Site Surveys</div>
+                                <div class="text-gray-500 text-xs">Detailed Analysis</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 border border-gold-500/50 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-certificate text-gold-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-white font-semibold text-sm">CAA Licensed</div>
+                                <div class="text-gray-500 text-xs">Fully Insured</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4">
+                        <a href="/drone-services" class="px-8 py-4 bg-gold-500 text-black font-semibold hover:bg-gold-400 transition-all duration-300 inline-flex items-center gap-2">
+                            Explore Drone Services
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="/drone-services#packages" class="px-8 py-4 border-2 border-gold-500/50 text-white font-semibold hover:border-gold-500 hover:bg-gold-500/10 transition-all duration-300">
+                            View Packages
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="py-32 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">PORTFOLIO</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6 luxury-underline pb-4"><%= @demo.work_title %></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg"><%= @demo.work_intro %></p>
+            </div>
+            
+            <!-- Gallery Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <% gallery_icons = %w[fa-layer-group fa-home fa-mountain fa-archway fa-building fa-monument] %>
+                <% 6.times do |i| %>
+                <div class="group relative overflow-hidden border border-gold-500/20 hover:border-gold-500/50 transition-all duration-500" data-animate<%= i > 0 ? " data-animate-delay=\"#{(i % 3) * 100}\"" : "" %>>
+                    <div class="relative h-80 overflow-hidden">
+                        <% proj_img = @demo.image_for("project_#{i + 1}") %>
+                        <% if proj_img.present? %>
+                            <%= image_tag proj_img, alt: @demo.project_cards[i][:title], class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" %>
+                        <% else %>
+                            <div class="w-full h-full bg-luxury-light flex items-center justify-center">
+                                <i class="fas <%= gallery_icons[i] %> text-5xl text-gold-500/20"></i>
+                            </div>
+                        <% end %>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="font-serif text-xl text-white mb-1"><%= @demo.project_cards[i][:title] %></h3>
+                            <p class="text-gold-500 text-sm"><%= @demo.project_cards[i][:category] %></p>
+                        </div>
+                    </div>
+                </div>
+                <% end %>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-32 relative overflow-hidden bg-black">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <!-- Section Header -->
+            <div class="text-center mb-20">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">TESTIMONIALS</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6 luxury-underline pb-4"><%= @demo.testimonials_title %></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg"><%= @demo.testimonials_intro %></p>
+            </div>
+            
+            <!-- Testimonials Grid -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="relative border-2 border-gold-500/20 p-8 bg-luxury-dark" data-animate>
+                    <div class="absolute -top-4 left-8">
+                        <i class="fas fa-quote-left text-4xl text-gold-500/30"></i>
+                    </div>
+                    
+                    <div class="mt-8 mb-6">
+                        <div class="flex gap-1 mb-4">
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed mb-6">"<%= @demo.testimonial_cards[0][:quote] %>"</p>
+                    </div>
+                    
+                    <div class="border-t border-gold-500/20 pt-4">
+                        <div class="font-semibold text-white"><%= @demo.testimonial_cards[0][:name] %></div>
+                        <div class="text-sm text-gold-500"><%= @demo.testimonial_cards[0][:role] %></div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="relative border-2 border-gold-500/20 p-8 bg-luxury-dark" data-animate data-animate-delay="200">
+                    <div class="absolute -top-4 left-8">
+                        <i class="fas fa-quote-left text-4xl text-gold-500/30"></i>
+                    </div>
+                    
+                    <div class="mt-8 mb-6">
+                        <div class="flex gap-1 mb-4">
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed mb-6">"<%= @demo.testimonial_cards[1][:quote] %>"</p>
+                    </div>
+                    
+                    <div class="border-t border-gold-500/20 pt-4">
+                        <div class="font-semibold text-white"><%= @demo.testimonial_cards[1][:name] %></div>
+                        <div class="text-sm text-gold-500"><%= @demo.testimonial_cards[1][:role] %></div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="relative border-2 border-gold-500/20 p-8 bg-luxury-dark" data-animate data-animate-delay="400">
+                    <div class="absolute -top-4 left-8">
+                        <i class="fas fa-quote-left text-4xl text-gold-500/30"></i>
+                    </div>
+                    
+                    <div class="mt-8 mb-6">
+                        <div class="flex gap-1 mb-4">
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                            <i class="fas fa-star text-gold-500"></i>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed mb-6">"<%= @demo.testimonial_cards[2][:quote] %>"</p>
+                    </div>
+                    
+                    <div class="border-t border-gold-500/20 pt-4">
+                        <div class="font-semibold text-white"><%= @demo.testimonial_cards[2][:name] %></div>
+                        <div class="text-sm text-gold-500"><%= @demo.testimonial_cards[2][:role] %></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-32 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">FAQ</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6 luxury-underline pb-4"><%= @demo.faq_title %></h2>
+            </div>
+            
+            <!-- FAQ Accordion -->
+            <div class="space-y-4">
+                <!-- FAQ 1 -->
+                <div class="border border-gold-500/20 bg-black">
+                    <button class="faq-question w-full text-left px-8 py-6 flex justify-between items-center hover:bg-gold-500/5 transition-colors">
+                        <span class="font-semibold text-white pr-8"><%= @demo.faq_items.fetch(0, @demo.faq_items.last)[:question] %></span>
+                        <i class="fas fa-plus text-gold-500 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-8 pb-6">
+                        <p class="text-gray-400 leading-relaxed"><%= @demo.faq_items.fetch(0, @demo.faq_items.last)[:answer] %></p>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="border border-gold-500/20 bg-black">
+                    <button class="faq-question w-full text-left px-8 py-6 flex justify-between items-center hover:bg-gold-500/5 transition-colors">
+                        <span class="font-semibold text-white pr-8"><%= @demo.faq_items.fetch(1, @demo.faq_items.last)[:question] %></span>
+                        <i class="fas fa-plus text-gold-500 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-8 pb-6">
+                        <p class="text-gray-400 leading-relaxed"><%= @demo.faq_items.fetch(1, @demo.faq_items.last)[:answer] %></p>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="border border-gold-500/20 bg-black">
+                    <button class="faq-question w-full text-left px-8 py-6 flex justify-between items-center hover:bg-gold-500/5 transition-colors">
+                        <span class="font-semibold text-white pr-8"><%= @demo.faq_items.fetch(2, @demo.faq_items.last)[:question] %></span>
+                        <i class="fas fa-plus text-gold-500 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-8 pb-6">
+                        <p class="text-gray-400 leading-relaxed"><%= @demo.faq_items.fetch(2, @demo.faq_items.last)[:answer] %></p>
+                    </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="border border-gold-500/20 bg-black">
+                    <button class="faq-question w-full text-left px-8 py-6 flex justify-between items-center hover:bg-gold-500/5 transition-colors">
+                        <span class="font-semibold text-white pr-8"><%= @demo.faq_items.fetch(3, @demo.faq_items.last)[:question] %></span>
+                        <i class="fas fa-plus text-gold-500 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-8 pb-6">
+                        <p class="text-gray-400 leading-relaxed"><%= @demo.faq_items.fetch(3, @demo.faq_items.last)[:answer] %></p>
+                    </div>
+                </div>
+
+                <!-- FAQ 5 -->
+                <div class="border border-gold-500/20 bg-black">
+                    <button class="faq-question w-full text-left px-8 py-6 flex justify-between items-center hover:bg-gold-500/5 transition-colors">
+                        <span class="font-semibold text-white pr-8"><%= @demo.faq_items.fetch(4, @demo.faq_items.last)[:question] %></span>
+                        <i class="fas fa-plus text-gold-500 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-8 pb-6">
+                        <p class="text-gray-400 leading-relaxed"><%= @demo.faq_items.fetch(4, @demo.faq_items.last)[:answer] %></p>
+                    </div>
+                </div>
+
+                <!-- FAQ 6 -->
+                <div class="border border-gold-500/20 bg-black">
+                    <button class="faq-question w-full text-left px-8 py-6 flex justify-between items-center hover:bg-gold-500/5 transition-colors">
+                        <span class="font-semibold text-white pr-8"><%= @demo.faq_items.fetch(5, @demo.faq_items.last)[:question] %></span>
+                        <i class="fas fa-plus text-gold-500 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-8 pb-6">
+                        <p class="text-gray-400 leading-relaxed"><%= @demo.faq_items.fetch(5, @demo.faq_items.last)[:answer] %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-32 relative overflow-hidden bg-black">
+        <div class="container mx-auto px-6 relative z-10 max-w-6xl">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">GET IN TOUCH</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6 luxury-underline pb-4"><%= @demo.contact_title %></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg"><%= @demo.contact_intro %></p>
+            </div>
+            
+            <!-- Split Layout: Contact Info & Form -->
+            <div class="grid lg:grid-cols-5 gap-12">
+                <!-- Left: Contact Information -->
+                <div class="lg:col-span-2">
+                    <div class="sticky top-24">
+                        <h3 class="font-serif text-3xl font-bold text-white mb-10">Contact Details</h3>
+                        
+                        <div class="space-y-8">
+                            <!-- Email -->
+                            <div class="group">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 border border-gold-500/50 flex items-center justify-center">
+                                        <i class="fas fa-envelope text-gold-500"></i>
+                                    </div>
+                                    <h4 class="text-sm uppercase tracking-wider text-gold-500 font-semibold">Email</h4>
+                                </div>
+                                <div class="pl-13">
+                                    <p class="text-lg text-white">
+                                        <%= @demo.contact_email %>
+                                    </p>
+                                    <p class="text-sm text-gray-500 mt-1">Response within 24 hours</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Divider -->
+                            <div class="border-t border-gold-500/10"></div>
+                            
+                            <!-- Phone -->
+                            <div class="group">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 border border-gold-500/50 flex items-center justify-center">
+                                        <i class="fas fa-phone text-gold-500"></i>
+                                    </div>
+                                    <h4 class="text-sm uppercase tracking-wider text-gold-500 font-semibold">Phone</h4>
+                                </div>
+                                <div class="pl-13">
+                                    <p class="text-lg text-white">
+                                        <%= @demo.contact_phone %>
+                                    </p>
+                                    <p class="text-sm text-gray-500 mt-1">Mon - Fri: 8AM - 6PM</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Divider -->
+                            <div class="border-t border-gold-500/10"></div>
+                            
+                            <!-- Location -->
+                            <div class="group">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 border border-gold-500/50 flex items-center justify-center">
+                                        <i class="fas fa-map-marker-alt text-gold-500"></i>
+                                    </div>
+                                    <h4 class="text-sm uppercase tracking-wider text-gold-500 font-semibold">Location</h4>
+                                </div>
+                                <div class="pl-13">
+                                    <p class="text-lg text-white">
+                                        The Cotswolds
+                                    </p>
+                                    <p class="text-sm text-gray-500 mt-1">Serving the Cotswolds & surrounding areas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Contact Form -->
+                <div class="lg:col-span-3">
+                    <div class="border-2 border-gold-500/20 p-8 bg-luxury-dark">
+                        <h3 class="font-serif text-2xl font-bold text-white mb-6">Send a Message</h3>
+                        
+                        <form id="contact-form" class="space-y-6" method="post" action="/contact" novalidate>
+                            <div data-status class="hidden w-full border border-gold-500/20 bg-gold-500/10 px-4 py-3 text-sm font-medium text-gold-100" aria-live="polite"></div>
+                            <ul data-errors class="hidden space-y-2 border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200" aria-live="polite"></ul>
+                            
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Full Name *</label>
+                                    <input type="text" id="name" name="name" autocomplete="name" required 
+                                           class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all" 
+                                           placeholder="Your name">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+                                    <input type="email" id="email" name="email" autocomplete="email" required 
+                                           class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all" 
+                                           placeholder="you@example.com">
+                                </div>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="phone" class="block text-sm font-medium text-gray-300 mb-2">Phone</label>
+                                    <input type="tel" id="phone" name="phone" autocomplete="tel" 
+                                           class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all" 
+                                           placeholder="Optional">
+                                </div>
+                                <div>
+                                    <label for="service" class="block text-sm font-medium text-gray-300 mb-2">Service *</label>
+                                    <select id="service" name="service" required 
+                                            class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-all appearance-none cursor-pointer">
+                                        <option value="" selected disabled>Select a service</option>
+                                        <option value="dry-stone-walling">Dry Stone Walling</option>
+                                        <option value="drone-surveying">Drone Surveying</option>
+                                        <option value="landscaping">Landscaping Features</option>
+                                        <option value="consultancy">Consultancy & Design</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="message" class="block text-sm font-medium text-gray-300 mb-2">Project Details *</label>
+                                <textarea id="message" name="message" rows="5" required minlength="10" 
+                                          class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all resize-none" 
+                                          placeholder="Tell us about your project..."></textarea>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="w-full bg-gold-500 hover:bg-gold-400 text-black font-semibold py-4 px-6 transition-all duration-300" 
+                                    data-default-text="Send Message">
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Media Links -->
+            <div class="mt-20 text-center">
+                <h3 class="font-serif text-2xl font-bold text-white mb-8">Follow Our Work</h3>
+                
+                <div class="flex justify-center gap-4">
+                    <a href="#" target="_blank" rel="noopener" aria-label="Facebook" class="w-12 h-12 border border-gold-500/30 flex items-center justify-center hover:border-gold-500 hover:bg-gold-500/10 transition-all">
+                        <i class="fab fa-facebook-f text-gray-400 hover:text-gold-500"></i>
+                    </a>
+                    <a href="#" target="_blank" rel="noopener" aria-label="Instagram" class="w-12 h-12 border border-gold-500/30 flex items-center justify-center hover:border-gold-500 hover:bg-gold-500/10 transition-all">
+                        <i class="fab fa-instagram text-gray-400 hover:text-gold-500"></i>
+                    </a>
+                    <a href="#" target="_blank" rel="noopener" aria-label="YouTube" class="w-12 h-12 border border-gold-500/30 flex items-center justify-center hover:border-gold-500 hover:bg-gold-500/10 transition-all">
+                        <i class="fab fa-youtube text-gray-400 hover:text-gold-500"></i>
+                    </a>
+                    <a href="#" target="_blank" rel="noopener" aria-label="LinkedIn" class="w-12 h-12 border border-gold-500/30 flex items-center justify-center hover:border-gold-500 hover:bg-gold-500/10 transition-all">
+                        <i class="fab fa-linkedin-in text-gray-400 hover:text-gold-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-white py-16 border-t border-gold-500/20 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-6xl relative z-10">
+            <!-- Footer Top -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-12 pb-12 border-b border-gold-500/10">
+                <div class="mb-6 md:mb-0">
+                    <div class="leading-none text-white">
+                        <div class="text-3xl font-serif font-bold tracking-tight text-gold-500"><%= @demo.site_title %></div>
+                        <div class="text-xs font-sans tracking-widest text-gray-400"><%= @demo.hero_badge %></div>
+                    </div>
+            </div>
+            
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="#contact" class="px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-black transition-all text-sm font-semibold">
+                        <%= @demo.cta_primary_text %>
+                    </a>
+                    <a href="#about" class="px-5 py-2.5 border border-gold-500/30 hover:border-gold-500 text-white transition-all text-sm">
+                        Learn More
+                        </a>
+                    </div>
+                </div>
+                
+            <!-- Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                <!-- About -->
+                <div>
+                    <h3 class="font-serif text-lg font-semibold text-white mb-4"><%= @demo.about_title %></h3>
+                    <p class="text-gray-400 text-sm mb-4 leading-relaxed">
+                        <%= @demo.about_body %>
+                    </p>
+                    <div class="space-y-2 mt-4">
+                        <a href="tel:<%= @demo.contact_phone %>" class="flex items-center gap-2 text-gold-500 hover:text-gold-400 text-sm transition-colors">
+                            <i class="fas fa-phone"></i>
+                            <span><%= @demo.contact_phone %></span>
+                        </a>
+                        <a href="mailto:<%= @demo.contact_email %>" class="flex items-center gap-2 text-gold-500 hover:text-gold-400 text-sm transition-colors">
+                            <i class="fas fa-envelope"></i>
+                            <span><%= @demo.contact_email %></span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Services -->
+                <div>
+                    <h3 class="font-serif text-lg font-semibold text-white mb-4">Our Services</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#services" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Dry Stone Walling</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Drone Surveying</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Landscaping Features</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Consultancy & Design</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="font-serif text-lg font-semibold text-white mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Home</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">About Us</a></li>
+                        <li><a href="#gallery" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Gallery</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Footer Bottom -->
+            <div class="pt-8 border-t border-gold-500/10">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-gray-400 text-sm text-center md:text-left">
+                        &copy; <%= Time.current.year %> <%= @demo.site_title %>. All rights reserved.
+                    </p>
+                    <div class="flex items-center gap-2 text-gray-400 text-sm">
+                        <i class="fas fa-award text-gold-500"></i>
+                        <span>Craftsmanship Excellence</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (() => {
+        // ── Navbar scroll behaviour ──────────────────────────────────────────
+        const navbar = document.getElementById('navbar');
+        const onScroll = () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 60);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        // ── Mobile menu toggle ────────────────────────────────────────────────
+        const menuBtn   = document.getElementById('mobile-menu-button');
+        const menuIcon  = document.getElementById('mobile-menu-icon');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuBtn?.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.toggle('open');
+            menuBtn.setAttribute('aria-expanded', isOpen);
+            menuIcon.className = isOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl';
+        });
+
+        // Close mobile menu when a link is clicked
+        mobileMenu?.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                menuBtn.setAttribute('aria-expanded', 'false');
+                menuIcon.className = 'fas fa-bars text-xl';
+            });
+        });
+
+        // ── Active nav link on scroll ─────────────────────────────────────────
+        const sections  = document.querySelectorAll('section[id], div[id="hero-section"]');
+        const navLinks  = document.querySelectorAll('.nav-link');
+        const navHeight = navbar.offsetHeight;
+
+        const updateActive = () => {
+            let current = '';
+            sections.forEach(section => {
+                if (window.scrollY >= section.offsetTop - navHeight - 40) {
+                    current = section.id;
+                }
+            });
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href')?.replace('#', '');
+                link.classList.toggle('active', href === current);
+            });
+        };
+        window.addEventListener('scroll', updateActive, { passive: true });
+        updateActive();
+
+        // ── Scroll-reveal animations ──────────────────────────────────────────
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+
+        document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
+
+        // ── FAQ accordion ─────────────────────────────────────────────────────
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function () {
+                const answer = this.nextElementSibling;
+                const icon   = this.querySelector('i');
+                const isOpen = !answer.classList.contains('hidden');
+
+                document.querySelectorAll('.faq-answer').forEach(a => {
+                    if (a !== answer) a.classList.add('hidden');
+                });
+                document.querySelectorAll('.faq-question i').forEach(i => {
+                    if (i !== icon) {
+                        i.classList.replace('fa-minus', 'fa-plus');
+                    }
+                });
+
+                answer.classList.toggle('hidden', isOpen);
+                icon.classList.toggle('fa-plus', isOpen);
+                icon.classList.toggle('fa-minus', !isOpen);
+            });
+        });
+
+        // ── Smooth scroll for anchor links ────────────────────────────────────
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', e => {
+                const target = document.querySelector(anchor.getAttribute('href'));
+                if (!target) return;
+                e.preventDefault();
+                const top = target.getBoundingClientRect().top + window.scrollY - navbar.offsetHeight;
+                window.scrollTo({ top, behavior: 'smooth' });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

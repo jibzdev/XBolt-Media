@@ -1,0 +1,81 @@
+<div class="w-full max-w-2xl">
+  <div class="mb-5 flex items-center justify-between">
+    <%= link_to root_path, class: "inline-flex items-center gap-2 text-[13px] font-semibold text-zinc-800 hover:text-zinc-600 transition-colors" do %>
+      <img src="<%= brand_logo_url %>" alt="Logo" class="w-8 h-6 object-contain">
+      <span><%= @general_setting&.application_name.presence || "XBolt Media" %></span>
+    <% end %>
+    <span class="text-[11px] text-zinc-400 tabular-nums"><%= Time.current.strftime("%Y-%m-%d %H:%M") %></span>
+  </div>
+
+  <div class="bg-white border border-zinc-200/70 rounded-xl p-6 sm:p-8 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-start gap-6">
+      <div class="flex-1">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-50 border border-zinc-200/70 text-zinc-600 text-[11px] font-medium">
+          <i data-lucide="<%= icon %>" class="w-3 h-3"></i>
+          <span><%= badge %></span>
+        </div>
+
+        <div class="mt-4 text-[48px] sm:text-[56px] font-black tracking-tight text-zinc-900 leading-none">
+          <%= code %>
+        </div>
+
+        <h1 class="mt-3 text-[18px] sm:text-[20px] font-semibold tracking-tight text-zinc-800">
+          <%= title %>
+        </h1>
+
+        <p class="mt-2 text-[13px] text-zinc-500 leading-relaxed">
+          <%= message %>
+        </p>
+
+        <div class="mt-5 flex flex-col sm:flex-row gap-2">
+          <%= link_to root_path, class: "inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition" do %>
+            <i data-lucide="home" class="w-3.5 h-3.5"></i>
+            Back to home
+          <% end %>
+
+          <button type="button"
+                  onclick="history.length > 1 ? history.back() : window.location.href='/'"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-zinc-200/70 text-zinc-700 text-[13px] font-medium hover:bg-zinc-50 transition">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            Go back
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full sm:w-[220px] flex-shrink-0">
+        <div class="rounded-xl border border-zinc-200/70 bg-zinc-50 p-4">
+          <div class="text-[12px] font-semibold text-zinc-800">What you can do</div>
+          <ul class="mt-2.5 space-y-2 text-[12px] text-zinc-500">
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="w-3 h-3 text-zinc-800 mt-0.5 flex-shrink-0"></i>
+              <span>Check the URL and try again</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="w-3 h-3 text-zinc-800 mt-0.5 flex-shrink-0"></i>
+              <span>Refresh the page</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="w-3 h-3 text-zinc-800 mt-0.5 flex-shrink-0"></i>
+              <span>Return to the homepage</span>
+            </li>
+          </ul>
+
+          <button type="button"
+                  onclick="window.location.reload()"
+                  class="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-zinc-200/70 text-zinc-700 text-[12px] font-medium hover:bg-zinc-50 transition">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+            Reload
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 text-center text-[11px] text-zinc-400">
+    If this keeps happening, contact support at
+    <a class="font-medium text-zinc-600 hover:text-zinc-800 transition-colors"
+       href="mailto:<%= @general_setting&.contact_email || 'info@xboltmedia.com' %>">
+      <%= @general_setting&.contact_email || 'info@xboltmedia.com' %>
+    </a>
+  </div>
+</div>

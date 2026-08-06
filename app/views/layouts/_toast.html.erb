@@ -1,0 +1,137 @@
+<% flash.each_with_index do |(type, message), index| %>
+    <div id="toast-<%= type %>-<%= index %>" 
+         class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 transition-all duration-500 ease-out z-50 opacity-0 translate-y-full" 
+         style="z-index: <%= 9999 + index %>; bottom: <%= 1.5 + (index * 5) %>rem;"
+         role="alert">
+        
+        <div class="relative overflow-hidden rounded-2xl bg-white/95 backdrop-blur-xl shadow-[0_20px_70px_-15px_rgba(0,0,0,0.3)] border border-zinc-200/80">
+            <!-- Progress Bar (Top) -->
+            <div class="absolute top-0 left-0 right-0 w-full bg-zinc-100 h-1">
+                <div
+                    class="progress-bar h-1 transition-all duration-[4000ms] ease-linear"
+                    style="width: 0%; background: linear-gradient(90deg, var(--xbolt-primary), var(--xbolt-primary-hover));">
+                </div>
+            </div>
+            
+            <!-- Toast Content -->
+            <div class="flex items-start gap-3 p-4 pt-5">
+                <!-- Icon -->
+                <div class="flex-shrink-0 mt-0.5">
+                    <% if type == 'notice' %>
+                        <div
+                            class="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style="background-color: rgb(var(--xbolt-primary-rgb) / 0.10); border: 1px solid rgb(var(--xbolt-primary-rgb) / 0.18);">
+                            <i class="bx bx-check-circle text-xl" style="color: var(--xbolt-primary);"></i>
+                        </div>
+                    <% elsif type == 'alert' %>
+                        <div
+                            class="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style="background-color: rgb(var(--xbolt-primary-rgb) / 0.10); border: 1px solid rgb(var(--xbolt-primary-rgb) / 0.18);">
+                            <i class="bx bx-error-circle text-xl" style="color: var(--xbolt-primary);"></i>
+                        </div>
+                    <% else %>
+                        <div
+                            class="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style="background-color: rgb(var(--xbolt-primary-rgb) / 0.10); border: 1px solid rgb(var(--xbolt-primary-rgb) / 0.18);">
+                            <i class="bx bx-info-circle text-xl" style="color: var(--xbolt-primary);"></i>
+                        </div>
+                    <% end %>
+                </div>
+                
+                <!-- Message -->
+                <div class="flex-1 min-w-0 pt-0.5">
+                    <p class="text-sm font-semibold text-zinc-950 tracking-tight">
+                        <%= type == 'notice' ? 'Success' : type == 'alert' ? 'Error' : 'Info' %>
+                    </p>
+                    <p class="mt-0.5 text-sm text-zinc-600 leading-relaxed break-words">
+                        <%= message %>
+                    </p>
+                </div>
+                
+                <!-- Close Button -->
+                <div class="flex-shrink-0">
+                    <button type="button" 
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-200 transition-all duration-200"
+                            onclick="dismissToast('toast-<%= type %>-<%= index %>')">
+                        <i class="bx bx-x text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const toastId = 'toast-<%= type %>-<%= index %>';
+            const toast = document.getElementById(toastId);
+            const progressBar = toast?.querySelector('.progress-bar');
+            
+            if (!toast) return;
+            
+            let autoHideTimer = null;
+            let isHovered = false;
+            
+            // Function to dismiss toast
+            window.dismissToast = function(id) {
+                const toastElement = document.getElementById(id);
+                if (toastElement && toastElement.parentNode) {
+                    toastElement.classList.add('opacity-0', 'translate-y-full');
+                    setTimeout(() => {
+                        if (toastElement && toastElement.parentNode) {
+                            toastElement.remove();
+                        }
+                    }, 500);
+                }
+            };
+            
+            // Show toast with smooth slide up animation
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    toast.classList.remove('opacity-0', 'translate-y-full');
+                }, 10);
+            });
+            
+            // Start progress bar animation
+            setTimeout(() => {
+                if (progressBar && !isHovered) {
+                    progressBar.style.width = '100%';
+                }
+            }, 100);
+            
+            // Auto-hide function
+            function startAutoHide() {
+                autoHideTimer = setTimeout(() => {
+                    if (toast && toast.parentNode && !isHovered) {
+                        dismissToast(toastId);
+                    }
+                }, 4000);
+            }
+            
+            // Start auto-hide timer
+            startAutoHide();
+            
+            // Pause on hover
+            toast.addEventListener('mouseenter', () => {
+                isHovered = true;
+                if (autoHideTimer) {
+                    clearTimeout(autoHideTimer);
+                }
+                if (progressBar) {
+                    const currentWidth = progressBar.style.width;
+                    progressBar.style.transition = 'none';
+                    progressBar.style.width = currentWidth;
+                }
+            });
+            
+            // Resume on mouse leave
+            toast.addEventListener('mouseleave', () => {
+                isHovered = false;
+                if (progressBar) {
+                    progressBar.style.transition = 'width 2s linear';
+                    progressBar.style.width = '100%';
+                }
+                startAutoHide();
+            });
+        })();
+    </script>
+<% end %>

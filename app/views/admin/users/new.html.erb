@@ -1,0 +1,85 @@
+<% content_for :page_title, "New User" %>
+<% content_for :page_description, "Create a new username/password account" %>
+
+<div class="max-w-3xl">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <%= form_with(model: @user, url: admin_users_path, method: :post, local: true, class: "space-y-5") do |form| %>
+      <% if @user.errors.any? %>
+        <div class="p-3 rounded-lg bg-red-50 border border-red-200/70 text-red-700">
+          <div class="text-[13px] font-medium mb-1.5">Please fix the following:</div>
+          <ul class="list-disc list-inside text-[12px] space-y-0.5">
+            <% @user.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <%= form.label :username, class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <%= form.text_field :username, required: true, placeholder: "username", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <%= form.label :password, class: "block text-[13px] font-medium text-zinc-600" %>
+            <button id="gen-password-btn" type="button" class="text-[11px] font-medium text-zinc-500 hover:text-zinc-700 transition">
+              Generate
+            </button>
+          </div>
+          <%= form.password_field :password, id: "new_user_password", required: true, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+        </div>
+
+        <div>
+          <%= form.label :password_confirmation, class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <%= form.password_field :password_confirmation, id: "new_user_password_confirmation", required: true, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+        </div>
+
+        <div>
+          <%= form.label :status, class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+          <%= form.select :status, ['verified', 'unverified'], {}, {class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300"} %>
+        </div>
+
+        <% if current_user&.super_admin? %>
+          <div>
+            <%= form.label :admin_role, "Admin role", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+            <%= form.select :admin_role,
+              [["Business user", ""], ["Moderator", "moderator"], ["Admin", "admin"], ["Super Admin", "super_admin"]],
+              {},
+              class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="flex gap-2 pt-3">
+        <%= link_to "Cancel", admin_users_path, class: "px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" %>
+        <%= form.submit "Create User", class: "px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const btn = document.getElementById("gen-password-btn");
+    const pw = document.getElementById("new_user_password");
+    const pw2 = document.getElementById("new_user_password_confirmation");
+    if (!btn || !pw || !pw2) return;
+
+    function generate(len) {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+      const bytes = new Uint8Array(len);
+      (window.crypto || window.msCrypto).getRandomValues(bytes);
+      let out = "";
+      for (let i = 0; i < bytes.length; i++) out += alphabet[bytes[i] % alphabet.length];
+      return out;
+    }
+
+    btn.addEventListener("click", () => {
+      const p = generate(16);
+      pw.value = p;
+      pw2.value = p;
+    });
+  })();
+</script>

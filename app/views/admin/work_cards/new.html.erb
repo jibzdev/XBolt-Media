@@ -1,0 +1,14 @@
+<% content_for :page_title, "New Work Card" %>
+<% content_for :page_description, "Add an external showcase card to Work page" %>
+
+<div class="max-w-3xl">
+  <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+    <%= form_with model: @work_card, url: admin_work_cards_path, local: true do |f| %>
+      <%= render "form", f: f, work_card: @work_card %>
+      <div class="mt-5 flex items-center gap-2">
+        <%= f.submit "Create Card", class: "px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer" %>
+        <%= link_to "Cancel", admin_work_cards_path, class: "px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" %>
+      </div>
+    <% end %>
+  </div>
+</div>

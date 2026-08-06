@@ -1,0 +1,123 @@
+<% content_for :page_title, "Edit User: #{@user.username}" %>
+<% content_for :page_description, "Update user account and permissions" %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+  <div class="lg:col-span-2 space-y-3">
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <%= form_with(model: @user, url: admin_user_path(@user), method: :patch, local: true, class: "space-y-5") do |form| %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <%= form.label :username, class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+            <%= form.text_field :username, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-[13px] font-medium text-zinc-600 mb-1.5">Password</label>
+            <div class="space-y-3">
+              <%= form.password_field :password, placeholder: "New password (leave blank to keep current)", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+              <%= form.password_field :password_confirmation, placeholder: "Confirm new password", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+            </div>
+          </div>
+
+          <div>
+            <%= form.label :status, class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+            <%= form.select :status, ['verified', 'unverified'], {}, {class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300"} %>
+          </div>
+
+          <div>
+            <%= form.label :email, class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+            <%= form.email_field :email, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+          </div>
+
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-2">
+              <%= form.check_box :receive_email_notifications, class: "h-4 w-4 text-zinc-900 focus:ring-zinc-300 border-zinc-300 rounded" %>
+              <%= form.label :receive_email_notifications, "Receive email notifications", class: "text-[13px] font-medium text-zinc-600" %>
+            </div>
+          </div>
+
+          <% if current_user&.super_admin? %>
+            <div class="md:col-span-2">
+              <%= form.label :admin_role, "Admin role", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
+              <%= form.select :admin_role,
+                [["Business user", ""], ["Moderator", "moderator"], ["Admin", "admin"], ["Super Admin", "super_admin"]],
+                { selected: @user.effective_admin_role.to_s },
+                class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 focus:border-zinc-300" %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="flex gap-2 pt-3">
+          <%= link_to "Cancel", admin_user_path(@user), class: "px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition" %>
+          <%= form.submit "Update User", class: "px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-5 xb-card-hover">
+      <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <h3 class="text-[13px] font-semibold text-zinc-700">User Statistics</h3>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] text-zinc-400">Total Payments</span>
+            <i data-lucide="credit-card" class="w-3.5 h-3.5 text-zinc-300"></i>
+          </div>
+          <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @user.payments.count %></div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] text-zinc-400">Activities</span>
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-zinc-300"></i>
+          </div>
+          <div class="text-[15px] font-semibold text-zinc-900 tabular-nums"><%= @user.activities.count %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="activity" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <h3 class="text-[13px] font-semibold text-zinc-700">IP Activity Log</h3>
+      </div>
+      <% if @ip_logs.blank? %>
+        <div class="text-center py-4">
+          <i data-lucide="info" class="w-7 h-7 text-zinc-200 mx-auto mb-1.5"></i>
+          <p class="text-[13px] font-medium text-zinc-500">No IP activity</p>
+          <p class="text-[12px] text-zinc-400 mt-0.5">No IP activity recorded yet.</p>
+        </div>
+      <% else %>
+        <div class="max-h-[350px] overflow-y-auto space-y-2">
+          <% @ip_logs.each do |log| %>
+            <div class="flex items-center justify-between p-2.5 bg-zinc-50/50 border border-zinc-100 rounded-lg">
+              <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                <span class="text-[12px] font-mono text-zinc-700"><%= log.ip_address %></span>
+              </div>
+              <span class="text-[11px] text-zinc-400"><%= log.login_time.strftime("%b %d, %H:%M") %></span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="bg-white rounded-xl border border-zinc-200/70 p-4 xb-card-hover">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-400"></i>
+        <h3 class="text-[13px] font-semibold text-red-600">Danger Zone</h3>
+      </div>
+      <%= button_to admin_user_path(@user), method: :delete,
+          data: { turbo_confirm: 'Are you sure you want to delete this user? This action cannot be undone.' },
+          class: "w-full px-3.5 py-2 rounded-lg bg-red-50 text-red-600 border border-red-200/70 text-[13px] font-medium hover:bg-red-100 transition flex items-center justify-center gap-1.5" do %>
+        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        <span>Delete User</span>
+      <% end %>
+    </div>
+  </div>
+</div>

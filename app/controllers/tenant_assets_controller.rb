@@ -1,19 +1,25 @@
 class TenantAssetsController < ApplicationController
   def index
     business = business_for_assets
-    return render json: { assets: [] } if business.nil?
+    return render json: { assets: [] }, status: :not_found if business.nil?
 
     category_filter = normalize_category(params[:category]) if params[:category].present?
-    all_assets = business.assets_attachments.includes(:blob).order(created_at: :desc)
-    all_assets = all_assets.select { |attachment| asset_category(attachment.blob) == category_filter } if category_filter.present?
+    attachments = business.assets_attachments.includes(:blob).order(created_at: :desc)
 
-    assets = all_assets.map do |attachment|
+    assets = []
+    categories = Set.new
+
+    attachments.each do |attachment|
       blob = attachment.blob
-      {
+      category = asset_category(blob)
+      next if category_filter.present? && category != category_filter
+
+      categories << category
+      assets << {
         id: attachment.id,
         filename: blob.filename.to_s,
         title: asset_title(blob),
-        category: asset_category(blob),
+        category: category,
         content_type: blob.content_type,
         byte_size: blob.byte_size,
         created_at: attachment.created_at,
@@ -21,33 +27,43 @@ class TenantAssetsController < ApplicationController
       }
     end
 
-    categories = assets.map { |asset| asset[:category] }.uniq.sort
-    render json: { assets: assets, categories: categories }
+    render json: { assets: assets, categories: categories.to_a.sort }
   end
 
   private
 
+  # Only expose assets for the current tenant host. Do not allow enumeration by
+  # arbitrary business IDs from the main platform domain.
   def business_for_assets
-    tenant_id = params[:tenant_id].presence
-    return Business.find_by(id: tenant_id) if tenant_id.present?
+    return current_business if current_business.present?
 
-    current_business
+    tenant_id = params[:tenant_id].presence
+    return nil if tenant_id.blank?
+    return nil unless user_signed_in?
+
+    business = Business.find_by(id: tenant_id)
+    return nil if business.nil?
+
+    return business if current_user.full_admin?
+    return business if current_user.business_id == business.id
+
+    nil
   end
 
   def asset_title(blob)
-    data = blob.metadata.fetch('xbolt', {})
-    title = data.is_a?(Hash) ? data['title'].to_s.strip : ''
+    data = blob.metadata.fetch("xbolt", {})
+    title = data.is_a?(Hash) ? data["title"].to_s.strip : ""
     title.presence || blob.filename.base
   end
 
   def asset_category(blob)
-    data = blob.metadata.fetch('xbolt', {})
-    category = data.is_a?(Hash) ? data['category'].to_s.strip : ''
+    data = blob.metadata.fetch("xbolt", {})
+    category = data.is_a?(Hash) ? data["category"].to_s.strip : ""
     normalize_category(category)
   end
 
   def normalize_category(value)
-    slug = value.to_s.strip.downcase.gsub(/[^a-z0-9]+/, '-').gsub(/\A-+|-+\z/, '')
-    slug.presence || 'general'
+    slug = value.to_s.strip.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-+|-+\z/, "")
+    slug.presence || "general"
   end
 end

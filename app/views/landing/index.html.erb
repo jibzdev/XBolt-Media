@@ -503,6 +503,43 @@
         <% end %>
 
         <!-- ════════════════════════════════════════════════
+             FAQ
+             ════════════════════════════════════════════════ -->
+        <section class="relative py-28 sm:py-36 overflow-hidden">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl mx-auto text-center mb-12" data-anim>
+                    <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-amber-500/70 mb-4">
+                        <span class="w-6 h-px bg-amber-500/40"></span> FAQ <span class="w-6 h-px bg-amber-500/40"></span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl md:text-[3.25rem] font-extrabold tracking-[-0.03em] xb-grad-white leading-tight">Questions, answered</h2>
+                    <p class="mt-5 text-base text-zinc-500 max-w-md mx-auto leading-relaxed">Quick answers about timelines, support, and working with XBolt.</p>
+                </div>
+
+                <div class="max-w-3xl mx-auto space-y-3" data-anim>
+                    <% @faqs.first(4).each do |faq| %>
+                        <details class="rounded-2xl border border-white/[0.06] bg-white/[0.03] open:border-amber-500/20 open:bg-amber-500/[0.04] overflow-hidden group">
+                            <summary class="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                                <span class="text-sm sm:text-base font-semibold text-white text-left"><%= faq[:question] %></span>
+                                <i class='bx bx-chevron-down text-amber-400 text-xl flex-shrink-0 transition-transform group-open:rotate-180'></i>
+                            </summary>
+                            <div class="px-5 pb-5">
+                                <p class="text-sm text-zinc-500 leading-relaxed"><%= faq[:answer] %></p>
+                            </div>
+                        </details>
+                    <% end %>
+                </div>
+
+                <div class="text-center mt-10" data-anim>
+                    <a href="<%= faq_path %>" class="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-amber-500/15 text-sm font-medium text-amber-500/80 hover:text-amber-400 hover:border-amber-500/30 hover:bg-amber-500/[0.04] transition-all">
+                        View all FAQs <i class='bx bx-right-arrow-alt text-base transition-transform group-hover:translate-x-1'></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <div class="xb-sep"></div>
+
+        <!-- ════════════════════════════════════════════════
              CTA
              ════════════════════════════════════════════════ -->
         <section class="relative overflow-hidden pt-32 sm:pt-44 pb-32 sm:pb-40">

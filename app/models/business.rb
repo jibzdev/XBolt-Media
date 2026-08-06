@@ -1,4 +1,8 @@
 class Business < ApplicationRecord
+  # Encrypt SMTP app passwords at rest. Existing plaintext values remain readable
+  # while support_unencrypted_data is enabled; re-saving encrypts them.
+  encrypts :tenant_contact_sender_password
+
   before_validation :normalize_subdomain
   before_validation :normalize_custom_domain
   before_validation :normalize_contact_email_fields

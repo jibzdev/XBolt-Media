@@ -2,6 +2,8 @@ class SitemapXmlBuilder
   PUBLIC_PATHS = [
     '/',
     '/about',
+    '/team',
+    '/faq',
     '/services',
     '/work',
     '/contact',

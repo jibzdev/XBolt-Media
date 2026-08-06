@@ -20,19 +20,19 @@ class Admin::UsersController < ApplicationController
     if @can_view_user_tracking
       @ip_logs = @user.ip_logs.order(login_time: :desc).limit(25)
       known_ips = @ip_logs.map(&:ip_address).compact_blank.uniq
-      @recent_page_views = known_ips.any? ? PageView.where(ip_hash: known_ips).recent.limit(25) : PageView.none
+      known_ip_hashes = known_ips.filter_map { |ip| RequestIp.hash_for(ip) }.uniq
+      @recent_page_views = known_ip_hashes.any? ? PageView.where(ip_hash: known_ip_hashes).recent.limit(25) : PageView.none
       @tracking_summary = {
         activities: @user.activities.count,
         logins: @user.ip_logs.count,
-        page_views: known_ips.any? ? PageView.where(ip_hash: known_ips).count : 0,
+        page_views: known_ip_hashes.any? ? PageView.where(ip_hash: known_ip_hashes).count : 0,
         unique_ips: known_ips.count
       }
     end
 
-    creds = session[:new_user_credentials]
+    creds = flash[:new_user_credentials]
     if creds.is_a?(Hash) && creds['user_id'].to_i == @user.id
       @new_user_credentials = creds
-      session.delete(:new_user_credentials)
     end
   end
 
@@ -63,7 +63,7 @@ class Admin::UsersController < ApplicationController
     if @user.save
       log_activity("Created user #{@user.username}")
       password_for_display = generated_password || attrs['password']
-      session[:new_user_credentials] = {
+      flash[:new_user_credentials] = {
         'user_id' => @user.id,
         'username' => @user.username,
         'password' => password_for_display,

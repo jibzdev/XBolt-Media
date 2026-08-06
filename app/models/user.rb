@@ -195,45 +195,7 @@ class User < ApplicationRecord
     end
   end
 
-  def current_streak
-    # Calculate current streak based on login activity
-    # This is a placeholder - implement based on your needs
-    0
-  end
-
-  def questions_answered_correctly
-    # Placeholder for question tracking
-    0
-  end
-
-  def questions_answered_incorrectly
-    # Placeholder for question tracking
-    0
-  end
-
-  def questions_not_answered
-    # Placeholder for question tracking
-    0
-  end
-
-  def question_sessions
-    # Placeholder for question sessions
-    []
-  end
-
-  def user_products
-    # Placeholder for user products/subscriptions
-    []
-  end
-
-  def selected_product_id
-    # Placeholder for selected product
-    nil
-  end
-
-  # Add a callback to update last_active_at on each request
   before_save :update_last_active
-
   before_destroy :cleanup_associations
 
   def set_google_secret

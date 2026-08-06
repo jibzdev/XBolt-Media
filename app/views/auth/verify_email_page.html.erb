@@ -93,7 +93,7 @@
 
                 <div class="mt-7 pt-7 border-t border-white/[0.06] text-center">
                     <p class="text-xs text-zinc-600 mb-3">Need to use a different email?</p>
-                    <%= link_to logout_path, method: :get, class: "inline-flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-amber-400 transition-colors" do %>
+                    <%= button_to logout_path, method: :delete, class: "inline-flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-amber-400 transition-colors", form: { class: "inline" } do %>
                         <i class="bx bx-log-out"></i>
                         <span>Sign out and try again</span>
                     <% end %>

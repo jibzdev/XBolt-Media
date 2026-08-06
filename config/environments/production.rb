@@ -1,7 +1,13 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  config.hosts.clear
+  # Host authorization: allow platform + tenant custom domains (cached lookup).
+  config.hosts << "xboltmedia.com"
+  config.hosts << /.*\.xboltmedia\.com/
+  config.host_authorization = {
+    exclude: ->(request) { TenantHostAuthorization.excluded?(request) }
+  }
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -58,8 +64,12 @@ Rails.application.configure do
   # Prepend all log lines with the following tags.
   config.log_tags = [ :request_id ]
 
-  # Use a different cache store in production.
-  # config.cache_store = :mem_cache_store
+  # Prefer Redis when available so auth throttles / host auth cache are shared.
+  if ENV["REDIS_URL"].present?
+    config.cache_store = :redis_cache_store, { url: ENV["REDIS_URL"] }
+  else
+    config.cache_store = :memory_store, { size: 64.megabytes }
+  end
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
   # config.active_job.queue_adapter     = :resque
@@ -122,9 +132,7 @@ Rails.application.configure do
       password:             gmail_password,
       authentication:       'plain',
       enable_starttls_auto: true,
-      openssl_verify_mode:  'none',
-      return_response:      true,
-      enable_ssl:           false
+      return_response:      true
     }
     
     Rails.logger&.info "Gmail SMTP configured successfully in production"

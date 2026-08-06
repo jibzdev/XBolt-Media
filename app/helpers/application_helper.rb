@@ -20,7 +20,7 @@ module ApplicationHelper
   SOCIAL_LINK_DEFAULTS = {
     tiktok: { label: "TikTok", icon: "bxl-tiktok", default: "https://tiktok.com/@xboltmedia" },
     instagram: { label: "Instagram", icon: "bxl-instagram", default: "https://instagram.com/xboltmedia" },
-    linkedin: { label: "LinkedIn", icon: "bxl-linkedin", default: "https://linkedin.com/company/xboltmedia" },
+    linkedin: { label: "LinkedIn", icon: "bxl-linkedin", default: "https://www.linkedin.com/company/xbolt-media/" },
     facebook: { label: "Facebook", icon: "bxl-facebook", default: nil }
   }.freeze
 
@@ -111,9 +111,7 @@ module ApplicationHelper
   end
 
   def category_open?(paths)
-    Rails.logger.debug "Checking paths: #{paths.inspect}"
-    Rails.logger.debug "Current page: #{request.path}"
-    paths.any? { |path| current_page?(path) } ? 'block' : 'hidden'
+    paths.any? { |path| current_page?(path) } ? "block" : "hidden"
   end
 
   def business_site_url(business)

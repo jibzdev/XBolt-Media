@@ -6,11 +6,24 @@ class LandingController < ApplicationController
     @landing_seo = SeoSetting.for_page('landing')
     @launches_count = Business.count
     @reviews = Review.visible.limit(12)
+    @faqs = @general_setting.faq_items
   end
 
   def about
     @general_setting = GeneralSetting.first_or_initialize
     @about_seo = SeoSetting.find_by(page_name: 'about')
+  end
+
+  def team
+    @general_setting = GeneralSetting.first_or_initialize
+    @team_seo = SeoSetting.find_by(page_name: 'team')
+    @team_members = @general_setting.team_members
+  end
+
+  def faq
+    @general_setting = GeneralSetting.first_or_initialize
+    @faq_seo = SeoSetting.find_by(page_name: 'faq')
+    @faqs = @general_setting.faq_items
   end
 
   def services

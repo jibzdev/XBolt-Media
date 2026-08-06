@@ -38,15 +38,26 @@ end
 puts "Services created successfully!"
 
 # Create admin user (username-based)
-admin_password = ENV['ADMIN_PASSWORD'].presence || 'admin'
-admin = User.find_or_initialize_by(username: 'admin')
+admin_password = ENV["ADMIN_PASSWORD"].presence
+if admin_password.blank?
+  if Rails.env.production?
+    raise "ADMIN_PASSWORD must be set when seeding in production"
+  end
+  admin_password = SecureRandom.base58(20)
+  puts "ADMIN_PASSWORD not set; generated a one-time password for local/dev:"
+  puts "  username: admin"
+  puts "  password: #{admin_password}"
+end
+
+admin = User.find_or_initialize_by(username: "admin")
 admin.assign_attributes(
   password: admin_password,
   password_confirmation: admin_password,
   admin: true,
-  status: 'verified'
+  admin_role: "super_admin",
+  status: "verified"
 )
-admin.email ||= 'admin@admin.com'
+admin.email ||= "admin@admin.com"
 admin.save!
 
 puts "Admin user ensured successfully!"

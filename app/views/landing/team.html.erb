@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%= seo_meta_tags('team') rescue nil %>
+    <title>Meet the team · XBolt Media</title>
+    <meta name="description" content="Meet the XBolt Media team — the people behind premium websites and systems for modern businesses.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <%= render "layouts/theme" %>
+    <link rel="icon" type="image/png" href="<%= brand_favicon_url %>">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #09090b; }
+        [data-anim] { opacity: 0; transform: translateY(36px); transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1), transform 0.85s cubic-bezier(0.16,1,0.3,1); }
+        [data-anim].is-visible { opacity: 1; transform: translateY(0); }
+        [data-stagger] > * { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+        [data-stagger].is-visible > *:nth-child(1) { transition-delay: 0s; }
+        [data-stagger].is-visible > *:nth-child(2) { transition-delay: 0.1s; }
+        [data-stagger].is-visible > *:nth-child(3) { transition-delay: 0.2s; }
+        [data-stagger].is-visible > * { opacity: 1; transform: translateY(0); }
+        .xb-grad-amber { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .xb-grad-white { background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .xb-glass {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            transition: border-color 0.4s ease, background 0.4s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s ease;
+        }
+        .xb-glass:hover {
+            background: rgba(251,191,36,0.04); border-color: rgba(251,191,36,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 24px 48px -16px rgba(0,0,0,0.5), 0 0 0 1px rgba(251,191,36,0.06);
+        }
+        .xb-sep { height: 1px; background: linear-gradient(90deg, transparent, rgba(251,191,36,0.12) 50%, transparent); }
+        @media (prefers-reduced-motion: reduce) { [data-anim], [data-stagger] > * { opacity: 1 !important; transform: none !important; transition: none !important; } .xb-glass:hover { transform: none !important; } }
+    </style>
+</head>
+<body class="text-white antialiased overflow-x-hidden">
+    <%= render 'landing/navbar' %>
+
+    <main>
+        <section class="pt-36 sm:pt-44 pb-24" style="background: #09090b;">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto text-center mb-16" data-anim>
+                    <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-amber-500/70 mb-4">
+                        <span class="w-5 h-px bg-amber-500/40"></span> Team <span class="w-5 h-px bg-amber-500/40"></span>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-[-0.04em] xb-grad-white">Meet the team</h1>
+                    <p class="mt-5 text-base sm:text-lg text-zinc-500 leading-relaxed max-w-xl mx-auto">
+                        A focused crew building premium websites and systems for modern businesses.
+                    </p>
+                </div>
+
+                <div class="max-w-5xl mx-auto grid sm:grid-cols-3 gap-5" data-stagger>
+                    <% @team_members.each do |member| %>
+                        <article class="xb-glass rounded-2xl p-6 text-center">
+                            <div class="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center mb-5">
+                                <span class="text-lg font-bold text-amber-400"><%= member[:initials] %></span>
+                            </div>
+                            <h2 class="text-lg font-semibold text-white"><%= member[:name] %></h2>
+                            <p class="text-[12px] font-semibold uppercase tracking-[0.14em] text-amber-500/70 mt-1"><%= member[:role] %></p>
+                            <p class="text-sm text-zinc-500 leading-relaxed mt-4"><%= member[:bio] %></p>
+                        </article>
+                    <% end %>
+                </div>
+
+                <div class="xb-sep my-16"></div>
+
+                <div class="max-w-2xl mx-auto text-center" data-anim>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-[-0.02em]">
+                        <span class="xb-grad-white">Connect with us on</span> <span class="xb-grad-amber">LinkedIn</span>
+                    </h2>
+                    <p class="mt-4 text-sm text-zinc-500 max-w-md mx-auto">Company updates, launches, and what we’re building next.</p>
+                    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <% linkedin = social_links.find { |link| link[:platform] == :linkedin } %>
+                        <a href="<%= linkedin&.dig(:url) || 'https://www.linkedin.com/company/xbolt-media/' %>" target="_blank" rel="noopener"
+                           class="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 text-zinc-950 text-sm font-bold hover:bg-amber-400 transition-all shadow-[0_0_24px_rgba(251,191,36,0.3)]">
+                            <i class='bx bxl-linkedin text-lg'></i>
+                            Follow XBolt Media
+                            <i class='bx bx-right-arrow-alt text-base transition-transform group-hover:translate-x-1'></i>
+                        </a>
+                        <a href="<%= contact_path %>" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-amber-500/15 text-zinc-400 text-sm font-semibold hover:text-amber-400 hover:border-amber-500/30 transition-all">
+                            Work with us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%= render 'landing/footer' %>
+    <%= javascript_include_tag "landing" %>
+    <%= render 'layouts/toast' %>
+</body>
+</html>

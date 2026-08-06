@@ -39,7 +39,7 @@ class Admin::BusinessesController < ApplicationController
           business: @business
         )
 
-        session[:new_business_account] = {
+        flash[:new_business_account] = {
           'business_id' => @business.id,
           'user_id' => user.id,
           'username' => user.username,
@@ -66,16 +66,14 @@ class Admin::BusinessesController < ApplicationController
     @unique_visitors_7d = scope.last_7_days.unique_visitors
 
     @business_user = @business.users.order(created_at: :asc).first
-    creds = session[:new_business_account]
+    creds = flash[:new_business_account]
     if creds.is_a?(Hash) && creds['business_id'].to_i == @business.id
       @new_business_account = creds
-      session.delete(:new_business_account)
     end
 
-    reset = session[:business_user_password_reset]
+    reset = flash[:business_user_password_reset]
     if reset.is_a?(Hash) && reset['business_id'].to_i == @business.id
       @business_user_password_reset = reset
-      session.delete(:business_user_password_reset)
     end
 
     @sitemap_path = Rails.root.join('public', 'tenant_sites', @business.subdomain.to_s, 'sitemap.xml')
@@ -198,7 +196,7 @@ class Admin::BusinessesController < ApplicationController
     user.update!(password: password, password_confirmation: password)
     log_activity("Reset business user password for #{@business.name} (#{@business.subdomain})")
 
-    session[:business_user_password_reset] = {
+    flash[:business_user_password_reset] = {
       'business_id' => @business.id,
       'user_id' => user.id,
       'username' => user.username,
@@ -231,7 +229,7 @@ class Admin::BusinessesController < ApplicationController
     )
 
     log_activity("Created replacement business login for #{@business.name} (#{@business.subdomain})")
-    session[:new_business_account] = {
+    flash[:new_business_account] = {
       'business_id' => @business.id,
       'user_id' => user.id,
       'username' => user.username,

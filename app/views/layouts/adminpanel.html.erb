@@ -223,7 +223,7 @@
           <%= link_to password_admin_account_path, class: "p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition", title: "Change Password" do %>
             <i data-lucide="lock" class="w-3.5 h-3.5"></i>
           <% end %>
-          <%= link_to logout_path, method: :get, class: "p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition", "data-turbo": "false", title: "Log out" do %>
+          <%= button_to logout_path, method: :delete, class: "p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition", title: "Log out", form: { class: "inline" } do %>
             <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
           <% end %>
         </div>

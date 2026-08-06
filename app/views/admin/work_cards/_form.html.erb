@@ -87,7 +87,7 @@
         const fd = new FormData();
         fd.append("file", file);
 
-        const res = await fetch("<%= upload_image_path %>", {
+        const res = await fetch("<%= admin_upload_image_path %>", {
           method: "POST",
           headers: csrf ? { "X-CSRF-Token": csrf } : {},
           body: fd

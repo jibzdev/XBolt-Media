@@ -23,11 +23,11 @@ class AuthController < ApplicationController
       return
     end
 
-    user = User.find_by(username: params[:username].to_s)
+    user = User.find_by(username: username)
 
-    if user && user.authenticate(params[:password])
+    if user&.authenticate(params[:password].to_s)
       clear_login_throttle!(username)
-      if @general_setting.maintenance_mode && !user.admin?
+      if @general_setting.maintenance_mode && !user.staff_admin?
         flash[:alert] = 'Logins are currently disabled due to maintenance.'
         redirect_to root_path
       else
@@ -113,8 +113,8 @@ class AuthController < ApplicationController
 
   def logout
     user = current_user
+    log_activity('User logged out', user: user) if user
     reset_session
-    log_activity('User logged out') if user
     redirect_to root_path, notice: 'Logged out successfully.'
   end
 
@@ -215,10 +215,13 @@ class AuthController < ApplicationController
   private
 
   def complete_login(user)
-    user.update_columns(inactive: false)
+    # Prevent session fixation by rotating the session before auth.
+    reset_session
+    user.update_columns(inactive: false, last_active_at: Time.current)
     session[:user_id] = user.id
-    log_activity('User logged in')
-    log_ip_activity
+    @current_user = user
+    log_activity('User logged in', user: user)
+    log_ip_activity(user: user)
 
     redirect_to after_login_path_for(user), notice: 'Login successful. Welcome back!'
   end

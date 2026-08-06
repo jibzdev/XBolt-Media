@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Drone Services - Dawkes Developments</title>
+    <link rel="icon" type="image/png" href="logo5.png">
+    <link rel="apple-touch-icon" href="logo5.png">
+	<link rel="icon" sizes="32x32" href="/logo5.png">
+	<link rel="icon" sizes="16x16" href="/logo5.png">
+    <meta name="description" content="Professional drone surveying and aerial photography services in the Cotswolds. Residential properties from £180-£280. Advanced 4K imaging, 3D mapping, and site surveys.">
+	<meta name="theme-color" content="#D4AF37">
+	<meta name="robots" content="index,follow">
+    <meta property="og:title" content="Drone Services - Dawkes Developments">
+    <meta property="og:description" content="Professional drone surveying, aerial photography, and 3D mapping services">
+	<meta property="og:image" content="/logo5.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Drone Services - Dawkes Developments">
+    <meta name="twitter:description" content="Professional aerial surveying and photography">
+	<meta name="twitter:image" content="/logo5.png">
+	<link rel="manifest" href="/site.webmanifest">
+    <meta name="keywords" content="drone services, aerial photography, drone surveying, 3D mapping, site survey, construction monitoring, property inspection">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&amp;family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#F4D03F',
+                            500: '#D4AF37',
+                            600: '#B8941E',
+                            700: '#9A7D0A'
+                        },
+                        luxury: {
+                            dark: '#0A0A0A',
+                            darker: '#000000',
+                            light: '#1A1A1A'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans antialiased overflow-x-hidden bg-black text-white">
+    
+    <!-- Navigation -->
+     <nav class="fixed w-full z-50 transition-all duration-300 bg-black/95 backdrop-blur-md border-b border-gold-500/10" id="navbar">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-3 items-center h-20">
+                <!-- Logo - Left -->
+                <div class="flex items-center justify-start">
+                    <a href="/" class="text-white">
+                        <div class="leading-none">
+                            <div class="text-2xl font-serif font-bold tracking-tight text-gold-500">DAWKES</div>
+                            <div class="text-xs font-sans font-light tracking-widest text-gray-300">DEVELOPMENTS</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Navigation Links - Center -->
+                <div class="hidden md:flex items-center justify-center">
+                    <div class="flex items-center space-x-8">
+                        <a href="/#about" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">About</a>
+                        <a href="/drone-services" class="nav-link text-gold-500 border-b-2 border-gold-500 transition-all duration-300 text-sm font-medium">Drone Services</a>
+                        <a href="/gallery.html" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Gallery</a>
+                        <a href="/#contact" class="nav-link text-white hover:text-gold-500 transition-all duration-300 text-sm font-medium">Contact</a>
+                    </div>
+                </div>
+                
+                <!-- CTA Button - Right -->
+                <div class="hidden md:flex items-center justify-end">
+                    <a href="#contact" class="px-6 py-2.5 bg-gold-500 text-black font-semibold text-sm hover:bg-gold-400 transition-all duration-300">
+                        <span>Book Survey</span>
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden col-span-2 flex justify-end">
+                    <button class="text-white hover:text-gold-500" id="mobile-menu-button">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-black pt-20">
+        <!-- Video Background -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <video autoplay loop muted playsinline class="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover">
+                <source src="./assets/videos/drone.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </source></video>
+        </div>
+        
+        <!-- Dark overlay -->
+        <div class="absolute inset-0 bg-black/70"></div>
+        
+        <!-- Subtle gradient overlay for depth -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
+        
+        <!-- Main Content -->
+        <div class="relative z-10 text-center px-6 py-32">
+            <div class="max-w-5xl mx-auto">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-5 py-2 border border-gold-500/30 mb-8">
+                    <i class="fas fa-drone text-gold-500"></i>
+                    <span class="text-gold-500 text-xs font-medium tracking-widest">ADVANCED AERIAL TECHNOLOGY</span>
+                </div>
+
+                <!-- Main Title -->
+                <h1 class="font-serif text-6xl md:text-7xl lg:text-8xl font-bold mb-6 text-white">
+                    <span class="block mb-2">Drone</span>
+                    <span class="block text-gold-500">Services</span>
+                </h1>
+
+                <div class="w-24 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent mx-auto mb-8"></div>
+
+                <!-- Subtitle -->
+                <p class="text-xl md:text-2xl text-gray-300 font-light mb-4 max-w-3xl mx-auto">
+                    Professional Aerial Surveying &amp; Photography
+                </p>
+                
+                <p class="text-base text-gray-400 mb-8 max-w-2xl mx-auto">
+                    State-of-the-art drone technology providing 4K aerial imaging, 3D mapping, topographical surveys, and comprehensive site analysis
+                </p>
+                
+                <div class="inline-block bg-black/60 border border-gold-500/30 px-6 py-3 mb-8">
+                    <p class="text-gold-500 font-semibold">
+                        <i class="fas fa-home mr-2"></i>Residential Properties: £180 - £280 (size dependent)
+                    </p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-4 text-gray-300">
+                    <div class="inline-flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt text-gold-500"></i>
+                        <span>The Cotswolds</span>
+                    </div>
+                    <span class="hidden sm:inline text-gold-500/30">|</span>
+                    <a href="tel:07301175562" class="inline-flex items-center gap-2 hover:text-gold-500 transition-colors">
+                        <i class="fas fa-phone"></i>
+                        <span>07301175562</span>
+                    </a>
+                    <span class="hidden sm:inline text-gold-500/30">|</span>
+                    <a href="mailto:samdawkes99@gmail.com" class="inline-flex items-center gap-2 hover:text-gold-500 transition-colors">
+                        <i class="fas fa-envelope"></i>
+                        <span>samdawkes99@gmail.com</span>
+                    </a>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                    <a href="#packages" class="px-8 py-4 bg-gold-500 text-black font-semibold hover:bg-gold-400 transition-all duration-300 inline-flex items-center justify-center gap-2">
+                        View Packages
+                        <i class="fas fa-arrow-down text-sm"></i>
+                    </a>
+                    <a href="#gallery" class="px-8 py-4 border-2 border-gold-500/50 text-white font-semibold hover:border-gold-500 hover:bg-gold-500/10 transition-all duration-300 inline-flex items-center justify-center gap-2">
+                        Sample Work
+                        <i class="fas fa-images text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-20">
+                    <div class="border-l-2 border-gold-500 pl-4 text-left">
+                        <div class="text-3xl md:text-4xl font-bold text-gold-500 mb-1">4K</div>
+                        <div class="text-xs text-gray-400">Ultra HD Video</div>
+                    </div>
+                    <div class="border-l-2 border-gold-500 pl-4 text-left">
+                        <div class="text-3xl md:text-4xl font-bold text-gold-500 mb-1">3D</div>
+                        <div class="text-xs text-gray-400">Mapping Available</div>
+                    </div>
+                    <div class="border-l-2 border-gold-500 pl-4 text-left">
+                        <div class="text-3xl md:text-4xl font-bold text-gold-500 mb-1">48hr</div>
+                        <div class="text-xs text-gray-400">Delivery</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Breakdown Section -->
+    <section class="py-32 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <!-- Section Header -->
+            <div class="text-center mb-20">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">WHAT WE OFFER</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">
+                    Aerial <span class="text-gold-500">Solutions</span>
+                </h2>
+            </div>
+            
+            <!-- Services Grid -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Service 1 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-black">
+                    <div class="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-gold-500/30"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-map-marked-alt text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4">Site Surveys &amp; Mapping</h3>
+                        
+                        <p class="text-gray-400 mb-6 leading-relaxed">
+                            Comprehensive aerial surveys providing detailed topographical data, boundary mapping, and volumetric calculations for construction and development projects.
+                        </p>
+                        
+                        <ul class="space-y-3 text-sm text-gray-500">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Topographical surveys with contour mapping</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Volumetric analysis for earthworks</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Boundary and land measurement</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>GIS-ready data exports</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-black">
+                    <div class="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-gold-500/30"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-video text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4">Aerial Photography &amp; Video</h3>
+                        
+                        <p class="text-gray-400 mb-6 leading-relaxed">
+                            Professional 4K aerial photography and videography for marketing, documentation, and promotional purposes. Stunning perspectives that showcase your property or project.
+                        </p>
+                        
+                        <ul class="space-y-3 text-sm text-gray-500">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>4K Ultra HD video capture</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>High-resolution photography (20MP+)</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Professional editing &amp; color grading</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Real estate marketing packages</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-black">
+                    <div class="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-gold-500/30"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-cube text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4">3D Modeling &amp; Orthomosaic</h3>
+                        
+                        <p class="text-gray-400 mb-6 leading-relaxed">
+                            Advanced photogrammetry creating detailed 3D models and orthomosaic maps. Perfect for precise planning, design visualization, and progress monitoring.
+                        </p>
+                        
+                        <ul class="space-y-3 text-sm text-gray-500">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>3D point cloud generation</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Orthomosaic map creation</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Digital terrain models (DTM)</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>CAD/BIM compatible exports</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="group relative border-2 border-gold-500/20 p-10 hover:border-gold-500/50 transition-all duration-500 bg-black">
+                    <div class="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-gold-500/30"></div>
+                    
+                    <div class="relative">
+                        <div class="w-16 h-16 border-2 border-gold-500/50 flex items-center justify-center mb-6">
+                            <i class="fas fa-hard-hat text-2xl text-gold-500"></i>
+                        </div>
+                        
+                        <h3 class="font-serif text-2xl font-bold text-white mb-4">Construction Monitoring</h3>
+                        
+                        <p class="text-gray-400 mb-6 leading-relaxed">
+                            Regular aerial documentation of construction progress. Track developments, identify issues early, and create comprehensive visual records for stakeholders.
+                        </p>
+                        
+                        <ul class="space-y-3 text-sm text-gray-500">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Weekly/monthly site visits</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Progress comparison overlays</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Time-lapse video creation</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-gold-500 mt-1"></i>
+                                <span>Stakeholder reports &amp; updates</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="py-32 relative overflow-hidden bg-black">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Left: Content -->
+                <div>
+                    <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                        <span class="text-gold-500 text-xs tracking-widest font-medium">WHY CHOOSE US</span>
+                    </div>
+                    
+                    <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-8">
+                        The Drone <span class="text-gold-500">Advantage</span>
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Benefit 1 -->
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 border border-gold-500/30 flex items-center justify-center">
+                                <i class="fas fa-tachometer-alt text-gold-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white text-lg mb-2">Speed &amp; Efficiency</h3>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Survey large areas in hours, not days. Rapid data collection with minimal site disruption.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Benefit 2 -->
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 border border-gold-500/30 flex items-center justify-center">
+                                <i class="fas fa-bullseye text-gold-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white text-lg mb-2">Unmatched Accuracy</h3>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Centimeter-level precision with RTK GPS technology. Reliable data for critical decisions.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Benefit 3 -->
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 border border-gold-500/30 flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-gold-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white text-lg mb-2">Enhanced Safety</h3>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Access dangerous or hard-to-reach areas without risk. Keep teams safe while gathering essential data.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Benefit 4 -->
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 border border-gold-500/30 flex items-center justify-center">
+                                <i class="fas fa-pound-sign text-gold-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white text-lg mb-2">Cost-Effective</h3>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Reduce survey costs significantly compared to traditional methods. Better ROI for your projects.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Image/Visual -->
+                <div class="relative">
+                    <div class="absolute -inset-4 bg-gradient-to-br from-gold-500/20 to-transparent blur-xl"></div>
+                    <div class="relative border-2 border-gold-500/20 p-2">
+                        <img src="assets/images/7.jpg" alt="Drone Technology" class="w-full h-[600px] object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Equipment Section -->
+    <section class="py-32 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-4xl text-center">
+            <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                <span class="text-gold-500 text-xs tracking-widest font-medium">TECHNOLOGY</span>
+            </div>
+            
+            <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">
+                Professional <span class="text-gold-500">Equipment</span>
+            </h2>
+            
+            <p class="text-gray-400 text-lg mb-16 max-w-2xl mx-auto">
+                We use industry-leading drone technology to ensure the highest quality results
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Spec 1 -->
+                <div class="border border-gold-500/20 p-8 bg-black">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-camera text-gold-500"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-2">Hasselblad Camera</h3>
+                    <p class="text-sm text-gray-400">20MP sensor with 1-inch CMOS</p>
+                </div>
+
+                <!-- Spec 2 -->
+                <div class="border border-gold-500/20 p-8 bg-black">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-clock text-gold-500"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-2">Extended Flight Time</h3>
+                    <p class="text-sm text-gray-400">Up to 45 minutes per flight</p>
+                </div>
+
+                <!-- Spec 3 -->
+                <div class="border border-gold-500/20 p-8 bg-black">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-satellite text-gold-500"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-2">RTK Positioning</h3>
+                    <p class="text-sm text-gray-400">Centimeter-level accuracy</p>
+                </div>
+            </div>
+
+            <div class="mt-12 p-8 border-2 border-gold-500/20 bg-black">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <i class="fas fa-certificate text-gold-500 text-2xl"></i>
+                    <h3 class="font-serif text-2xl font-bold text-white">Fully Licensed &amp; Insured</h3>
+                </div>
+                <p class="text-gray-400">
+                    CAA approved operator with full public liability insurance and all necessary permissions for commercial operations
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="py-32 relative overflow-hidden bg-black">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">PORTFOLIO</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">
+                    Aerial <span class="text-gold-500">Showcase</span>
+                </h2>
+            </div>
+            
+            <!-- Video/Image Grid -->
+            <div class="grid md:grid-cols-2 gap-6 mb-12">
+                <div class="relative h-96 border border-gold-500/20 overflow-hidden group">
+                    <img src="assets/images/8.jpg" alt="Aerial Survey Sample" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+                        <div>
+                            <h3 class="font-serif text-xl text-white mb-1">Construction Site Survey</h3>
+                            <p class="text-gold-500 text-sm">3D Mapping &amp; Analysis</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative h-96 border border-gold-500/20 overflow-hidden group">
+                    <img src="assets/images/9.jpg" alt="Aerial Photography" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+                        <div>
+                            <h3 class="font-serif text-xl text-white mb-1">Estate Property</h3>
+                            <p class="text-gold-500 text-sm">4K Aerial Photography</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative h-96 border border-gold-500/20 overflow-hidden group">
+                    <img src="assets/images/10.jpg" alt="Progress Monitoring" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+                        <div>
+                            <h3 class="font-serif text-xl text-white mb-1">Development Progress</h3>
+                            <p class="text-gold-500 text-sm">Time-lapse Documentation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative h-96 border border-gold-500/20 overflow-hidden group bg-luxury-dark flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-play-circle text-6xl text-gold-500 mb-4"></i>
+                        <h3 class="font-serif text-2xl text-white mb-2">Sample Drone Footage</h3>
+                        <p class="text-gray-400 text-sm">Coming Soon</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Packages Section -->
+    <section id="packages" class="py-32 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">PRICING</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">
+                    Service <span class="text-gold-500">Packages</span>
+                </h2>
+                <p class="text-gray-400 max-w-2xl mx-auto mb-8">
+                    Flexible packages tailored to your project needs
+                </p>
+                <div class="inline-block bg-gold-500/10 border-2 border-gold-500/30 px-8 py-4">
+                    <p class="text-gold-500 font-semibold text-lg">
+                        <i class="fas fa-home mr-2"></i>Residential Property Drone Services: £180 - £280 (depending on house size)
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Packages Grid -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Basic Package -->
+                <div class="border-2 border-gold-500/20 p-8 bg-black hover:border-gold-500/50 transition-all">
+                    <h3 class="font-serif text-2xl font-bold text-white mb-2">Residential Property</h3>
+                    <p class="text-gray-400 text-sm mb-6">Aerial photography and video for residential properties</p>
+                    
+                    <div class="mb-8">
+                        <div class="text-4xl font-bold text-gold-500 mb-2">£180 - £280</div>
+                        <div class="text-sm text-gray-500">Depending on house size</div>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8 text-sm text-gray-400">
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Professional aerial photography</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>4K video footage</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Multiple angles &amp; perspectives</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Edited &amp; delivered digitally</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="#contact" class="block w-full text-center px-6 py-3 border border-gold-500/50 text-white hover:bg-gold-500/10 transition-all">
+                        Get Quote
+                    </a>
+                </div>
+
+                <!-- Professional Package -->
+                <div class="border-2 border-gold-500 p-8 bg-black relative">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gold-500 text-black text-xs font-semibold">
+                        MOST POPULAR
+                    </div>
+                    
+                    <h3 class="font-serif text-2xl font-bold text-white mb-2">Professional</h3>
+                    <p class="text-gray-400 text-sm mb-6">Comprehensive survey with 3D modeling</p>
+                    
+                    <div class="mb-8">
+                        <div class="text-4xl font-bold text-gold-500 mb-2">From £600</div>
+                        <div class="text-sm text-gray-500">Per site visit</div>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8 text-sm text-gray-400">
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Up to 2 hours flight time</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>4K video &amp; HDR photos</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>3D model &amp; orthomosaic</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Topographical data</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>24hr delivery</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="#contact" class="block w-full text-center px-6 py-3 bg-gold-500 text-black font-semibold hover:bg-gold-400 transition-all">
+                        Get Quote
+                    </a>
+                </div>
+
+                <!-- Enterprise Package -->
+                <div class="border-2 border-gold-500/20 p-8 bg-black hover:border-gold-500/50 transition-all">
+                    <h3 class="font-serif text-2xl font-bold text-white mb-2">Enterprise</h3>
+                    <p class="text-gray-400 text-sm mb-6">Regular monitoring &amp; comprehensive analysis</p>
+                    
+                    <div class="mb-8">
+                        <div class="text-4xl font-bold text-gold-500 mb-2">Custom</div>
+                        <div class="text-sm text-gray-500">Contact for pricing</div>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8 text-sm text-gray-400">
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Multiple site visits</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Progress tracking</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Time-lapse creation</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Full CAD integration</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-gold-500"></i>
+                            <span>Priority support</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="#contact" class="block w-full text-center px-6 py-3 border border-gold-500/50 text-white hover:bg-gold-500/10 transition-all">
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-gray-500 text-sm">
+                    All packages include full insurance coverage and CAA compliant operations. Custom packages available for unique requirements.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-32 relative overflow-hidden bg-black">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-1 border border-gold-500/30 mb-6">
+                    <span class="text-gold-500 text-xs tracking-widest font-medium">GET STARTED</span>
+                </div>
+                <h2 class="font-serif text-5xl md:text-6xl font-bold text-white mb-6">
+                    Book Your <span class="text-gold-500">Survey</span>
+                </h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                    Contact us to discuss your drone survey requirements
+                </p>
+            </div>
+            
+            <div class="border-2 border-gold-500/20 p-8 bg-luxury-dark">
+                <form id="contact-form" class="space-y-6" method="post" action="/contact" novalidate>
+                    <div data-status class="hidden w-full border border-gold-500/20 bg-gold-500/10 px-4 py-3 text-sm font-medium text-gold-100" aria-live="polite"></div>
+                    <ul data-errors class="hidden space-y-2 border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200" aria-live="polite"></ul>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Full Name *</label>
+                            <input type="text" id="name" name="name" autocomplete="name" required class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all" placeholder="Your name">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+                            <input type="email" id="email" name="email" autocomplete="email" required class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all" placeholder="you@example.com">
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-300 mb-2">Phone *</label>
+                            <input type="tel" id="phone" name="phone" autocomplete="tel" required class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all" placeholder="Your contact number">
+                        </div>
+                        <div>
+                            <label for="service" class="block text-sm font-medium text-gray-300 mb-2">Service Type *</label>
+                            <select id="service" name="service" required class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-all appearance-none cursor-pointer">
+                                <option value="" selected disabled>Select service</option>
+                                <option value="site-survey">Site Survey &amp; Mapping</option>
+                                <option value="aerial-photography">Aerial Photography</option>
+                                <option value="3d-modeling">3D Modeling</option>
+                                <option value="construction-monitoring">Construction Monitoring</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-300 mb-2">Project Details *</label>
+                        <textarea id="message" name="message" rows="5" required minlength="10" class="w-full bg-black border border-gold-500/20 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 transition-all resize-none" placeholder="Tell us about your site location, size, and requirements..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gold-500 hover:bg-gold-400 text-black font-semibold py-4 px-6 transition-all duration-300" data-default-text="Request Quote">
+                        Request Quote
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-12 grid md:grid-cols-3 gap-6 text-center">
+                <div>
+                    <i class="fas fa-phone text-gold-500 text-2xl mb-3"></i>
+                    <div class="text-white font-semibold mb-1">Phone</div>
+                    <div class="text-gray-400 text-sm">07301175562</div>
+                </div>
+                <div>
+                    <i class="fas fa-envelope text-gold-500 text-2xl mb-3"></i>
+                    <div class="text-white font-semibold mb-1">Email</div>
+                    <div class="text-gray-400 text-sm">samdawkes99@gmail.com</div>
+                </div>
+                <div>
+                    <i class="fas fa-clock text-gold-500 text-2xl mb-3"></i>
+                    <div class="text-white font-semibold mb-1">Response Time</div>
+                    <div class="text-gray-400 text-sm">Within 24 hours</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-white py-16 border-t border-gold-500/20 relative overflow-hidden bg-luxury-dark">
+        <div class="container mx-auto px-6 max-w-6xl relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div class="mb-6 md:mb-0">
+                    <a href="/" class="leading-none text-white">
+                        <div class="text-3xl font-serif font-bold tracking-tight text-gold-500">DAWKES</div>
+                        <div class="text-xs font-sans tracking-widest text-gray-400">DEVELOPMENTS</div>
+                    </a>
+                    <div class="space-y-2 mt-4">
+                        <a href="tel:07301175562" class="flex items-center gap-2 text-gold-500 hover:text-gold-400 text-sm transition-colors">
+                            <i class="fas fa-phone"></i>
+                            <span>07301175562</span>
+                        </a>
+                        <a href="mailto:samdawkes99@gmail.com" class="flex items-center gap-2 text-gold-500 hover:text-gold-400 text-sm transition-colors">
+                            <i class="fas fa-envelope"></i>
+                            <span>samdawkes99@gmail.com</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <a href="/" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Home</a>
+                    <a href="/#services" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Services</a>
+                    <a href="/drone-services" class="text-gold-500 text-sm font-semibold">Drone Services</a>
+                    <a href="/#contact" class="text-gray-400 hover:text-gold-500 transition-colors text-sm">Contact</a>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-gold-500/10">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-gray-400 text-sm text-center md:text-left">
+                        © 2025 Dawkes Developments. All rights reserved.
+                    </p>
+                    <div class="flex items-center gap-2 text-gray-400 text-sm">
+                        <i class="fas fa-certificate text-gold-500"></i>
+                        <span>CAA Licensed Operator</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+<script src="/xbolt-watermark.js?v=8b3ad447ae95" defer data-xbolt-watermark></script>
+</body>
+</html>

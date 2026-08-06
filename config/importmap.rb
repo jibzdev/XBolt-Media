@@ -2,7 +2,7 @@
 
 pin "application"
 pin "admin_panel"
-pin "tenant_site_builder"
+pin "tenant_site_builder" # legacy no-op; editor uses Stimulus website-builder
 pin "landing"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"

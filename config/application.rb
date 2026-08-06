@@ -28,5 +28,12 @@ module MedApp
     # Render themed error pages via Rails (instead of static public/*.html)
     # so they inherit the admin theme CSS variables.
     config.exceptions_app = self.routes
+
+    config.action_dispatch.cookies_same_site_protection = :lax
+
+    # Active Record encryption (tenant SMTP passwords, etc.).
+    # Values are finalized in config/initializers/active_record_encryption.rb.
+    # Keep support for existing plaintext until records are re-saved.
+    config.active_record.encryption.support_unencrypted_data = true
   end
 end

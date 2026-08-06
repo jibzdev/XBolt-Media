@@ -1,0 +1,398 @@
+/* Luxury Gold & Black Theme */
+
+/* ===== HERO SECTION - PREMIUM STONE WALL BACKGROUND ===== */
+
+/* Premium Photorealistic Stone Wall Background */
+.stone-wall-bg {
+    z-index: 0;
+    background-color: #0d0d0d;
+    background-image: 
+        /* Top row - larger stones with natural variation */
+        radial-gradient(ellipse 160px 100px at 8% 8%, #4a4a4a 0%, #383838 45%, transparent 70%),
+        radial-gradient(ellipse 140px 95px at 35% 10%, #525252 0%, #3d3d3d 45%, transparent 70%),
+        radial-gradient(ellipse 155px 105px at 68% 12%, #484848 0%, #3a3a3a 45%, transparent 70%),
+        radial-gradient(ellipse 130px 90px at 94% 15%, #4e4e4e 0%, #404040 45%, transparent 70%),
+        
+        /* Second row */
+        radial-gradient(ellipse 145px 98px at 15% 28%, #454545 0%, #353535 45%, transparent 70%),
+        radial-gradient(ellipse 135px 92px at 48% 30%, #4f4f4f 0%, #3f3f3f 45%, transparent 70%),
+        radial-gradient(ellipse 150px 100px at 82% 32%, #494949 0%, #3b3b3b 45%, transparent 70%),
+        
+        /* Third row */
+        radial-gradient(ellipse 138px 96px at 5% 50%, #4c4c4c 0%, #3c3c3c 45%, transparent 70%),
+        radial-gradient(ellipse 148px 102px at 32% 52%, #474747 0%, #393939 45%, transparent 70%),
+        radial-gradient(ellipse 142px 94px at 62% 54%, #505050 0%, #424242 45%, transparent 70%),
+        radial-gradient(ellipse 136px 98px at 90% 56%, #4a4a4a 0%, #3a3a3a 45%, transparent 70%),
+        
+        /* Fourth row */
+        radial-gradient(ellipse 152px 100px at 12% 72%, #4d4d4d 0%, #3d3d3d 45%, transparent 70%),
+        radial-gradient(ellipse 144px 96px at 44% 74%, #494949 0%, #3b3b3b 45%, transparent 70%),
+        radial-gradient(ellipse 158px 104px at 75% 76%, #515151 0%, #414141 45%, transparent 70%),
+        
+        /* Bottom row */
+        radial-gradient(ellipse 146px 98px at 8% 92%, #484848 0%, #383838 45%, transparent 70%),
+        radial-gradient(ellipse 140px 94px at 38% 94%, #4e4e4e 0%, #3e3e3e 45%, transparent 70%),
+        radial-gradient(ellipse 148px 100px at 70% 96%, #4b4b4b 0%, #3c3c3c 45%, transparent 70%),
+        
+        /* Base atmospheric gradient */
+        linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 40%, #151515 70%, #0a0a0a 100%);
+}
+
+/* Enhanced Stone Texture with Depth */
+.stone-texture-layer {
+    z-index: 1;
+    pointer-events: none;
+    background-image: 
+        /* Horizontal mortar/joint lines - more natural spacing */
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            transparent 96px,
+            rgba(8, 8, 8, 0.85) 96px,
+            rgba(8, 8, 8, 0.85) 100px,
+            rgba(18, 18, 18, 0.4) 100px,
+            rgba(18, 18, 18, 0.4) 101px
+        ),
+        /* Vertical mortar lines - irregular pattern */
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            transparent 142px,
+            rgba(8, 8, 8, 0.85) 142px,
+            rgba(8, 8, 8, 0.85) 146px,
+            rgba(18, 18, 18, 0.4) 146px,
+            rgba(18, 18, 18, 0.4) 147px
+        ),
+        /* Stone surface grain - fine texture */
+        repeating-linear-gradient(
+            38deg,
+            transparent,
+            transparent 1px,
+            rgba(0, 0, 0, 0.08) 1px,
+            rgba(0, 0, 0, 0.08) 2px
+        ),
+        /* Cross-hatch detail for stone character */
+        repeating-linear-gradient(
+            -42deg,
+            transparent,
+            transparent 2px,
+            rgba(80, 80, 80, 0.02) 2px,
+            rgba(80, 80, 80, 0.02) 3px
+        ),
+        /* Subtle noise for natural stone appearance */
+        repeating-radial-gradient(
+            circle at 50% 50%,
+            transparent 0px,
+            rgba(0, 0, 0, 0.03) 1px,
+            transparent 2px
+        );
+}
+
+/* Premium Ambient Lighting with Gold Accents */
+.ambient-light {
+    z-index: 2;
+    pointer-events: none;
+    background: 
+        /* Warm top-center spotlight (gold wash) */
+        radial-gradient(ellipse 80% 60% at 50% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 65%),
+        /* Subtle left-side highlight */
+        radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 45%),
+        /* Right-side warm glow */
+        radial-gradient(ellipse 50% 70% at 85% 60%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+        /* Center depth enhancement */
+        radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0, 0, 0, 0.2) 0%, transparent 60%),
+        /* Bottom corner vignette for focus */
+        radial-gradient(ellipse 120% 100% at 50% 100%, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+/* Enhanced text shadow for hero title */
+.hero-title {
+    text-shadow: 
+        2px 2px 8px rgba(0, 0, 0, 0.95),
+        0 0 30px rgba(212, 175, 55, 0.3),
+        4px 4px 16px rgba(0, 0, 0, 0.8);
+}
+
+/* Button hover effects */
+#hero-section a[href="#contact"],
+#hero-section a[href="#gallery"] {
+    transition: all 0.3s ease;
+}
+
+#hero-section a[href="#contact"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+}
+
+#hero-section a[href="#gallery"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    border-color: rgba(212, 175, 55, 1);
+}
+
+/* Subtle depth animation for premium feel */
+@keyframes subtleStoneShift {
+    0%, 100% {
+        transform: scale(1.01);
+    }
+    50% {
+        transform: scale(1.0);
+    }
+}
+
+.stone-wall-bg {
+    animation: subtleStoneShift 20s ease-in-out infinite;
+}
+
+/* Add premium shadow depth to hero content */
+#hero-section .relative.z-10 {
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
+}
+
+/* Enhanced gold glow effect for premium feel */
+#hero-section .border-gold-500\/30 {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+/* Premium stone edge lighting */
+.stone-texture-layer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(
+            to right,
+            rgba(212, 175, 55, 0.02) 0%,
+            transparent 20%,
+            transparent 80%,
+            rgba(212, 175, 55, 0.02) 100%
+        );
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stone-texture-layer {
+        background-size: auto, auto, 3px 3px;
+    }
+    
+    .stone-wall-bg {
+        /* Reduce animation on mobile for performance */
+        animation: none;
+    }
+}
+
+/* Navigation Styles */
+#navbar {
+    transition: all 0.3s ease-in-out;
+    background: transparent;
+}
+
+#navbar.navbar-scrolled {
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+/* Smooth Scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D4AF37;
+    border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #F4D03F;
+}
+
+/* Form Styles */
+input, textarea, select {
+    font-family: 'Montserrat', sans-serif;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #D4AF37;
+}
+
+/* Button Hover Effects */
+button, a {
+    transition: all 0.3s ease;
+}
+
+/* Luxury Divider */
+.luxury-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    margin: 2rem 0;
+}
+
+/* Gold Accent */
+.gold-accent {
+    color: #D4AF37;
+}
+
+/* Section Spacing */
+section {
+    position: relative;
+}
+
+/* Image Hover Effects */
+img {
+    transition: transform 0.5s ease;
+}
+
+/* Subtle hover effect for images */
+.hover-zoom:hover img {
+    transform: scale(1.05);
+}
+
+/* Typography */
+.font-serif {
+    font-family: 'Playfair Display', serif;
+}
+
+.font-sans {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Loading Animation - Minimalist */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+.loading-container {
+    text-align: center;
+}
+
+.loading-container p {
+    margin-top: 20px;
+    color: #D4AF37;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    letter-spacing: 2px;
+    font-size: 0.875rem;
+}
+
+.scaffold-loader {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    margin: 0 auto;
+}
+
+.beam {
+    position: absolute;
+    background: linear-gradient(to right, #D4AF37, #F4D03F);
+    width: 20px;
+    height: 2px;
+    animation: build 1.5s infinite;
+}
+
+.beam:nth-child(1) {
+    top: 20%;
+    animation-delay: 0s;
+}
+
+.beam:nth-child(2) {
+    top: 45%;
+    animation-delay: 0.5s;
+}
+
+.beam:nth-child(3) {
+    top: 70%;
+    animation-delay: 1s;
+}
+
+@keyframes build {
+    0% {
+        left: 0;
+        width: 0;
+    }
+    50% {
+        left: 0;
+        width: 100%;
+    }
+    100% {
+        left: 100%;
+        width: 0;
+    }
+}
+
+/* Minimal fade in effect */
+.fade-in {
+    animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Border box for all elements */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Selection color */
+::selection {
+    background-color: #D4AF37;
+    color: #000000;
+}
+
+::-moz-selection {
+    background-color: #D4AF37;
+    color: #000000;
+}
+
+.text-shadow-gold {
+    text-shadow: 0 2px 20px rgba(212, 175, 55, 0.3);
+}
+
+.border-gradient {
+    border-image: linear-gradient(135deg, #D4AF37 0%, #F4D03F 50%, #D4AF37 100%) 1;
+}
+
+.luxury-underline {
+    position: relative;
+}
+
+.luxury-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+}

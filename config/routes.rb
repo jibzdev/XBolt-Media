@@ -37,6 +37,8 @@ Rails.application.routes.draw do
   # Landing routes
   root 'landing#index'
   get '/about', to: 'landing#about', as: 'about'
+  get '/team', to: 'landing#team', as: 'team'
+  get '/faq', to: 'landing#faq', as: 'faq'
   get '/services', to: 'landing#services', as: 'services'
   get '/contact', to: 'landing#contact', as: 'contact'
   post '/contact', to: 'landing#contact_submit', as: 'contact_submit'
@@ -49,7 +51,9 @@ Rails.application.routes.draw do
   # Auth routes
   get '/auth/login', to: 'auth#login', as: 'login'
   post '/auth/login', to: 'auth#login_handle'
-  get '/auth/logout', to: 'auth#logout', as: 'logout'
+  delete '/auth/logout', to: 'auth#logout', as: 'logout'
+  # Keep GET logout as a temporary redirect target only for legacy bookmarks.
+  get '/auth/logout', to: redirect('/'), as: nil
   post '/auth/stop-impersonating', to: 'auth#stop_impersonating', as: 'stop_impersonating'
   get '/auth/forgot-password', to: 'auth#forgot_password', as: 'forgot_password'
   post '/auth/forgot-password', to: 'auth#forgot_password_handle'
@@ -65,6 +69,7 @@ Rails.application.routes.draw do
   namespace :admin, path: 'dashboard' do
     get '/', to: 'dashboard#overview', as: 'dashboard'
     get '/overview', to: 'dashboard#overview', as: 'overview'
+    post '/uploads/image', to: 'uploads#create', as: :upload_image
     resource :demo_website, only: [:show, :update], controller: 'demo_websites'
     resources :assets, only: [:index, :create, :update, :destroy]
     get '/website', to: 'tenant_site_builder#index', as: :website
@@ -147,6 +152,4 @@ Rails.application.routes.draw do
 
 
 
-  # Misc routes
-  post '/application/upload_image', to: 'application#upload_image', as: 'upload_image'
 end

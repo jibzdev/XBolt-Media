@@ -1,137 +1,161 @@
 <% content_for :page_title, "Website Editor" %>
-<% content_for :page_description, "Click text to edit and drag cards or sections to reorder" %>
+
+<% pages_json = (@static_pages || []).map { |p|
+     {
+       path: p[:path],
+       title: p[:title],
+       url: admin_website_path(path: p[:path])
+     }
+   } %>
 
 <div
-  id="tenant-builder"
-  class="-m-5 sm:-m-6 h-[calc(100vh-52px)] grid grid-cols-1 xl:grid-cols-[340px_minmax(0,1fr)] bg-zinc-100"
-  data-page-id="<%= @page.id %>"
-  data-page-title="<%= @page.title %>"
-  data-page-slug="<%= @page.slug %>"
-  data-page-position="<%= @page.position %>"
-  data-sections="<%= json_escape(@sections_json) %>"
-  data-update-url="<%= admin_website_page_path(@page) %>"
-  data-static-mode="<%= @static_deployed ? "true" : "false" %>"
-  data-static-path="<%= @static_path %>"
-  data-static-update-url="<%= admin_static_website_update_path %>"
-  data-publish-url="<%= admin_publish_website_path %>"
-  data-preview-url="<%= @static_deployed ? admin_static_website_preview_path(path: @static_path) : preview_admin_website_page_path(@page, editor: 1) %>"
-  data-site-url="<%= business_site_url(@business) %>"
+  class="xb-editor"
+  data-controller="website-live-editor"
+  data-website-live-editor-preview-url-value="<%= @static_deployed ? admin_static_website_preview_path(path: @static_path) : "" %>"
+  data-website-live-editor-static-path-value="<%= @static_path %>"
+  data-website-live-editor-static-update-url-value="<%= admin_static_website_update_path %>"
+  data-website-live-editor-site-url-value="<%= business_site_url(@business) %>"
+  data-website-live-editor-dashboard-url-value="<%= admin_dashboard_path %>"
+  data-website-live-editor-pages-value="<%= json_escape(JSON.generate(pages_json)) %>"
+  data-website-live-editor-deployed-value="<%= @static_deployed ? "true" : "false" %>"
 >
-  <aside class="bg-white border-r border-zinc-200/70 flex flex-col min-h-0">
-    <div class="p-4 border-b border-zinc-200/70">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <h2 class="text-[14px] font-semibold text-zinc-900">Website Editor</h2>
-          <p class="text-[11px] text-zinc-500 mt-0.5">Select text on the site to edit it.</p>
-        </div>
-        <span id="tenant-builder-save-status" class="text-[11px] text-zinc-400">Saved</span>
-      </div>
+  <% if @static_deployed %>
+    <aside class="xb-editor-rail" data-website-live-editor-target="toolbar" id="xbolt-live-editor-ignore">
+      <%= link_to admin_dashboard_path, data: { turbo: false, tip: "Dashboard" }, class: "xb-rail-btn", "aria-label": "Dashboard" do %>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>
+      <% end %>
 
-      <div class="mt-4">
-        <label class="block text-[11px] font-medium text-zinc-500 mb-1.5">Page</label>
-        <% if @static_deployed && @static_pages.any? %>
+      <div class="xb-rail-tip-wrap">
+        <button type="button" data-tip="Pages" aria-label="Pages" data-action="website-live-editor#togglePages" class="xb-rail-btn" data-website-live-editor-target="pagesBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/></svg>
+        </button>
+        <div data-website-live-editor-target="pageMenu" class="xb-page-menu" hidden>
+          <div class="xb-page-menu-label">Pages</div>
+          <p style="margin:0 0 8px; padding:0 10px; font-size:11px; color:var(--xb-chrome-faint); line-height:1.4;">
+            Double-click any site link to open that page here.
+          </p>
+          <% @static_pages.each do |page| %>
+            <a
+              href="<%= admin_website_path(path: page[:path]) %>"
+              data-turbo="false"
+              class="xb-page-link <%= "is-current" if page[:path] == @static_path %>"
+            >
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= page[:title] %></span>
+            </a>
+          <% end %>
           <select
-            id="tenant-builder-page-switcher"
-            class="w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300"
+            data-website-live-editor-target="pageSwitcher"
+            data-action="change->website-live-editor#switchPage"
+            hidden
           >
             <% @static_pages.each do |page| %>
               <option value="<%= admin_website_path(path: page[:path]) %>" <%= "selected" if page[:path] == @static_path %>>
-                <%= page[:title] %> (<%= page[:path] %>)
+                <%= page[:title] %>
               </option>
             <% end %>
           </select>
-        <% else %>
-          <select
-            id="tenant-builder-page-switcher"
-            class="w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300"
-          >
-            <% @pages.each do |page| %>
-              <option value="<%= admin_website_path(page_id: page.id) %>" <%= "selected" if page.id == @page.id %>>
-                <%= page.title %> (<%= page.slug %>)
-              </option>
-            <% end %>
-          </select>
-        <% end %>
-      </div>
-    </div>
-
-    <div class="p-4 space-y-4 overflow-y-auto min-h-0 flex-1">
-      <div class="rounded-xl border border-zinc-200/70 bg-zinc-50 p-3">
-        <h3 class="text-[12px] font-semibold text-zinc-800 mb-1">How it works</h3>
-        <p class="text-[12px] text-zinc-500 leading-relaxed">
-          Click any highlighted text in the website preview, edit it here, and it saves automatically. Drag whole sections or card items inside the preview to reorder them.
-        </p>
-      </div>
-
-      <div id="tenant-builder-empty-state" class="rounded-xl border border-dashed border-zinc-300 bg-white p-4 text-center">
-        <div class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-zinc-100 mb-2">
-          <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-zinc-400"></i>
         </div>
-        <p class="text-[13px] font-medium text-zinc-700">No text selected</p>
-        <p class="text-[12px] text-zinc-400 mt-1">Click text in the website preview to edit it.</p>
       </div>
 
-      <div id="tenant-builder-field-panel" class="hidden rounded-xl border border-zinc-200/70 bg-white p-4">
-        <div class="flex items-center justify-between gap-3 mb-3">
+      <button type="button" data-tip="Refresh" aria-label="Refresh preview" data-action="website-live-editor#reloadPreview" class="xb-rail-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
+      </button>
+
+      <a href="<%= business_site_url(@business) %>" target="_blank" rel="noopener" data-turbo="false" data-tip="Open live site" aria-label="Open live site" class="xb-rail-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4h6v6"/><path d="M10 14 20 4"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>
+      </a>
+
+      <div class="xb-rail-divider"></div>
+
+      <button type="button" data-tip="Duplicate card" aria-label="Duplicate card" data-action="website-live-editor#duplicateCard" class="xb-rail-btn" data-website-live-editor-target="duplicateBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>
+      </button>
+      <button type="button" data-tip="Copy HTML" aria-label="Copy HTML" data-action="website-live-editor#copyHtml" class="xb-rail-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 5-4 14"/></svg>
+      </button>
+      <button type="button" data-tip="Copy CSS" aria-label="Copy CSS" data-action="website-live-editor#copyCss" class="xb-rail-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4h9a1 1 0 0 1 1 1v3H7V5a1 1 0 0 1 1-1z"/><path d="M7 8h11v11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8z"/><path d="M10 12h6M10 16h4"/></svg>
+      </button>
+      <button type="button" data-tip="Delete card" aria-label="Delete card" data-action="website-live-editor#deleteCard" class="xb-rail-btn xb-rail-btn-danger">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/></svg>
+      </button>
+    </aside>
+
+    <%# Dedicated inspector column — shared chrome CSS, never cut off %>
+    <section
+      data-website-live-editor-target="bubble"
+      class="xb-inspector-panel"
+      aria-label="Editor inspector"
+    >
+      <div class="xb-inspector-inner">
+        <div class="xb-inspector-header">
           <div>
-            <h3 id="tenant-builder-field-label" class="text-[13px] font-semibold text-zinc-800">Selected text</h3>
-            <p id="tenant-builder-field-meta" class="text-[11px] text-zinc-400 mt-0.5">Section text</p>
+            <p class="xb-inspector-kicker">Editing</p>
+            <h2 data-website-live-editor-target="bubbleLabel" class="xb-inspector-title">Select something</h2>
           </div>
-          <button id="tenant-builder-clear-selection" type="button" class="p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50">
-            <i data-lucide="x" class="w-4 h-4"></i>
+          <button type="button" class="xb-icon-btn" data-action="website-live-editor#doneEditing" title="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
           </button>
         </div>
+        <div class="xb-inspector-body">
+          <textarea
+            data-website-live-editor-target="bubbleInput"
+            data-action="input->website-live-editor#onBubbleInput"
+            maxlength="5000"
+            rows="7"
+            placeholder="Click text on the site to edit it here"
+            class="xb-inspector-input"
+          ></textarea>
 
-        <label class="block">
-          <span class="block text-[11px] font-medium text-zinc-500 mb-1.5">Text</span>
-          <textarea id="tenant-builder-text-input" rows="6" class="w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300"></textarea>
-        </label>
-      </div>
+          <div data-website-live-editor-target="cardHint" class="xb-inspector-hint" hidden>
+            Card selected — duplicate, copy HTML/CSS, or delete from the icon rail. Changes apply live.
+          </div>
 
-      <div class="rounded-xl border border-zinc-200/70 bg-white p-4">
-        <h3 class="text-[13px] font-semibold text-zinc-800">Reordering</h3>
-        <p class="text-[12px] text-zinc-500 mt-1 leading-relaxed">
-          Drag highlighted sections up or down. Card, testimonial, and FAQ items can be dragged within their own group.
-        </p>
-      </div>
-    </div>
-
-    <div class="p-4 border-t border-zinc-200/70 space-y-2">
-      <% unless @static_deployed %>
-        <button id="tenant-builder-publish" type="button" class="w-full px-3.5 py-2 rounded-lg bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition cursor-pointer">
-          Publish Site
-        </button>
-      <% end %>
-      <a href="<%= business_site_url(@business) %>" target="_blank" rel="noopener" data-turbo="false" class="w-full inline-flex items-center justify-center px-3.5 py-2 rounded-lg border border-zinc-200/70 text-zinc-600 text-[13px] font-medium hover:bg-zinc-50 transition">
-        Open Live Site
-      </a>
-    </div>
-  </aside>
-
-  <section class="min-h-0 flex flex-col">
-    <div class="h-12 px-4 bg-white border-b border-zinc-200/70 flex items-center justify-between gap-3">
-      <div class="min-w-0">
-        <p class="text-[12px] font-medium text-zinc-700 truncate"><%= @page.title %></p>
-        <p class="text-[11px] text-zinc-400 font-mono leading-tight"><%= @page.slug %></p>
-      </div>
-      <%= link_to "Refresh Preview", admin_website_path(page_id: @page.id), class: "text-[12px] text-zinc-500 hover:text-zinc-800" %>
-    </div>
-    <div class="flex-1 min-h-0 p-4">
-      <% if @static_deployed %>
-        <iframe
-          id="tenant-builder-frame"
-          src="<%= admin_static_website_preview_path(path: @static_path) %>"
-          class="w-full h-full rounded-xl border border-zinc-200 bg-white shadow-sm"
-          title="Website editor preview"
-        ></iframe>
-      <% else %>
-        <div class="w-full h-full rounded-xl border border-zinc-200 bg-white shadow-sm flex items-center justify-center p-6 text-center">
-          <div class="max-w-md">
-            <h3 class="text-[16px] font-semibold text-zinc-800">No deployed static website found</h3>
-            <p class="text-[13px] text-zinc-500 mt-2">Deploy a ZIP for this tenant first, then the editor will open the actual static files here.</p>
+          <div class="xb-inspector-actions">
+            <button type="button" class="xb-btn xb-btn-ghost" data-action="website-live-editor#doneEditing">Done</button>
+            <button type="button" class="xb-btn xb-btn-primary" data-action="website-live-editor#saveNow">Save</button>
           </div>
         </div>
-      <% end %>
+      </div>
+    </section>
+
+    <div class="xb-canvas">
+      <iframe
+        data-website-live-editor-target="frame"
+        data-action="load->website-live-editor#onFrameLoad"
+        src="<%= admin_static_website_preview_path(path: @static_path) %>"
+        title="Live website editor"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allow="fullscreen"
+      ></iframe>
+
+      <div class="xb-float-badge" aria-label="Beta">Beta</div>
+
+      <div
+        class="xb-status-toast"
+        data-website-live-editor-target="statusToast"
+        role="status"
+        aria-live="polite"
+      >
+        <span class="xb-status-toast-dot" data-website-live-editor-target="statusDot"></span>
+        <span class="xb-status-toast-text" data-website-live-editor-target="status">Ready</span>
+      </div>
     </div>
-  </section>
+  <% else %>
+    <div class="xb-empty">
+      <div style="max-width:28rem">
+        <h2 style="margin:0;font-size:18px;font-weight:650;color:var(--xb-chrome-text)">No live website deployed</h2>
+        <p style="margin:10px 0 0;font-size:13px;line-height:1.55;color:var(--xb-chrome-muted)">
+          Ask your admin to deploy this business’s website ZIP first. Once it’s live, you can edit text and manage cards directly on the site.
+        </p>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+          <%= link_to "Back to dashboard", admin_dashboard_path, data: { turbo: false }, class: "xb-btn xb-btn-primary", style: "text-decoration:none" %>
+          <a href="<%= business_site_url(@business) %>" target="_blank" rel="noopener" data-turbo="false" class="xb-btn xb-btn-ghost" style="border:1px solid var(--xb-chrome-border);text-decoration:none">
+            Open site URL
+          </a>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>

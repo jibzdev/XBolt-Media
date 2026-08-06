@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_28_001100) do
+ActiveRecord::Schema[7.0].define(version: 2026_08_06_234500) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -179,6 +179,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_28_001100) do
     t.string "instagram_url"
     t.string "tiktok_url"
     t.string "google_reviews_url"
+    t.text "team_members_data", default: "Jibraeel|Founder|Leads product, client delivery, and the systems behind every XBolt launch.|J\nDesign|Brand & UI|Crafts clean interfaces and brand systems that feel premium on every device.|D\nEngineering|Platform|Builds fast, scalable web infrastructure for multi-tenant client sites.|E\n", null: false
+    t.text "faq_items_data", default: "How long does a typical website project take?|Most builds launch in 1–4 weeks depending on scope. We keep the process tight: plan, design, build, then ship.\nDo you only build websites?|We specialise in premium websites and the systems around them — hosting, analytics, lead capture, and ongoing improvements.\nCan you take over or redesign an existing site?|Yes. We can redesign, rebuild, or modernise what you already have so it loads faster and converts better.\nDo you offer ongoing support after launch?|Absolutely. We can handle updates, content changes, performance monitoring, and new features as your business grows.\nHow do we get started?|Send a message through the contact page with your goals and timeline. We'll reply with next steps and a clear plan.\nWhere can I learn more about XBolt Media?|Visit our LinkedIn page for company updates, or explore Work and Reviews on this site to see recent launches.\n", null: false
   end
 
   create_table "invoices", force: :cascade do |t|
@@ -328,6 +330,20 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_28_001100) do
     t.index ["position"], name: "index_services_on_position"
   end
 
+  create_table "tenant_site_pages", force: :cascade do |t|
+    t.integer "business_id", null: false
+    t.string "title", null: false
+    t.string "slug", null: false
+    t.integer "position", default: 0, null: false
+    t.json "sections", default: [], null: false
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["business_id", "position"], name: "index_tenant_site_pages_on_business_id_and_position"
+    t.index ["business_id", "slug"], name: "index_tenant_site_pages_on_business_id_and_slug", unique: true
+    t.index ["business_id"], name: "index_tenant_site_pages_on_business_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "username", null: false
     t.string "email"
@@ -402,6 +418,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_28_001100) do
   add_foreign_key "page_views", "businesses"
   add_foreign_key "payment_ip_logs", "payments"
   add_foreign_key "reviews", "businesses"
+  add_foreign_key "tenant_site_pages", "businesses"
   add_foreign_key "users", "businesses"
   add_foreign_key "vehicles", "users"
 end

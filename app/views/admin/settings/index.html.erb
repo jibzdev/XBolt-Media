@@ -58,7 +58,7 @@
   </div>
 
   <div class="p-5">
-    <%= form_with(model: @general_setting, url: admin_update_settings_path(tab: active_tab), method: :patch, local: true, class: "space-y-5", html: { id: "general-settings-form" }) do |f| %>
+    <%= form_with(model: @general_setting, url: admin_update_settings_path(tab: active_tab), method: :patch, local: true, class: "space-y-5", html: { id: "general-settings-form", novalidate: true }) do |f| %>
       <input type="hidden" name="tab" id="settings-active-tab" value="<%= active_tab %>">
 
       <div data-settings-panel="general" class="<%= active_tab == 'general' ? '' : 'hidden' %> space-y-4">
@@ -96,11 +96,11 @@
         </div>
         <div>
           <%= f.label :contact_email, "Contact Email", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
-          <%= f.email_field :contact_email, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+          <%= f.text_field :contact_email, inputmode: "email", autocomplete: "email", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
         </div>
         <div>
           <%= f.label :website_url, "Website URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
-          <%= f.url_field :website_url, class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+          <%= f.text_field :website_url, inputmode: "url", autocomplete: "url", placeholder: "https://…", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
         </div>
       </div>
 
@@ -113,25 +113,25 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <%= f.label :linkedin_url, "LinkedIn URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
-            <%= f.url_field :linkedin_url, placeholder: "https://www.linkedin.com/company/xbolt-media/", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+            <%= f.text_field :linkedin_url, inputmode: "url", placeholder: "https://www.linkedin.com/company/xbolt-media/", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
           </div>
           <div>
             <%= f.label :facebook_url, "Facebook URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
-            <%= f.url_field :facebook_url, placeholder: "https://facebook.com/xboltmedia", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+            <%= f.text_field :facebook_url, inputmode: "url", placeholder: "https://facebook.com/xboltmedia", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
           </div>
           <div>
             <%= f.label :instagram_url, "Instagram URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
-            <%= f.url_field :instagram_url, placeholder: "https://instagram.com/xboltmedia", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+            <%= f.text_field :instagram_url, inputmode: "url", placeholder: "https://instagram.com/xboltmedia", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
           </div>
           <div>
             <%= f.label :tiktok_url, "TikTok URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
-            <%= f.url_field :tiktok_url, placeholder: "https://tiktok.com/@xboltmedia", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+            <%= f.text_field :tiktok_url, inputmode: "url", placeholder: "https://tiktok.com/@xboltmedia", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
           </div>
         </div>
 
         <div>
           <%= f.label :google_reviews_url, "Google Reviews URL", class: "block text-[13px] font-medium text-zinc-600 mb-1.5" %>
-          <%= f.url_field :google_reviews_url, placeholder: "https://g.page/r/.../review", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
+          <%= f.text_field :google_reviews_url, inputmode: "url", placeholder: "https://g.page/r/.../review", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300" %>
           <p class="text-[11px] text-zinc-400 mt-1">Adds “Read all reviews on Google” buttons to the reviews page.</p>
         </div>
       </div>
@@ -150,7 +150,7 @@
                 <img id="xbolt-logo-preview" src="<%= brand_logo_url %>" alt="Logo preview" class="max-w-[36px] max-h-[26px] object-contain">
               </div>
               <div class="flex-1">
-                <%= f.url_field :logo_url, placeholder: "https://.../logo.png", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", data: { preview_target: "xbolt-logo-preview" } %>
+                <%= f.text_field :logo_url, inputmode: "url", placeholder: "https://.../logo.png", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", data: { preview_target: "xbolt-logo-preview" } %>
                 <p class="text-[11px] text-zinc-400 mt-1">Transparent PNG/SVG, ~200–400px wide.</p>
               </div>
             </div>
@@ -162,7 +162,7 @@
                 <img id="xbolt-favicon-preview" src="<%= brand_favicon_url %>" alt="Favicon preview" class="w-6 h-6 object-contain">
               </div>
               <div class="flex-1">
-                <%= f.url_field :favicon_url, placeholder: "https://.../favicon.png", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", data: { preview_target: "xbolt-favicon-preview" } %>
+                <%= f.text_field :favicon_url, inputmode: "url", placeholder: "https://.../favicon.png", class: "w-full px-3 py-2 rounded-lg border border-zinc-200/70 text-[13px] text-zinc-800 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300", data: { preview_target: "xbolt-favicon-preview" } %>
                 <p class="text-[11px] text-zinc-400 mt-1">Square PNG, 256×256.</p>
               </div>
             </div>
@@ -251,6 +251,17 @@
       const hidden = document.getElementById("settings-active-tab");
       const form = document.getElementById("general-settings-form");
 
+      function syncPanelFields(activeKey) {
+        panels.forEach((panel) => {
+          const on = panel.getAttribute("data-settings-panel") === activeKey;
+          panel.classList.toggle("hidden", !on);
+          // Disable inactive fields so hidden url/email inputs can't block HTML5 submit.
+          panel.querySelectorAll("input, textarea, select").forEach((el) => {
+            el.disabled = !on;
+          });
+        });
+      }
+
       function activate(key) {
         tabs.forEach((tab) => {
           const on = tab.getAttribute("data-settings-tab") === key;
@@ -260,11 +271,17 @@
           tab.classList.toggle("border-transparent", !on);
           tab.classList.toggle("text-zinc-500", !on);
         });
-        panels.forEach((panel) => {
-          panel.classList.toggle("hidden", panel.getAttribute("data-settings-panel") !== key);
-        });
+        syncPanelFields(key);
         if (hidden) hidden.value = key;
-        if (form) form.action = form.action.replace(/([?&])tab=[^&]*/, "$1tab=" + encodeURIComponent(key));
+        if (form) {
+          try {
+            const action = new URL(form.action, window.location.origin);
+            action.searchParams.set("tab", key);
+            form.action = action.pathname + action.search;
+          } catch (_) {
+            form.action = form.action.replace(/([?&])tab=[^&]*/, "$1tab=" + encodeURIComponent(key));
+          }
+        }
         try {
           const url = new URL(window.location.href);
           url.searchParams.set("tab", key);
@@ -275,6 +292,12 @@
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => activate(tab.getAttribute("data-settings-tab")));
       });
+
+      const initial =
+        (hidden && hidden.value) ||
+        tabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.getAttribute("data-settings-tab") ||
+        "general";
+      syncPanelFields(initial);
     }
 
     document.addEventListener("DOMContentLoaded", () => {

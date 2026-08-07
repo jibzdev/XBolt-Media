@@ -14,6 +14,10 @@
   data-website-live-editor-preview-url-value="<%= @static_deployed ? admin_static_website_preview_path(path: @static_path) : "" %>"
   data-website-live-editor-static-path-value="<%= @static_path %>"
   data-website-live-editor-static-update-url-value="<%= admin_static_website_update_path %>"
+  data-website-live-editor-static-source-url-value="<%= admin_static_website_source_path %>"
+  data-website-live-editor-static-undo-url-value="<%= admin_static_website_undo_path %>"
+  data-website-live-editor-static-redo-url-value="<%= admin_static_website_redo_path %>"
+  data-website-live-editor-static-upload-url-value="<%= admin_static_website_upload_image_path %>"
   data-website-live-editor-site-url-value="<%= business_site_url(@business) %>"
   data-website-live-editor-dashboard-url-value="<%= admin_dashboard_path %>"
   data-website-live-editor-pages-value="<%= json_escape(JSON.generate(pages_json)) %>"
@@ -25,7 +29,7 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>
       <% end %>
 
-      <div class="xb-rail-tip-wrap">
+      <div class="xb-rail-tip-wrap" style="position:relative;display:inline-flex">
         <button type="button" data-tip="Pages" aria-label="Pages" data-action="website-live-editor#togglePages" class="xb-rail-btn" data-website-live-editor-target="pagesBtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/></svg>
         </button>
@@ -38,122 +42,223 @@
             <a
               href="<%= admin_website_path(path: page[:path]) %>"
               data-turbo="false"
+              data-action="click->website-live-editor#switchPageLink"
+              data-path="<%= page[:path] %>"
               class="xb-page-link <%= "is-current" if page[:path] == @static_path %>"
             >
               <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= page[:title] %></span>
             </a>
           <% end %>
-          <select
-            data-website-live-editor-target="pageSwitcher"
-            data-action="change->website-live-editor#switchPage"
-            hidden
-          >
-            <% @static_pages.each do |page| %>
-              <option value="<%= admin_website_path(path: page[:path]) %>" <%= "selected" if page[:path] == @static_path %>>
-                <%= page[:title] %>
-              </option>
-            <% end %>
-          </select>
         </div>
       </div>
 
+      <button type="button" data-tip="Undo" aria-label="Undo" data-action="website-live-editor#undo" class="xb-rail-btn" data-website-live-editor-target="undoBtn" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 1 1 0 12h-2"/></svg>
+      </button>
+      <button type="button" data-tip="Redo" aria-label="Redo" data-action="website-live-editor#redo" class="xb-rail-btn" data-website-live-editor-target="redoBtn" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 1 0 0 12h2"/></svg>
+      </button>
       <button type="button" data-tip="Refresh" aria-label="Refresh preview" data-action="website-live-editor#reloadPreview" class="xb-rail-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
       </button>
-
       <a href="<%= business_site_url(@business) %>" target="_blank" rel="noopener" data-turbo="false" data-tip="Open live site" aria-label="Open live site" class="xb-rail-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4h6v6"/><path d="M10 14 20 4"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>
       </a>
 
       <div class="xb-rail-divider"></div>
 
-      <button type="button" data-tip="Duplicate card" aria-label="Duplicate card" data-action="website-live-editor#duplicateCard" class="xb-rail-btn" data-website-live-editor-target="duplicateBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>
-      </button>
-      <button type="button" data-tip="Copy HTML" aria-label="Copy HTML" data-action="website-live-editor#copyHtml" class="xb-rail-btn">
+      <button type="button" data-tip="Code" aria-label="Toggle code" data-action="website-live-editor#toggleCode" class="xb-rail-btn" data-website-live-editor-target="codeBtn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 5-4 14"/></svg>
-      </button>
-      <button type="button" data-tip="Copy CSS" aria-label="Copy CSS" data-action="website-live-editor#copyCss" class="xb-rail-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4h9a1 1 0 0 1 1 1v3H7V5a1 1 0 0 1 1-1z"/><path d="M7 8h11v11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8z"/><path d="M10 12h6M10 16h4"/></svg>
-      </button>
-      <button type="button" data-tip="Delete card" aria-label="Delete card" data-action="website-live-editor#deleteCard" class="xb-rail-btn xb-rail-btn-danger">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/></svg>
       </button>
     </aside>
 
-    <%# Dedicated inspector column — shared chrome CSS, never cut off %>
-    <section
-      data-website-live-editor-target="bubble"
-      class="xb-inspector-panel"
-      aria-label="Editor inspector"
-    >
-      <div class="xb-inspector-inner">
-        <div class="xb-inspector-header">
-          <div>
-            <p class="xb-inspector-kicker">Editing</p>
-            <h2 data-website-live-editor-target="bubbleLabel" class="xb-inspector-title">Select something</h2>
-          </div>
-          <button type="button" class="xb-icon-btn" data-action="website-live-editor#doneEditing" title="Close">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
-          </button>
+    <section class="xb-inspector-panel" data-website-live-editor-target="bubble" aria-label="Editor inspector">
+      <div class="xb-inspector-header">
+        <div>
+          <p class="xb-inspector-kicker">Selected</p>
+          <h2 data-website-live-editor-target="bubbleLabel" class="xb-inspector-title">Nothing selected</h2>
         </div>
-        <div class="xb-inspector-body">
+        <button type="button" class="xb-icon-btn" data-action="website-live-editor#doneEditing" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div class="xb-inspector-body">
+        <div>
+          <label class="xb-field-label">Text</label>
           <textarea
             data-website-live-editor-target="bubbleInput"
             data-action="input->website-live-editor#onBubbleInput"
-            maxlength="5000"
-            rows="7"
-            placeholder="Click text on the site to edit it here"
             class="xb-inspector-input"
+            maxlength="20000"
+            rows="5"
+            placeholder="Edit text content"
           ></textarea>
+        </div>
 
-          <div data-website-live-editor-target="cardHint" class="xb-inspector-hint" hidden>
-            Card selected — duplicate, copy HTML/CSS, or delete from the icon rail. Changes apply live.
+        <p class="xb-section-title">Styles</p>
+        <div class="xb-style-grid">
+          <div>
+            <label class="xb-field-label">Color</label>
+            <input type="color" data-style-key="color" data-action="input->website-live-editor#onStyleInput" class="xb-inspector-input" style="padding:4px;height:38px">
           </div>
-
-          <div class="xb-inspector-actions">
-            <button type="button" class="xb-btn xb-btn-ghost" data-action="website-live-editor#doneEditing">Done</button>
-            <button type="button" class="xb-btn xb-btn-primary" data-action="website-live-editor#saveNow">Save</button>
+          <div>
+            <label class="xb-field-label">Background</label>
+            <input type="color" data-style-key="background-color" data-action="input->website-live-editor#onStyleInput" class="xb-inspector-input" style="padding:4px;height:38px">
+          </div>
+          <div>
+            <label class="xb-field-label">Font size</label>
+            <input type="text" data-style-key="font-size" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-input" placeholder="16px">
+          </div>
+          <div>
+            <label class="xb-field-label">Weight</label>
+            <select data-style-key="font-weight" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-select">
+              <option value="">Default</option>
+              <option value="300">Light</option>
+              <option value="400">Normal</option>
+              <option value="500">Medium</option>
+              <option value="600">Semibold</option>
+              <option value="700">Bold</option>
+            </select>
+          </div>
+          <div class="xb-span-2">
+            <label class="xb-field-label">Font family</label>
+            <input type="text" data-style-key="font-family" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-input" placeholder="Inter, sans-serif">
+          </div>
+          <div>
+            <label class="xb-field-label">Align</label>
+            <select data-style-key="text-align" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-select">
+              <option value="">Default</option>
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+              <option value="justify">Justify</option>
+            </select>
+          </div>
+          <div>
+            <label class="xb-field-label">Opacity</label>
+            <input type="text" data-style-key="opacity" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-input" placeholder="1">
+          </div>
+          <div>
+            <label class="xb-field-label">Margin</label>
+            <input type="text" data-style-key="margin" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-input" placeholder="0">
+          </div>
+          <div>
+            <label class="xb-field-label">Padding</label>
+            <input type="text" data-style-key="padding" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-input" placeholder="0">
+          </div>
+          <div>
+            <label class="xb-field-label">Radius</label>
+            <input type="text" data-style-key="border-radius" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-input" placeholder="0">
+          </div>
+          <div>
+            <label class="xb-field-label">Display</label>
+            <select data-style-key="display" data-action="change->website-live-editor#onStyleInput" class="xb-inspector-select">
+              <option value="">Default</option>
+              <option value="block">Block</option>
+              <option value="flex">Flex</option>
+              <option value="grid">Grid</option>
+              <option value="inline-block">Inline block</option>
+              <option value="none">None</option>
+            </select>
           </div>
         </div>
+
+        <div data-website-live-editor-target="imagePanel" hidden>
+          <p class="xb-section-title">Image</p>
+          <img data-website-live-editor-target="imagePreview" class="xb-img-preview" alt="">
+          <label class="xb-field-label" style="margin-top:8px">Image URL</label>
+          <input type="text" data-website-live-editor-target="imageUrl" data-action="change->website-live-editor#saveImageUrl" class="xb-inspector-input" placeholder="https://… or /assets/…">
+          <label class="xb-field-label" style="margin-top:8px">Alt text</label>
+          <input type="text" data-website-live-editor-target="imageAlt" data-action="change->website-live-editor#saveImageUrl" class="xb-inspector-input">
+          <label class="xb-field-label" style="margin-top:8px">Upload</label>
+          <input type="file" accept="image/*" data-action="change->website-live-editor#uploadImage" class="xb-inspector-input">
+        </div>
+
+        <p class="xb-section-title">Attributes</p>
+        <div>
+          <label class="xb-field-label">Class</label>
+          <input type="text" data-attr-key="class" data-action="change->website-live-editor#onAttrInput" class="xb-inspector-input">
+        </div>
+        <div>
+          <label class="xb-field-label">Href / Src</label>
+          <input type="text" data-website-live-editor-target="linkAttr" data-action="change->website-live-editor#onLinkAttrInput" class="xb-inspector-input">
+        </div>
+
+        <div class="xb-btn-row">
+          <button type="button" class="xb-btn xb-btn-ghost" data-action="website-live-editor#doneEditing">Done</button>
+          <button type="button" class="xb-btn xb-btn-primary" data-action="website-live-editor#saveNow">Save</button>
+        </div>
+        <p class="xb-hint">Right-click the page for duplicate, delete, move, wrap, and code actions.</p>
       </div>
     </section>
 
-    <div class="xb-canvas">
-      <iframe
-        data-website-live-editor-target="frame"
-        data-action="load->website-live-editor#onFrameLoad"
-        src="<%= admin_static_website_preview_path(path: @static_path) %>"
-        title="Live website editor"
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allow="fullscreen"
-      ></iframe>
+    <div class="xb-canvas-wrap">
+      <div class="xb-canvas">
+        <iframe
+          data-website-live-editor-target="frame"
+          data-action="load->website-live-editor#onFrameLoad"
+          src="<%= admin_static_website_preview_path(path: @static_path) %>"
+          title="Live website editor"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="fullscreen"
+        ></iframe>
 
-      <div class="xb-float-badge" aria-label="Beta">Beta</div>
-
-      <div
-        class="xb-status-toast"
-        data-website-live-editor-target="statusToast"
-        role="status"
-        aria-live="polite"
-      >
-        <span class="xb-status-toast-dot" data-website-live-editor-target="statusDot"></span>
-        <span class="xb-status-toast-text" data-website-live-editor-target="status">Ready</span>
+        <div class="xb-float-badge" aria-label="Beta">Beta</div>
+        <div class="xb-status-toast" data-website-live-editor-target="statusToast" role="status" aria-live="polite">
+          <span class="xb-status-toast-dot" data-website-live-editor-target="statusDot"></span>
+          <span class="xb-status-toast-text" data-website-live-editor-target="status">Ready</span>
+        </div>
       </div>
+    </div>
+
+    <section class="xb-code-drawer" data-website-live-editor-target="codeDrawer" aria-label="Code editor">
+      <div class="xb-code-toolbar">
+        <button type="button" class="xb-code-tab is-active" data-code-tab="html" data-action="website-live-editor#switchCodeTab">HTML</button>
+        <button type="button" class="xb-code-tab" data-code-tab="css" data-action="website-live-editor#switchCodeTab">CSS</button>
+        <div style="flex:1"></div>
+        <button type="button" class="xb-btn xb-btn-ghost" data-action="website-live-editor#reloadSource">Reload</button>
+        <button type="button" class="xb-btn xb-btn-primary" data-action="website-live-editor#applyCode">Apply to site</button>
+      </div>
+      <div class="xb-code-body" data-website-live-editor-target="codeBody">
+        <div class="xb-code-sources" data-website-live-editor-target="cssSources" hidden></div>
+        <div class="xb-monaco-host" data-website-live-editor-target="monacoHost"></div>
+        <textarea
+          class="xb-code-fallback"
+          data-website-live-editor-target="codeFallback"
+          data-action="input->website-live-editor#onCodeFallbackInput"
+          spellcheck="false"
+          hidden
+        ></textarea>
+      </div>
+    </section>
+
+    <div class="xb-ctx-menu" data-website-live-editor-target="contextMenu" hidden role="menu">
+      <button type="button" class="xb-ctx-item" data-ctx="edit-text">Edit text</button>
+      <button type="button" class="xb-ctx-item" data-ctx="edit-styles">Edit styles</button>
+      <button type="button" class="xb-ctx-item" data-ctx="edit-html">Edit HTML</button>
+      <div class="xb-ctx-sep"></div>
+      <button type="button" class="xb-ctx-item" data-ctx="duplicate">Duplicate</button>
+      <button type="button" class="xb-ctx-item" data-ctx="move-up">Move up</button>
+      <button type="button" class="xb-ctx-item" data-ctx="move-down">Move down</button>
+      <button type="button" class="xb-ctx-item" data-ctx="wrap">Wrap with section</button>
+      <button type="button" class="xb-ctx-item" data-ctx="replace-image">Replace image</button>
+      <div class="xb-ctx-sep"></div>
+      <button type="button" class="xb-ctx-item" data-ctx="copy-html">Copy HTML</button>
+      <button type="button" class="xb-ctx-item" data-ctx="copy-css">Copy CSS</button>
+      <button type="button" class="xb-ctx-item" data-ctx="open-code">Open in Code</button>
+      <div class="xb-ctx-sep"></div>
+      <button type="button" class="xb-ctx-item is-danger" data-ctx="delete">Delete</button>
     </div>
   <% else %>
     <div class="xb-empty">
       <div style="max-width:28rem">
         <h2 style="margin:0;font-size:18px;font-weight:650;color:var(--xb-chrome-text)">No live website deployed</h2>
         <p style="margin:10px 0 0;font-size:13px;line-height:1.55;color:var(--xb-chrome-muted)">
-          Ask your admin to deploy this business’s website ZIP first. Once it’s live, you can edit text and manage cards directly on the site.
+          Ask your admin to deploy this business’s website ZIP first. Once it’s live, you can edit text, styles, HTML, and CSS directly on the site.
         </p>
         <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
           <%= link_to "Back to dashboard", admin_dashboard_path, data: { turbo: false }, class: "xb-btn xb-btn-primary", style: "text-decoration:none" %>
-          <a href="<%= business_site_url(@business) %>" target="_blank" rel="noopener" data-turbo="false" class="xb-btn xb-btn-ghost" style="border:1px solid var(--xb-chrome-border);text-decoration:none">
-            Open site URL
-          </a>
         </div>
       </div>
     </div>

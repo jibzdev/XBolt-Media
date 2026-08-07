@@ -1,19 +1,30 @@
 require "nokogiri"
 require "fileutils"
+require "securerandom"
 
 class TenantStaticSiteEditor
-  TEXT_SELECTOR = "h1,h2,h3,h4,h5,h6,p,a,button,span,li,blockquote,strong,em,b,i,small,label,figcaption,cite,div,td,th".freeze
-  NON_CONTENT_TAGS = %w[script style noscript svg path img picture video audio source canvas iframe input textarea select option br hr].freeze
-  GROUP_HINT = /grid|cards?|reviews?|testimonials?|gallery|work|projects?|services?|features?|team|pricing|plans?|portfolio|case|results?|logos?|columns?|row|list|slider|carousel/i
-  # Match real card tokens (review-card, service-card) — not labels like review-name / review-service.
-  ITEM_HINT = /(?:^|\s)([\w-]*card|testimonial|gallery-item|portfolio-item|team-member|slide|logo)(?:\s|$)/i
   ASSET_ATTRS = %w[href src poster].freeze
-  MAX_TEXT_LENGTH = 5000
   EVENT_HANDLER_ATTRS = /\Aon/i
+  MAX_TEXT_LENGTH = 20_000
+  MAX_HTML_BYTES = 2.megabytes
+  MAX_CSS_BYTES = 1.megabyte
+  MAX_IMAGE_BYTES = 5.megabytes
+  ALLOWED_IMAGE_TYPES = %w[image/jpeg image/png image/webp image/gif image/svg+xml].freeze
+  BACKUP_KEEP = 30
+  EDITOR_SKIP = "[data-xbolt-static-editor],[data-xbolt-static-editor-runtime],[data-xbolt-editor-chrome]".freeze
+
+  STYLE_PROPS = %w[
+    color background-color background-image font-size font-weight font-family text-align
+    margin padding display gap opacity border-radius border
+    line-height letter-spacing width max-width height max-height
+    flex-direction justify-content align-items grid-template-columns
+  ].freeze
 
   def initialize(business:)
     @business = business
     @site_root = Rails.root.join("public", "tenant_sites", @business.subdomain.to_s)
+    @backup_root = Rails.root.join("public", "tenant_sites_backups", @business.subdomain.to_s, "editor")
+    @redo_root = Rails.root.join("public", "tenant_sites_backups", @business.subdomain.to_s, "editor_redo")
   end
 
   def deployed?
@@ -40,15 +51,61 @@ class TenantStaticSiteEditor
     doc = Nokogiri::HTML(File.read(abs))
     neutralize_scripts!(doc)
     rewrite_asset_urls!(doc)
-    mark_text_nodes!(doc)
-    mark_reorder_groups!(doc)
     inject_editor_styles!(doc)
     inject_editor_runtime!(doc)
     doc.to_html
   end
 
+  def page_source(path:)
+    abs = resolve_html_path(path)
+    raise ArgumentError, "Page not found." if abs.nil?
+
+    html = File.read(abs)
+    doc = Nokogiri::HTML(html)
+    css_sources = []
+
+    doc.css("style").each_with_index do |style_node, index|
+      next if style_node["data-xbolt-static-editor"].present?
+
+      css_sources << {
+        id: "style:#{index}",
+        kind: "inline",
+        label: "Inline <style> ##{index + 1}",
+        content: style_node.content.to_s
+      }
+    end
+
+    doc.css('link[rel="stylesheet"][href]').each_with_index do |link, index|
+      href = link["href"].to_s
+      next if href.start_with?("http://", "https://", "//", "data:")
+
+      rel = href.sub(%r{\A\./}, "").sub(%r{\A/+}, "")
+      next if rel.blank? || rel.include?("..")
+
+      css_abs = @site_root.join(rel).cleanpath
+      next unless css_abs.to_s.start_with?(@site_root.to_s) && File.file?(css_abs)
+
+      css_sources << {
+        id: "file:#{rel}",
+        kind: "file",
+        label: rel,
+        path: rel,
+        content: File.read(css_abs)
+      }
+    end
+
+    {
+      path: path.to_s,
+      file: abs.relative_path_from(@site_root).to_s.tr("\\", "/"),
+      html: html,
+      css_sources: css_sources,
+      can_undo: can_undo?,
+      can_redo: can_redo?
+    }
+  end
+
   def serve_asset(path)
-    rel = path.to_s.sub(%r{\A/+}, "")
+    rel = path.to_s.sub(%r{\A/+}, "").split("?", 2).first.to_s
     return nil if rel.blank? || rel.include?("..")
 
     abs = @site_root.join(rel).cleanpath
@@ -58,107 +115,281 @@ class TenantStaticSiteEditor
     abs
   end
 
-  def update_text!(path:, text_index:, value:)
-    abs = resolve_html_path(path)
-    raise ArgumentError, "Page not found." if abs.nil?
+  # --- Path-based ops -------------------------------------------------------
 
+  def update_text_at_path!(path:, element_path:, value:)
     text = value.to_s
     raise ArgumentError, "Text is too long." if text.bytesize > MAX_TEXT_LENGTH
 
-    if text_index.to_s.start_with?("review:")
-      update_dynamic_review!(abs: abs, token: text_index.to_s, value: text)
-      return
+    mutate_html_path!(path, element_path) do |node|
+      node.content = text[0, MAX_TEXT_LENGTH]
     end
-
-    doc = Nokogiri::HTML(File.read(abs))
-    node = editable_text_nodes(doc)[text_index.to_i]
-    raise ArgumentError, "Editable text not found." if node.nil?
-
-    node.content = text[0, MAX_TEXT_LENGTH]
-    write_html!(abs, doc)
   end
 
-  def reorder_items!(path:, container_index:, old_index:, new_index:)
-    abs = resolve_html_path(path)
-    raise ArgumentError, "Page not found." if abs.nil?
+  def update_styles_at_path!(path:, element_path:, styles:)
+    raise ArgumentError, "Styles required." unless styles.is_a?(Hash) || styles.is_a?(ActionController::Parameters)
 
-    doc = Nokogiri::HTML(File.read(abs))
-    group = reorder_groups(doc)[container_index.to_i]
-    raise ArgumentError, "Reorder group not found." if group.nil?
+    mutate_html_path!(path, element_path) do |node|
+      current = parse_inline_style(node["style"].to_s)
+      styles.to_h.each do |key, raw|
+        prop = key.to_s.downcase.tr("_", "-")
+        next unless STYLE_PROPS.include?(prop)
 
-    children = reorder_children(group)
-    moved = children[old_index.to_i]
-    target = children[new_index.to_i]
-    raise ArgumentError, "Reorder item not found." if moved.nil? || target.nil?
+        val = raw.to_s.strip
+        if val.blank?
+          current.delete(prop)
+        else
+          raise ArgumentError, "Invalid style value." if val.match?(/[;{}<>]|expression|javascript:/i)
 
-    moved.remove
-    if old_index.to_i < new_index.to_i
-      target.after(moved)
+          current[prop] = val[0, 200]
+        end
+      end
+      node["style"] = current.map { |k, v| "#{k}: #{v}" }.join("; ")
+      node.remove_attribute("style") if node["style"].blank?
+    end
+  end
+
+  def update_attrs_at_path!(path:, element_path:, attrs:)
+    raise ArgumentError, "Attributes required." unless attrs.is_a?(Hash) || attrs.is_a?(ActionController::Parameters)
+
+    allowed = %w[href src alt title class id]
+    mutate_html_path!(path, element_path) do |node|
+      attrs.to_h.each do |key, raw|
+        name = key.to_s.downcase
+        next unless allowed.include?(name)
+        next if name.match?(EVENT_HANDLER_ATTRS)
+
+        val = raw.to_s.strip
+        if val.blank?
+          node.remove_attribute(name)
+        else
+          raise ArgumentError, "Invalid attribute value." if val.match?(/javascript:/i)
+
+          val = demangle_editor_href(val) if name == "href"
+          val = demangle_editor_src(val) if name == "src"
+          node[name] = val[0, 2000]
+        end
+      end
+    end
+  end
+
+  def replace_outer_html_at_path!(path:, element_path:, html:)
+    fragment = html.to_s
+    raise ArgumentError, "HTML is empty." if fragment.blank?
+    raise ArgumentError, "HTML is too large." if fragment.bytesize > MAX_HTML_BYTES
+
+    mutate_html_path!(path, element_path) do |node|
+      parsed = Nokogiri::HTML::DocumentFragment.parse(fragment)
+      raise ArgumentError, "Could not parse HTML." if parsed.children.blank?
+
+      replacement = parsed.children.find(&:element?) || parsed.children.first
+      raise ArgumentError, "Could not parse HTML." if replacement.nil?
+
+      node.replace(replacement)
+    end
+  end
+
+  def duplicate_at_path!(path:, element_path:)
+    mutate_html_path!(path, element_path) do |node|
+      raise ArgumentError, "Cannot duplicate the root element." if %w[html body head].include?(node.name)
+
+      clone = node.dup
+      annotate_copy_label!(clone)
+      node.add_next_sibling(clone)
+    end
+  end
+
+  def delete_at_path!(path:, element_path:)
+    mutate_html_path!(path, element_path) do |node|
+      raise ArgumentError, "Cannot delete the root element." if %w[html body head].include?(node.name)
+
+      node.remove
+    end
+  end
+
+  def move_at_path!(path:, element_path:, direction:)
+    dir = direction.to_s
+    raise ArgumentError, "Direction must be up or down." unless %w[up down].include?(dir)
+
+    mutate_html_path!(path, element_path) do |node|
+      raise ArgumentError, "Cannot move the root element." if %w[html body head].include?(node.name)
+
+      if dir == "up"
+        prev = node.previous_element
+        raise ArgumentError, "Already at the top." if prev.nil?
+
+        prev.add_previous_sibling(node)
+      else
+        nxt = node.next_element
+        raise ArgumentError, "Already at the bottom." if nxt.nil?
+
+        nxt.add_next_sibling(node)
+      end
+    end
+  end
+
+  def wrap_at_path!(path:, element_path:, tag: "div")
+    tag_name = tag.to_s.downcase
+    raise ArgumentError, "Invalid wrap tag." unless %w[div section article aside].include?(tag_name)
+
+    mutate_html_path!(path, element_path) do |node|
+      raise ArgumentError, "Cannot wrap the root element." if %w[html body head].include?(node.name)
+
+      wrapper = Nokogiri::XML::Node.new(tag_name, node.document)
+      node.add_next_sibling(wrapper)
+      wrapper.add_child(node)
+    end
+  end
+
+  def replace_image_at_path!(path:, element_path:, src: nil, alt: nil, uploaded_file: nil)
+    final_src = src.to_s.strip
+    if uploaded_file.present?
+      final_src = store_uploaded_image!(uploaded_file)
     else
-      target.before(moved)
+      final_src = demangle_editor_src(final_src)
+    end
+    raise ArgumentError, "Image source required." if final_src.blank?
+    raise ArgumentError, "Invalid image URL." if final_src.match?(/javascript:/i)
+
+    mutate_html_path!(path, element_path) do |node|
+      if node.name == "img"
+        node["src"] = final_src
+        node["alt"] = alt.to_s[0, 300] if !alt.nil?
+      else
+        styles = parse_inline_style(node["style"].to_s)
+        styles["background-image"] = "url(#{final_src})"
+        node["style"] = styles.map { |k, v| "#{k}: #{v}" }.join("; ")
+      end
     end
 
-    write_html!(abs, doc)
+    { ok: true, src: final_src }
   end
 
-  def duplicate_item!(path:, container_index:, item_index:)
-    if container_index.to_s == "dynamic-reviews"
-      return duplicate_dynamic_review!(path: path, item_index: item_index)
-    end
-
+  def save_html!(path:, html:)
     abs = resolve_html_path(path)
     raise ArgumentError, "Page not found." if abs.nil?
 
-    doc = Nokogiri::HTML(File.read(abs))
-    group = reorder_groups(doc)[container_index.to_i]
-    raise ArgumentError, "Card group not found." if group.nil?
+    content = html.to_s
+    raise ArgumentError, "HTML is empty." if content.blank?
+    raise ArgumentError, "HTML is too large." if content.bytesize > MAX_HTML_BYTES
+    raise ArgumentError, "HTML looks invalid." unless content.match?(/<html[\s>]|<!DOCTYPE/i) || content.include?("<body")
 
-    children = reorder_children(group)
-    source = children[item_index.to_i]
-    raise ArgumentError, "Card not found." if source.nil?
-    raise ArgumentError, "Too many cards in this group." if children.size >= 40
-
-    expected = children.size + 1
-    clone = source.dup
-    annotate_duplicated_text!(clone)
-    source.add_next_sibling(clone)
-    write_html!(abs, doc)
-
-    verify_count = item_count_on_disk(abs, container_index)
-    raise ArgumentError, "Duplicate did not persist." if verify_count < expected
-
-    { ok: true, item_count: verify_count, container_index: container_index.to_i }
+    versioned_backup!(abs)
+    write_raw!(abs, content)
+    refresh_sitemap!
+    { ok: true }
   end
 
-  def delete_item!(path:, container_index:, item_index:)
-    if container_index.to_s == "dynamic-reviews"
-      return delete_dynamic_review!(path: path, item_index: item_index)
-    end
-
+  def save_css!(path:, source_id:, css:)
     abs = resolve_html_path(path)
     raise ArgumentError, "Page not found." if abs.nil?
 
-    doc = Nokogiri::HTML(File.read(abs))
-    group = reorder_groups(doc)[container_index.to_i]
-    raise ArgumentError, "Card group not found." if group.nil?
+    content = css.to_s
+    raise ArgumentError, "CSS is too large." if content.bytesize > MAX_CSS_BYTES
+    raise ArgumentError, "CSS contains forbidden content." if content.match?(/expression\s*\(|javascript:/i)
 
-    children = reorder_children(group)
-    raise ArgumentError, "Keep at least one card in this group." if children.size <= 1
+    id = source_id.to_s
+    if id.start_with?("style:")
+      index = id.split(":", 2).last.to_i
+      doc = Nokogiri::HTML(File.read(abs))
+      styles = doc.css("style").reject { |n| n["data-xbolt-static-editor"].present? }
+      node = styles[index]
+      raise ArgumentError, "Style block not found." if node.nil?
 
-    target = children[item_index.to_i]
-    raise ArgumentError, "Card not found." if target.nil?
+      node.content = content
+      versioned_backup!(abs)
+      # Prefer preserving surrounding HTML: rewrite only the style text via raw replace when possible
+      write_raw!(abs, doc.to_html)
+      refresh_sitemap!
+    elsif id.start_with?("file:")
+      rel = id.delete_prefix("file:")
+      raise ArgumentError, "Invalid CSS path." if rel.blank? || rel.include?("..")
 
-    expected = children.size - 1
-    target.remove
-    write_html!(abs, doc)
+      css_abs = @site_root.join(rel).cleanpath
+      raise ArgumentError, "CSS file not found." unless css_abs.to_s.start_with?(@site_root.to_s) && File.file?(css_abs)
 
-    verify_count = item_count_on_disk(abs, container_index)
-    raise ArgumentError, "Delete did not persist." if verify_count != expected
+      versioned_backup!(css_abs)
+      write_raw!(css_abs, content)
+    else
+      raise ArgumentError, "Unknown CSS source."
+    end
 
-    { ok: true, item_count: verify_count, container_index: container_index.to_i }
+    { ok: true }
+  end
+
+  def undo!(path: nil)
+    latest = newest_backup(@backup_root)
+    raise ArgumentError, "Nothing to undo." if latest.nil?
+
+    abs = restore_target_from_backup!(latest)
+    push_history_copy!(@redo_root, abs)
+    FileUtils.cp(latest, abs)
+    FileUtils.rm_f(latest)
+    refresh_sitemap!
+    {
+      ok: true,
+      restored_from: File.basename(latest),
+      can_undo: can_undo?,
+      can_redo: can_redo?
+    }
+  end
+
+  def redo!(path: nil)
+    latest = newest_backup(@redo_root)
+    raise ArgumentError, "Nothing to redo." if latest.nil?
+
+    abs = restore_target_from_backup!(latest)
+    # Move current into undo stack without clearing redo (versioned_backup! clears redo)
+    FileUtils.mkdir_p(@backup_root)
+    stamp = Time.current.strftime("%Y%m%d-%H%M%S-%L")
+    rel = Pathname.new(abs).relative_path_from(@site_root).to_s.tr("\\", "/")
+    safe = rel.gsub("/", "__")
+    FileUtils.cp(abs, @backup_root.join("#{stamp}__#{safe}"))
+    FileUtils.cp(latest, abs)
+    FileUtils.rm_f(latest)
+    refresh_sitemap!
+    {
+      ok: true,
+      restored_from: File.basename(latest),
+      can_undo: can_undo?,
+      can_redo: can_redo?
+    }
+  end
+
+  def can_undo?(path: nil)
+    newest_backup(@backup_root).present?
+  end
+
+  def can_redo?(path: nil)
+    newest_backup(@redo_root).present?
   end
 
   private
+
+  def mutate_html_path!(path, element_path)
+    abs = resolve_html_path(path)
+    raise ArgumentError, "Page not found." if abs.nil?
+
+    doc = Nokogiri::HTML(File.read(abs))
+    node = find_by_path!(doc, element_path)
+    yield node
+    versioned_backup!(abs)
+    write_raw!(abs, doc.to_html)
+    refresh_sitemap!
+    { ok: true }
+  end
+
+  def find_by_path!(doc, element_path)
+    path = element_path.to_s.strip
+    raise ArgumentError, "Element path required." if path.blank?
+    raise ArgumentError, "Invalid element path." if path.include?("..") || path.match?(/[<"']/ )
+
+    matches = doc.css(path)
+    raise ArgumentError, "Element not found." if matches.empty?
+    raise ArgumentError, "Element path is ambiguous (#{matches.size} matches)." if matches.size > 1
+
+    matches.first
+  end
 
   def resolve_html_path(path)
     raw = path.to_s.strip
@@ -181,19 +412,19 @@ class TenantStaticSiteEditor
       next unless abs.to_s.start_with?(@site_root.to_s)
       return abs if File.file?(abs)
     end
-
     nil
   end
 
   def page_title(abs, rel)
     doc = Nokogiri::HTML(File.read(abs))
-    doc.at("title")&.text&.strip.presence || rel
+    title = doc.at("title")&.text.to_s.strip
+    return title if title.present?
+
+    rel == "index.html" ? "Home" : rel.delete_suffix(".html").tr("-_/", " ").split.map(&:capitalize).join(" ")
   rescue StandardError
     rel
   end
 
-  # Keep styling/runtime scripts (e.g. Tailwind CDN) so the live site looks correct.
-  # Only strip clearly dangerous vectors; preview runs sandboxed in an iframe.
   def neutralize_scripts!(doc)
     doc.css("iframe, object, embed").remove
 
@@ -216,96 +447,33 @@ class TenantStaticSiteEditor
     end
   end
 
-  def editable_text_nodes(doc)
-    candidates = doc.css(TEXT_SELECTOR).select do |node|
-      next false if ignored_node?(node)
-      next false if node.text.to_s.strip.blank?
-
-      meaningful_text_node?(node)
-    end
-
-    candidates.reject do |node|
-      candidates.any? { |other| other != node && node.ancestors.include?(other) && same_text_content?(node, other) }
-    end
-  end
-
-  def mark_text_nodes!(doc)
-    editable_text_nodes(doc).each_with_index do |node, index|
-      node["data-xbolt-editable"] = "true"
-      node["data-xbolt-text-index"] = index.to_s
-    end
-  end
-
-  def reorder_groups(doc)
-    candidates = doc.css("div,ul,ol,section,main").select do |node|
-      next false if ignored_node?(node)
-
-      children = reorder_children(node)
-      next false if children.size < 2
-      next false if children.any? { |child| child["data-xbolt-items"].present? }
-      next false if node.css("[data-xbolt-items]").any?
-
-      class_name = node["class"].to_s.downcase
-      id_name = node["id"].to_s.downcase
-      hinted_children = children.count { |child| item_like_child?(child) }
-
-      id_name == "reviews-grid" ||
-        hinted_children >= 2 ||
-        ((class_name.match?(GROUP_HINT) || id_name.match?(GROUP_HINT)) && repeated_children?(children)) ||
-        repeated_card_like_children?(children)
-    end
-
-    candidates.reject do |node|
-      candidates.any? { |other| other != node && other.ancestors.include?(node) }
-    end
-  end
-
-  def reorder_children(node)
-    node.element_children.reject { |child| NON_CONTENT_TAGS.include?(child.name) || child.text.to_s.strip.blank? }
-  end
-
-  def item_like_child?(child)
-    return true if %w[article li].include?(child.name)
-
-    child["class"].to_s.downcase.match?(ITEM_HINT)
-  end
-
-  def mark_reorder_groups!(doc)
-    reorder_groups(doc).each_with_index do |node, group_index|
-      node["data-xbolt-items"] = "true"
-      node["data-xbolt-container-index"] = group_index.to_s
-      reorder_children(node).each_with_index do |child, child_index|
-        child["data-xbolt-item"] = "true"
-        child["data-xbolt-item-index"] = child_index.to_s
-      end
-    end
-  end
-
   def rewrite_asset_urls!(doc)
     doc.css("[href], [src], [poster]").each do |node|
       ASSET_ATTRS.each do |attr|
         raw = node[attr].to_s
         next if raw.blank? || raw.start_with?("#", "mailto:", "tel:", "http://", "https://", "//", "data:")
 
-        # Root-absolute paths like /logo.png and relative ./assets/... both map
-        # into the tenant site folder via the static asset proxy.
         clean = raw.sub(%r{\A\./}, "").sub(%r{\A/+}, "")
         next if clean.blank? || clean.include?("..")
 
-        # Keep HTML page links navigable in the editor (do not send them through the asset proxy).
-        if attr == "href" && html_page_href?(clean)
-          page_path = normalize_editor_page_path(clean)
+        file_part, query = clean.split("?", 2)
+        next if file_part.blank?
+
+        if attr == "href" && html_page_href?(file_part)
+          page_path = normalize_editor_page_path(file_part)
           node["data-xbolt-page"] = page_path
           node[attr] = "#xbolt-page:#{page_path}"
           next
         end
 
-        node[attr] = asset_proxy_path(clean)
+        proxied = asset_proxy_path(file_part)
+        node[attr] = query.present? ? "#{proxied}?#{query}" : proxied
       end
     end
 
-    # Rewrite url(...) references inside <style> blocks when they are relative.
     doc.css("style").each do |style_node|
+      next if style_node["data-xbolt-static-editor"].present?
+
       css = style_node.content.to_s
       rewritten = css.gsub(/url\(\s*(['"]?)(?!https?:|data:|\/\/|#)([^'")]+)\1\s*\)/i) do
         quote = Regexp.last_match(1)
@@ -323,7 +491,6 @@ class TenantStaticSiteEditor
     return true if rel.end_with?(".html", ".htm")
     return true if rel.blank? || rel == "index" || rel == "index.html"
 
-    # Extensionless paths that match a deployed page (e.g. "about", "services/work")
     pages.any? { |page| page[:path] == normalize_editor_page_path(path) }
   end
 
@@ -339,245 +506,255 @@ class TenantStaticSiteEditor
     "/dashboard/website/static/assets/#{relative_path}"
   end
 
+  def demangle_editor_href(value)
+    raw = value.to_s.strip
+    if raw.start_with?("#xbolt-page:")
+      page = raw.delete_prefix("#xbolt-page:")
+      return "index.html" if page.blank? || page == "/"
+
+      slug = page.sub(%r{\A/+}, "").sub(%r{\.html?\z}i, "")
+      return "index.html" if slug.blank? || slug == "index"
+
+      return "#{slug}.html"
+    end
+    raw
+  end
+
+  def demangle_editor_src(value)
+    raw = value.to_s.strip
+    prefix = "/dashboard/website/static/assets/"
+    return raw.delete_prefix(prefix) if raw.start_with?(prefix)
+
+    raw
+  end
+
   def inject_editor_styles!(doc)
     style = Nokogiri::XML::Node.new("style", doc)
     style["data-xbolt-static-editor"] = "true"
-    # Outline/ring only — never paint fills that change tenant text/background colors.
     style.content = <<~CSS
-      [data-xbolt-editable]{
-        outline:2px solid transparent;
-        outline-offset:3px;
-        border-radius:6px;
-        cursor:text;
-        transition:outline-color .15s ease, box-shadow .15s ease;
-      }
-      [data-xbolt-editable]:hover{
-        outline-color:rgba(245,158,11,.85);
-        box-shadow:0 0 0 3px rgba(245,158,11,.14);
+      [data-xbolt-hover]{
+        outline:2px solid rgba(245,158,11,.7) !important;
+        outline-offset:2px !important;
       }
       [data-xbolt-selected]{
         outline:2px solid #f59e0b !important;
         outline-offset:3px !important;
         box-shadow:0 0 0 4px rgba(245,158,11,.18) !important;
       }
-      [data-xbolt-items]{
-        min-height:24px;
-        outline:1px dashed rgba(245,158,11,.25);
-        outline-offset:10px;
-        border-radius:12px;
-      }
-      [data-xbolt-item]{
-        cursor:grab;
-        transition:box-shadow .15s ease;
-        position:relative;
-      }
-      [data-xbolt-item]:hover{ box-shadow:0 0 0 2px rgba(245,158,11,.5); }
-      [data-xbolt-item-selected]{ box-shadow:0 0 0 2px #f59e0b !important; }
-      .xbolt-drag-ghost{opacity:.45}
+      [data-xbolt-editable-hint]{ cursor:text; }
     CSS
     (doc.at("head") || doc.root).add_child(style)
   end
 
   def inject_editor_runtime!(doc)
-    # Static review cards are edited as normal HTML. Legacy JS-rendered grids still get marked.
     script = Nokogiri::XML::Node.new("script", doc)
     script["data-xbolt-static-editor-runtime"] = "true"
     script.content = <<~JS
       (function () {
-        var grid = document.getElementById("reviews-grid");
-        if (!grid) return;
+        if (window.__xboltEditorRuntime) return;
+        window.__xboltEditorRuntime = true;
 
-        var staticCards = grid.querySelectorAll(".review-card");
-        if (staticCards.length) {
-          // Show every card in the editor (ignore production load-more hiding).
-          Array.prototype.forEach.call(staticCards, function (card) { card.style.display = ""; });
+        function isEditorChrome(el) {
+          return !!(el && el.closest && el.closest("#{EDITOR_SKIP}"));
+        }
+
+        function cssEscape(value) {
+          if (window.CSS && CSS.escape) return CSS.escape(value);
+          return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\\\$&");
+        }
+
+        function stableClass(node) {
+          if (!node.classList || !node.classList.length) return "";
+          for (var i = 0; i < node.classList.length; i++) {
+            var c = node.classList[i];
+            if (!/^[a-zA-Z][\\w-]*$/.test(c)) continue;
+            if (c.indexOf("xbolt") !== -1) continue;
+            return "." + cssEscape(c);
+          }
+          return "";
+        }
+
+        function buildPath(el) {
+          if (!el || el.nodeType !== 1) return null;
+          if (el.id && document.querySelectorAll("#" + cssEscape(el.id)).length === 1) {
+            return "#" + cssEscape(el.id);
+          }
+          var parts = [];
+          var node = el;
+          while (node && node.nodeType === 1 && node !== document.documentElement) {
+            if (node.id && document.querySelectorAll("#" + cssEscape(node.id)).length === 1) {
+              parts.unshift("#" + cssEscape(node.id));
+              break;
+            }
+            var tag = node.tagName.toLowerCase();
+            var parent = node.parentElement;
+            if (!parent) {
+              parts.unshift(tag + stableClass(node));
+              break;
+            }
+            var siblings = Array.prototype.filter.call(parent.children, function (child) {
+              return child.tagName === node.tagName;
+            });
+            var index = siblings.indexOf(node) + 1;
+            // Always include nth-of-type so Nokogiri css() never matches sibling groups.
+            parts.unshift(tag + stableClass(node) + ":nth-of-type(" + index + ")");
+            node = parent;
+            if (parts[0] && parts[0].charAt(0) === "#") break;
+          }
+          return parts.join(" > ");
+        }
+
+        function nearestBlock(el) {
+          if (!el || !el.closest) return el;
+          return el.closest("article, section, li, .review-card, .card, .faq-item, .service-card, header, footer, nav, main > div") || el;
+        }
+
+        function post(type, detail) {
+          try {
+            window.parent.postMessage(Object.assign({ source: "xbolt-editor" }, detail, { type: type }), "*");
+          } catch (e) {}
+        }
+
+        var selected = null;
+
+        function clearHover() {
+          document.querySelectorAll("[data-xbolt-hover]").forEach(function (n) {
+            n.removeAttribute("data-xbolt-hover");
+          });
+        }
+
+        function select(el) {
+          if (!el || isEditorChrome(el)) return;
+          document.querySelectorAll("[data-xbolt-selected]").forEach(function (n) {
+            n.removeAttribute("data-xbolt-selected");
+          });
+          selected = el;
+          el.setAttribute("data-xbolt-selected", "true");
+          var path = buildPath(el);
+          var block = nearestBlock(el);
+          var rect = el.getBoundingClientRect();
+          var computed = window.getComputedStyle(el);
+          var styles = {};
+          #{STYLE_PROPS.map { |p| "styles[#{p.to_json}] = computed.getPropertyValue(#{p.to_json});" }.join("\n          ")}
+          post("select", {
+            path: path,
+            blockPath: buildPath(block),
+            tag: el.tagName.toLowerCase(),
+            text: (el.innerText || "").trim().slice(0, 5000),
+            html: el.outerHTML.slice(0, 50000),
+            attrs: {
+              href: el.getAttribute("href") || "",
+              src: el.getAttribute("src") || "",
+              alt: el.getAttribute("alt") || "",
+              class: el.getAttribute("class") || "",
+              id: el.getAttribute("id") || "",
+              title: el.getAttribute("title") || ""
+            },
+            styles: styles,
+            rect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+            isImage: el.tagName.toLowerCase() === "img" || !!(styles["background-image"] && styles["background-image"] !== "none")
+          });
+        }
+
+        document.addEventListener("mouseover", function (event) {
+          var el = event.target;
+          if (!el || el === document.documentElement || el === document.body || isEditorChrome(el)) return;
+          clearHover();
+          el.setAttribute("data-xbolt-hover", "true");
+        }, true);
+
+        document.addEventListener("mouseout", function () {
+          clearHover();
+        }, true);
+
+        document.addEventListener("click", function (event) {
+          var el = event.target.closest("*");
+          if (!el || isEditorChrome(el)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          select(el);
+        }, true);
+
+        document.addEventListener("contextmenu", function (event) {
+          var el = event.target.closest("*");
+          if (!el || isEditorChrome(el)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          select(el);
+          var path = buildPath(el);
+          var bg = (window.getComputedStyle(el).getPropertyValue("background-image") || "");
+          var block = nearestBlock(el);
+          post("contextmenu", {
+            path: path,
+            blockPath: buildPath(block),
+            tag: el.tagName.toLowerCase(),
+            x: event.clientX,
+            y: event.clientY,
+            isImage: el.tagName.toLowerCase() === "img" || (bg && bg !== "none")
+          });
+        }, true);
+
+        document.addEventListener("dblclick", function (event) {
+          var link = event.target.closest("a[href], a[data-xbolt-page]");
+          if (!link) return;
+          event.preventDefault();
+          event.stopPropagation();
+          post("navigate", {
+            page: link.getAttribute("data-xbolt-page") || link.getAttribute("href")
+          });
+        }, true);
+
+        window.addEventListener("message", function (event) {
+          var data = event.data;
+          if (!data || data.source !== "xbolt-editor-parent") return;
+          if (data.type === "clear-selection") {
+            document.querySelectorAll("[data-xbolt-selected]").forEach(function (n) {
+              n.removeAttribute("data-xbolt-selected");
+            });
+            selected = null;
+          }
+          if (data.type === "select-path" && data.path) {
+            try {
+              var node = document.querySelector(data.path);
+              if (node) select(node);
+            } catch (e) {}
+          }
+          if (data.type === "apply-text" && selected) {
+            selected.textContent = data.value || "";
+          }
+          if (data.type === "apply-styles" && selected && data.styles) {
+            Object.keys(data.styles).forEach(function (key) {
+              selected.style.setProperty(key, data.styles[key] || "");
+            });
+          }
+        });
+
+        // Force review cards visible in editor if present.
+        var grid = document.getElementById("reviews-grid");
+        if (grid) {
+          Array.prototype.forEach.call(grid.querySelectorAll(".review-card"), function (card) {
+            card.style.display = "";
+          });
           var moreBtn = document.getElementById("load-more-reviews");
           if (moreBtn) moreBtn.style.display = "none";
-          return;
         }
 
-        function markReviews() {
-          var cards = Array.prototype.slice.call(grid.querySelectorAll(".review-card"));
-          cards.forEach(function (card, index) {
-            card.setAttribute("data-xbolt-item", "true");
-            card.setAttribute("data-xbolt-item-index", String(index));
-            var name = card.querySelector(".review-name") ||
-              card.querySelector("div[style*='letter-spacing:0.5px']") ||
-              card.querySelector("div[style*='letter-spacing: 0.5px']");
-            var service = card.querySelector(".review-service") ||
-              card.querySelector("div[style*='text-transform:uppercase']");
-            var body = card.querySelector("p.review-text, p");
-            if (name) { name.setAttribute("data-xbolt-editable", "true"); name.setAttribute("data-xbolt-text-index", "review:" + index + ":name"); }
-            if (service) { service.setAttribute("data-xbolt-editable", "true"); service.setAttribute("data-xbolt-text-index", "review:" + index + ":service"); }
-            if (body) { body.setAttribute("data-xbolt-editable", "true"); body.setAttribute("data-xbolt-text-index", "review:" + index + ":reviewText"); }
-          });
-          if (cards.length > 1) {
-            grid.setAttribute("data-xbolt-items", "true");
-            grid.setAttribute("data-xbolt-container-index", "dynamic-reviews");
-          }
-        }
-
-        markReviews();
-        if (typeof MutationObserver === "undefined") return;
-        var timer = null;
-        var observer = new MutationObserver(function () {
-          if (timer) clearTimeout(timer);
-          timer = setTimeout(markReviews, 40);
-        });
-        observer.observe(grid, { childList: true, subtree: true });
+        post("ready", {});
       })();
     JS
     (doc.at("body") || doc.root).add_child(script)
   end
 
-  def ignored_node?(node)
-    NON_CONTENT_TAGS.include?(node.name) ||
-      node.ancestors.any? { |ancestor| NON_CONTENT_TAGS.include?(ancestor.name) } ||
-      node["aria-hidden"].to_s == "true" ||
-      node["hidden"].present?
-  end
+  def parse_inline_style(raw)
+    raw.to_s.split(";").each_with_object({}) do |chunk, hash|
+      prop, value = chunk.split(":", 2)
+      next if prop.blank? || value.blank?
 
-  def meaningful_text_node?(node)
-    own_text = node.children.select(&:text?).map(&:text).join.strip
-    return true if own_text.present? && node.element_children.none? { |child| child.text.to_s.strip.present? }
-
-    text_children = node.element_children.reject { |child| ignored_node?(child) || child.text.to_s.strip.blank? }
-    return true if text_children.empty?
-
-    false
-  end
-
-  def same_text_content?(left, right)
-    left.text.to_s.squish == right.text.to_s.squish
-  end
-
-  def repeated_children?(children)
-    signatures = children.map { |child| child_signature(child) }
-    signatures.tally.values.any? { |count| count >= 2 }
-  end
-
-  def repeated_card_like_children?(children)
-    children.count { |child| child.css("h1,h2,h3,h4,h5,h6,p,blockquote,span,small").size >= 2 } >= 2 &&
-      repeated_children?(children)
-  end
-
-  def child_signature(child)
-    classes = child["class"].to_s.split.select { |klass| klass.match?(ITEM_HINT) }.sort
-    [child.name, classes.first(4)].join(":")
-  end
-
-  def update_dynamic_review!(abs:, token:, value:)
-    _prefix, raw_index, field = token.split(":", 3)
-    index = raw_index.to_i
-    raise ArgumentError, "Review field not found." unless %w[name service reviewText].include?(field)
-
-    html = File.read(abs)
-    pattern = review_object_pattern
-    current = -1
-    replaced = false
-    # gsub — String#sub only ever rewrites the first match, so index > 0 always failed.
-    changed = html.gsub(pattern) do |match|
-      current += 1
-      next match unless current == index
-
-      name = Regexp.last_match(1)
-      review_text = Regexp.last_match(2)
-      service = Regexp.last_match(3)
-
-      case field
-      when "name" then name = js_string_escape(value.to_s[0, MAX_TEXT_LENGTH])
-      when "reviewText" then review_text = js_string_escape(value.to_s[0, MAX_TEXT_LENGTH])
-      when "service" then service = js_string_escape(value.to_s[0, MAX_TEXT_LENGTH])
-      end
-
-      replaced = true
-      %({ name: "#{name}", reviewText: "#{review_text}", service: "#{service}" })
+      hash[prop.strip.downcase] = value.strip
     end
-
-    raise ArgumentError, "Review not found." unless replaced
-    write_raw_html!(abs, changed)
   end
 
-  def duplicate_dynamic_review!(path:, item_index:)
-    abs = resolve_html_path(path)
-    raise ArgumentError, "Page not found." if abs.nil?
-
-    html = File.read(abs)
-    matches = review_matches(html)
-    raise ArgumentError, "Review not found." if matches.empty?
-
-    index = item_index.to_i
-    source = matches[index]
-    raise ArgumentError, "Review not found." if source.nil?
-    raise ArgumentError, "Too many reviews." if matches.size >= 40
-
-    clone = %({ name: "#{source[:name]} (copy)", reviewText: "#{source[:review_text]}", service: "#{source[:service]}" })
-    changed = html.dup
-    changed.insert(source[:end], ",\n      #{clone}")
-    write_raw_html!(abs, changed)
-
-    count = review_matches(File.read(abs)).size
-    raise ArgumentError, "Duplicate did not persist." if count <= matches.size
-
-    { ok: true, item_count: count, container_index: "dynamic-reviews" }
-  end
-
-  def delete_dynamic_review!(path:, item_index:)
-    abs = resolve_html_path(path)
-    raise ArgumentError, "Page not found." if abs.nil?
-
-    html = File.read(abs)
-    matches = review_matches(html)
-    raise ArgumentError, "Keep at least one review." if matches.size <= 1
-
-    index = item_index.to_i
-    target = matches[index]
-    raise ArgumentError, "Review not found." if target.nil?
-
-    before = html[0...target[:begin]]
-    after = html[target[:end]..]
-    if before.match?(/,\s*\z/)
-      before = before.sub(/,\s*\z/, "")
-    elsif after.match?(/\A\s*,/)
-      after = after.sub(/\A\s*,/, "")
-    end
-
-    write_raw_html!(abs, before + after)
-
-    count = review_matches(File.read(abs)).size
-    raise ArgumentError, "Delete did not persist." if count != matches.size - 1
-
-    { ok: true, item_count: count, container_index: "dynamic-reviews" }
-  end
-
-  def item_count_on_disk(abs, container_index)
-    doc = Nokogiri::HTML(File.read(abs))
-    group = reorder_groups(doc)[container_index.to_i]
-    return 0 if group.nil?
-
-    reorder_children(group).size
-  end
-
-  def review_object_pattern
-    /\{\s*name:\s*"((?:\\.|[^"])*)",\s*reviewText:\s*"((?:\\.|[^"])*)",\s*service:\s*"((?:\\.|[^"])*)"\s*\}/m
-  end
-
-  def review_matches(html)
-    matches = []
-    html.scan(review_object_pattern) do
-      m = Regexp.last_match
-      matches << {
-        name: m[1],
-        review_text: m[2],
-        service: m[3],
-        begin: m.begin(0),
-        end: m.end(0)
-      }
-    end
-    matches
-  end
-
-  def annotate_duplicated_text!(node)
+  def annotate_copy_label!(node)
     heading = node.at_css(".review-name, h1, h2, h3, h4, h5, h6, p, span, strong")
     return if heading.nil?
 
@@ -585,34 +762,91 @@ class TenantStaticSiteEditor
     return if text.blank?
 
     heading.content = text.end_with?("(copy)") ? text : "#{text} (copy)"
-
-    avatar = node.at_css(".review-avatar")
-    return if avatar.nil?
-
-    initial = heading.text.to_s.strip[0].to_s.upcase
-    avatar.content = initial if initial.present?
   end
 
-  def js_string_escape(value)
-    JSON.generate(value)[1...-1]
+  def store_uploaded_image!(uploaded_file)
+    raise ArgumentError, "No file uploaded." if uploaded_file.blank?
+
+    content_type = uploaded_file.content_type.to_s
+    raise ArgumentError, "Unsupported image type." unless ALLOWED_IMAGE_TYPES.include?(content_type)
+
+    size = uploaded_file.size.to_i
+    raise ArgumentError, "Image is too large." if size <= 0 || size > MAX_IMAGE_BYTES
+
+    ext =
+      case content_type
+      when "image/jpeg" then ".jpg"
+      when "image/png" then ".png"
+      when "image/webp" then ".webp"
+      when "image/gif" then ".gif"
+      when "image/svg+xml" then ".svg"
+      else File.extname(uploaded_file.original_filename.to_s).presence || ".bin"
+      end
+
+    dir = @site_root.join("assets", "editor")
+    FileUtils.mkdir_p(dir)
+    name = "#{Time.current.strftime('%Y%m%d%H%M%S')}-#{SecureRandom.hex(6)}#{ext}"
+    abs = dir.join(name)
+    File.open(abs, "wb") { |f| IO.copy_stream(uploaded_file.tempfile, f) }
+    asset_proxy_path("assets/editor/#{name}")
   end
 
-  def write_raw_html!(abs, html)
-    backup = "#{abs}.xbolt-backup"
-    FileUtils.cp(abs, backup) unless File.exist?(backup)
-    atomic_write!(abs, html)
-    refresh_sitemap!
+  def versioned_backup!(abs)
+    FileUtils.mkdir_p(@backup_root)
+    clear_redo_stack!
+    stamp = Time.current.strftime("%Y%m%d-%H%M%S-%L")
+    rel = Pathname.new(abs).relative_path_from(@site_root).to_s.tr("\\", "/")
+    safe = rel.gsub("/", "__")
+    dest = @backup_root.join("#{stamp}__#{safe}")
+    FileUtils.cp(abs, dest)
+
+    all = Dir.glob(@backup_root.join("*")).select { |f| File.file?(f) }.sort.reverse
+    all.drop(BACKUP_KEEP).each { |old| FileUtils.rm_f(old) }
   end
 
-  def write_html!(abs, doc)
-    backup = "#{abs}.xbolt-backup"
-    FileUtils.cp(abs, backup) unless File.exist?(backup)
-    atomic_write!(abs, doc.to_html)
-    refresh_sitemap!
+  def editor_backups_for(abs)
+    rel = Pathname.new(abs).relative_path_from(@site_root).to_s.tr("\\", "/")
+    safe = rel.gsub("/", "__")
+    Dir.glob(@backup_root.join("*__#{safe}")).sort.reverse
   end
 
-  def atomic_write!(abs, contents)
-    # Write + fsync so a follow-up preview read cannot race a buffered old file.
+  def newest_backup(root)
+    return nil unless Dir.exist?(root)
+
+    Dir.glob(root.join("*")).select { |f| File.file?(f) }.sort.reverse.first
+  end
+
+  def restore_target_from_backup!(backup_path)
+    basename = File.basename(backup_path.to_s)
+    match = basename.match(/\A\d{8}-\d{6}-\d{3}__(.+)\z/)
+    raise ArgumentError, "Corrupt backup." if match.nil?
+
+    rel = match[1].gsub("__", "/")
+    raise ArgumentError, "Invalid backup path." if rel.blank? || rel.include?("..")
+
+    abs = @site_root.join(rel).cleanpath
+    raise ArgumentError, "Invalid backup target." unless abs.to_s.start_with?(@site_root.to_s)
+
+    abs
+  end
+
+  def push_history_copy!(root, abs)
+    FileUtils.mkdir_p(root)
+    stamp = Time.current.strftime("%Y%m%d-%H%M%S-%L")
+    rel = Pathname.new(abs).relative_path_from(@site_root).to_s.tr("\\", "/")
+    safe = rel.gsub("/", "__")
+    FileUtils.cp(abs, root.join("#{stamp}__#{safe}"))
+    all = Dir.glob(root.join("*")).select { |f| File.file?(f) }.sort.reverse
+    all.drop(BACKUP_KEEP).each { |old| FileUtils.rm_f(old) }
+  end
+
+  def clear_redo_stack!
+    return unless Dir.exist?(@redo_root)
+
+    Dir.glob(@redo_root.join("*")).each { |f| FileUtils.rm_f(f) }
+  end
+
+  def write_raw!(abs, contents)
     File.open(abs, "w") do |file|
       file.write(contents)
       file.flush

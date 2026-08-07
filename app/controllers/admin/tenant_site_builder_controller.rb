@@ -11,6 +11,9 @@ class Admin::TenantSiteBuilderController < ApplicationController
   before_action :set_business
   before_action :ensure_default_pages, only: [:publish, :create]
   before_action :set_page, only: [:edit, :update, :destroy, :preview]
+  # Tenant <script>/<link> tags load assets through this action; Rails would otherwise
+  # treat ".js"/".css" as a response format and block them as cross-origin JS.
+  skip_after_action :verify_same_origin_request, only: [:static_asset]
 
   def index
     @general_setting = general_setting
@@ -106,52 +109,84 @@ class Admin::TenantSiteBuilderController < ApplicationController
   end
 
   def static_asset
-    abs = TenantStaticSiteEditor.new(business: @business).serve_asset(params[:path])
+    rel = params[:path].to_s
+    fmt = params[:format].to_s
+    if fmt.present? && !rel.downcase.end_with?(".#{fmt.downcase}")
+      rel = "#{rel}.#{fmt}"
+    end
+
+    abs = TenantStaticSiteEditor.new(business: @business).serve_asset(rel)
     return head :not_found if abs.nil?
 
     content_type = Rack::Mime.mime_type(File.extname(abs.to_s), "application/octet-stream")
     response.set_header("Cache-Control", "private, max-age=300")
+    response.set_header("X-Content-Type-Options", "nosniff")
     send_file abs, type: content_type, disposition: "inline"
+  end
+
+  def static_source
+    editor = TenantStaticSiteEditor.new(business: @business)
+    raise ArgumentError, "No custom site is deployed." unless editor.deployed?
+
+    render json: editor.page_source(path: params[:path]).merge(ok: true)
+  rescue ArgumentError => e
+    render json: { ok: false, message: e.message }, status: :unprocessable_entity
+  end
+
+  def static_undo
+    editor = TenantStaticSiteEditor.new(business: @business)
+    raise ArgumentError, "No custom site is deployed." unless editor.deployed?
+
+    result = editor.undo!(path: params[:path])
+    render json: result.reverse_merge(ok: true, can_undo: editor.can_undo?, can_redo: editor.can_redo?)
+  rescue ArgumentError => e
+    render json: { ok: false, message: e.message }, status: :unprocessable_entity
+  rescue StandardError => e
+    Rails.logger.error("Static site editor undo failed for business=#{@business&.id}: #{e.class}: #{e.message}")
+    render json: { ok: false, message: "Could not undo." }, status: :internal_server_error
+  end
+
+  def static_redo
+    editor = TenantStaticSiteEditor.new(business: @business)
+    raise ArgumentError, "No custom site is deployed." unless editor.deployed?
+
+    result = editor.redo!(path: params[:path])
+    render json: result.reverse_merge(ok: true, can_undo: editor.can_undo?, can_redo: editor.can_redo?)
+  rescue ArgumentError => e
+    render json: { ok: false, message: e.message }, status: :unprocessable_entity
+  rescue StandardError => e
+    Rails.logger.error("Static site editor redo failed for business=#{@business&.id}: #{e.class}: #{e.message}")
+    render json: { ok: false, message: "Could not redo." }, status: :internal_server_error
+  end
+
+  def static_upload_image
+    editor = TenantStaticSiteEditor.new(business: @business)
+    raise ArgumentError, "No custom site is deployed." unless editor.deployed?
+
+    result = editor.replace_image_at_path!(
+      path: params[:path],
+      element_path: params[:element_path],
+      uploaded_file: params[:file],
+      alt: params[:alt]
+    )
+    render json: result.reverse_merge(ok: true, can_undo: editor.can_undo?, can_redo: editor.can_redo?)
+  rescue ArgumentError => e
+    render json: { ok: false, message: e.message }, status: :unprocessable_entity
+  rescue StandardError => e
+    Rails.logger.error("Static site editor upload failed for business=#{@business&.id}: #{e.class}: #{e.message}")
+    render json: { ok: false, message: "Could not upload image." }, status: :internal_server_error
   end
 
   def static_update
     editor = TenantStaticSiteEditor.new(business: @business)
     raise ArgumentError, "No custom site is deployed." unless editor.deployed?
 
-    result = { ok: true }
-
-    if params[:text_index].present?
-      value = params[:value].to_s
-      raise ArgumentError, "Text is too long." if value.bytesize > MAX_STATIC_TEXT_BYTES
-
-      editor.update_text!(path: params[:path], text_index: params[:text_index], value: value)
-    elsif params[:reorder].is_a?(ActionController::Parameters) || params[:reorder].is_a?(Hash)
-      reorder = params.require(:reorder).permit(:container_index, :old_index, :new_index)
-      editor.reorder_items!(
-        path: params[:path],
-        container_index: reorder[:container_index],
-        old_index: reorder[:old_index],
-        new_index: reorder[:new_index]
-      )
-    elsif params[:duplicate].is_a?(ActionController::Parameters) || params[:duplicate].is_a?(Hash)
-      duplicate = params.require(:duplicate).permit(:container_index, :item_index)
-      result = editor.duplicate_item!(
-        path: params[:path],
-        container_index: duplicate[:container_index],
-        item_index: duplicate[:item_index]
-      ) || result
-    elsif params[:delete_item].is_a?(ActionController::Parameters) || params[:delete_item].is_a?(Hash)
-      delete_item = params.require(:delete_item).permit(:container_index, :item_index)
-      result = editor.delete_item!(
-        path: params[:path],
-        container_index: delete_item[:container_index],
-        item_index: delete_item[:item_index]
-      ) || result
-    else
-      raise ArgumentError, "No valid update provided."
-    end
-
-    render json: result.is_a?(Hash) ? result.reverse_merge(ok: true) : { ok: true }
+    result = dispatch_static_op!(editor)
+    render json: (result.is_a?(Hash) ? result : {}).reverse_merge(
+      ok: true,
+      can_undo: editor.can_undo?,
+      can_redo: editor.can_redo?
+    )
   rescue ArgumentError => e
     render json: { ok: false, message: e.message }, status: :unprocessable_entity
   rescue StandardError => e
@@ -194,6 +229,56 @@ class Admin::TenantSiteBuilderController < ApplicationController
 
   def resolve_layout
     action_name == "index" ? "website_editor" : "adminpanel"
+  end
+
+  def dispatch_static_op!(editor)
+    op = params[:op].to_s
+    path = params[:path]
+    element_path = params[:element_path]
+
+    case op
+    when "update_text"
+      value = params[:value].to_s
+      raise ArgumentError, "Text is too long." if value.bytesize > MAX_STATIC_TEXT_BYTES
+
+      editor.update_text_at_path!(path: path, element_path: element_path, value: value)
+    when "update_styles"
+      raise ArgumentError, "Styles required." if params[:styles].blank?
+
+      raw = params[:styles].respond_to?(:to_unsafe_h) ? params[:styles].to_unsafe_h : params[:styles].to_h
+      filtered = raw.each_with_object({}) do |(k, v), memo|
+        key = k.to_s.tr("_", "-")
+        memo[key] = v if TenantStaticSiteEditor::STYLE_PROPS.include?(key)
+      end
+      editor.update_styles_at_path!(path: path, element_path: element_path, styles: filtered)
+    when "update_attrs"
+      attrs = params.require(:attrs).permit(:href, :src, :alt, :title, :class, :id)
+      editor.update_attrs_at_path!(path: path, element_path: element_path, attrs: attrs)
+    when "replace_outer_html"
+      editor.replace_outer_html_at_path!(path: path, element_path: element_path, html: params[:html])
+    when "duplicate"
+      editor.duplicate_at_path!(path: path, element_path: element_path)
+    when "delete"
+      editor.delete_at_path!(path: path, element_path: element_path)
+    when "move"
+      editor.move_at_path!(path: path, element_path: element_path, direction: params[:direction])
+    when "wrap"
+      editor.wrap_at_path!(path: path, element_path: element_path, tag: params[:tag].presence || "div")
+    when "replace_image"
+      editor.replace_image_at_path!(
+        path: path,
+        element_path: element_path,
+        src: params[:src],
+        alt: params[:alt],
+        uploaded_file: params[:file]
+      )
+    when "save_html"
+      editor.save_html!(path: path, html: params[:html])
+    when "save_css"
+      editor.save_css!(path: path, source_id: params[:source_id], css: params[:css])
+    else
+      raise ArgumentError, "Unknown editor operation."
+    end
   end
 
   def require_business_user

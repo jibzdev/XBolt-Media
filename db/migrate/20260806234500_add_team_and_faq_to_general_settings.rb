@@ -14,8 +14,18 @@ class AddTeamAndFaqToGeneralSettings < ActiveRecord::Migration[7.0]
     Where can I learn more about XBolt Media?|Visit our LinkedIn page for company updates, or explore Work and Reviews on this site to see recent launches.
   TEXT
 
-  def change
-    add_column :general_settings, :team_members_data, :text, null: false, default: DEFAULT_TEAM
-    add_column :general_settings, :faq_items_data, :text, null: false, default: DEFAULT_FAQ
+  def up
+    unless column_exists?(:general_settings, :team_members_data)
+      add_column :general_settings, :team_members_data, :text, null: false, default: DEFAULT_TEAM
+    end
+
+    unless column_exists?(:general_settings, :faq_items_data)
+      add_column :general_settings, :faq_items_data, :text, null: false, default: DEFAULT_FAQ
+    end
+  end
+
+  def down
+    remove_column :general_settings, :faq_items_data if column_exists?(:general_settings, :faq_items_data)
+    remove_column :general_settings, :team_members_data if column_exists?(:general_settings, :team_members_data)
   end
 end

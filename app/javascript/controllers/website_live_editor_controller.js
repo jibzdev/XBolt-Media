@@ -1,9 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 /**
- * Live website editor.
- * Soft iframe reloads (not document.write) so CDN/CSS/font requests keep working.
- * Double-click page links soft-navigates inside the editor.
+ * Hybrid website editor: visual path-based editing + Monaco HTML/CSS + right-click menu.
  */
 export default class extends Controller {
   static targets = [
@@ -12,20 +10,35 @@ export default class extends Controller {
     "status",
     "statusToast",
     "statusDot",
-    "pageSwitcher",
     "pageMenu",
     "pagesBtn",
     "bubble",
     "bubbleLabel",
     "bubbleInput",
-    "cardHint",
-    "duplicateBtn"
+    "undoBtn",
+    "redoBtn",
+    "codeBtn",
+    "codeDrawer",
+    "monacoHost",
+    "codeBody",
+    "codeFallback",
+    "cssSources",
+    "contextMenu",
+    "imagePanel",
+    "imagePreview",
+    "imageUrl",
+    "imageAlt",
+    "linkAttr"
   ]
 
   static values = {
     previewUrl: String,
     staticPath: String,
     staticUpdateUrl: String,
+    staticSourceUrl: String,
+    staticUndoUrl: String,
+    staticRedoUrl: String,
+    staticUploadUrl: String,
     siteUrl: String,
     dashboardUrl: String,
     pages: String,
@@ -33,28 +46,67 @@ export default class extends Controller {
   }
 
   connect() {
-    this.saveTimer = null
-    this.sortables = []
     this.selected = null
-    this.selectedEl = null
-    this.selectedItem = null
-    this.clickHandler = null
-    this.dblClickHandler = null
-    this.keyHandler = null
+    this.saveTimer = null
+    this.styleTimer = null
     this.pendingRefresh = null
     this.refreshResolver = null
-    this.lastClickAt = 0
+    this.monaco = null
+    this.monacoEditor = null
+    this.monacoReady = false
+    this.useCodeFallback = false
+    this.codeTab = "html"
+    this.sourcePayload = null
+    this.activeCssSourceId = null
+    this.codeDirty = false
+    this.canUndo = false
+    this.canRedo = false
+    this.busy = false
+    this.messageHandler = this.onWindowMessage.bind(this)
     this.docClickOutside = this.onDocumentClick.bind(this)
+    this.ctxHandler = this.onContextAction.bind(this)
+    this.keyHandler = this.onKeyDown.bind(this)
+
+    window.addEventListener("message", this.messageHandler)
     document.addEventListener("click", this.docClickOutside)
+    document.addEventListener("keydown", this.keyHandler)
+    this.hasContextMenuTarget && this.contextMenuTarget.addEventListener("click", this.ctxHandler)
     this.closeInspector()
+    this.hideContextMenu()
+    if (this.deployedValue) this.loadSource()
+  }
+
+  async askConfirm(message, options = {}) {
+    if (typeof window.showConfirmModal === "function") {
+      return window.showConfirmModal(message, options)
+    }
+    return window.confirm(message)
   }
 
   disconnect() {
     window.clearTimeout(this.saveTimer)
-    this.destroySortables()
-    this.teardownFrameListeners()
+    window.clearTimeout(this.styleTimer)
+    window.removeEventListener("message", this.messageHandler)
     document.removeEventListener("click", this.docClickOutside)
+    document.removeEventListener("keydown", this.keyHandler)
+    if (this.hasContextMenuTarget) this.contextMenuTarget.removeEventListener("click", this.ctxHandler)
     if (this.refreshResolver) this.refreshResolver()
+  }
+
+  onKeyDown(event) {
+    const meta = event.metaKey || event.ctrlKey
+    if (!meta) return
+    const tag = (event.target?.tagName || "").toLowerCase()
+    const inCode = this.codeDrawerTarget?.classList.contains("is-open") && this.monacoHostTarget?.contains(event.target)
+    if (inCode || tag === "textarea" || tag === "input" || event.target?.isContentEditable) return
+    const key = event.key.toLowerCase()
+    if (key === "z" && !event.shiftKey) {
+      event.preventDefault()
+      this.undo()
+    } else if (key === "y" || (key === "z" && event.shiftKey)) {
+      event.preventDefault()
+      this.redo()
+    }
   }
 
   csrfToken() {
@@ -84,34 +136,16 @@ export default class extends Controller {
   }
 
   onFrameLoad() {
-    const doc = this.frameDoc()
-    if (!doc?.body) return
-
     const pending = this.pendingRefresh
     this.pendingRefresh = null
-
-    this.destroySortables()
-    this.teardownFrameListeners()
-    this.bindEditing(doc)
-    this.bindSortables(doc)
-
     if (pending?.scrollX != null || pending?.scrollY != null) {
-      doc.defaultView?.scrollTo(pending.scrollX || 0, pending.scrollY || 0)
+      this.frameWin()?.scrollTo(pending.scrollX || 0, pending.scrollY || 0)
     }
-
-    if (pending?.selectCardIndex != null && pending?.containerIndex != null) {
-      const container = doc.querySelector(
-        `[data-xbolt-items][data-xbolt-container-index="${pending.containerIndex}"]`
-      )
-      const card = container?.querySelector(
-        `[data-xbolt-item][data-xbolt-item-index="${pending.selectCardIndex}"]`
-      )
-      if (card) this.selectCard(card)
-      else this.clearSelection({ keepStatus: true })
+    if (pending?.reselectPath) {
+      this.postToFrame({ type: "select-path", path: pending.reselectPath })
     } else if (!pending?.keepSelection) {
       this.clearSelection({ keepStatus: true })
     }
-
     this.setStatus(pending?.status || "Ready", pending?.tone || "")
     if (this.refreshResolver) {
       const resolve = this.refreshResolver
@@ -120,20 +154,395 @@ export default class extends Controller {
     }
   }
 
-  onDocumentClick(event) {
-    if (!this.hasPageMenuTarget || this.pageMenuTarget.hasAttribute("hidden")) return
-    if (event.target.closest?.(".xb-page-menu")) return
-    if (event.target.closest?.("[data-action*='togglePages']")) return
-    this.hidePageMenu()
+  onWindowMessage(event) {
+    const data = event.data
+    if (!data || data.source !== "xbolt-editor") return
+    if (data.type === "select") this.applySelection(data)
+    if (data.type === "contextmenu") {
+      this.applySelection(data)
+      this.showContextMenu(data)
+    }
+    if (data.type === "navigate") this.handleNavigateMessage(data.page)
+    if (data.type === "ready") {
+      if (this.pendingRefresh?.reselectPath) {
+        this.postToFrame({ type: "select-path", path: this.pendingRefresh.reselectPath })
+      }
+      this.setStatus(this.pendingRefresh?.status || "Ready", this.pendingRefresh?.tone || "")
+    }
   }
+
+  postToFrame(payload) {
+    this.frameWin()?.postMessage({ source: "xbolt-editor-parent", ...payload }, "*")
+  }
+
+  applySelection(data) {
+    this.selected = {
+      ...this.selected,
+      ...data,
+      path: data.path || this.selected?.path || null,
+      blockPath: data.blockPath || data.path || this.selected?.blockPath || null
+    }
+    this.element.classList.add("has-inspector")
+    if (this.hasBubbleLabelTarget) {
+      const tip = (this.selected.path || "").split(" > ").slice(-2).join(" > ")
+      this.bubbleLabelTarget.textContent = `${this.selected.tag || "element"}${tip ? ` · ${tip}` : ""}`
+    }
+    if (this.hasBubbleInputTarget && data.text != null) {
+      this.bubbleInputTarget.value = data.text || ""
+      this.bubbleInputTarget.disabled = false
+    }
+    if (data.styles) this.fillStyles(data.styles)
+    if (data.attrs) this.fillAttrs(data.attrs)
+    this.fillImage(this.selected)
+    this.setStatus("Selected", "ok")
+  }
+
+  structurePath() {
+    return this.selected?.blockPath || this.selected?.path
+  }
+
+  fillStyles(styles) {
+    this.element.querySelectorAll("[data-style-key]").forEach((input) => {
+      const key = input.getAttribute("data-style-key")
+      let value = styles[key] || ""
+      if (input.type === "color") {
+        value = this.toHexColor(value) || "#000000"
+      }
+      input.value = value
+    })
+  }
+
+  fillAttrs(attrs) {
+    this.element.querySelectorAll("[data-attr-key]").forEach((input) => {
+      input.value = attrs[input.getAttribute("data-attr-key")] || ""
+    })
+    if (this.hasLinkAttrTarget) {
+      this.linkAttrTarget.value = this.displayHref(attrs.href || attrs.src || "")
+    }
+  }
+
+  displayHref(value) {
+    const raw = String(value || "")
+    if (raw.startsWith("#xbolt-page:")) {
+      const page = raw.slice("#xbolt-page:".length)
+      if (!page || page === "/") return "index.html"
+      return `${page.replace(/^\//, "").replace(/\.html?$/i, "")}.html`
+    }
+    const prefix = "/dashboard/website/static/assets/"
+    if (raw.startsWith(prefix)) return raw.slice(prefix.length)
+    return raw
+  }
+
+  fillImage(data) {
+    if (!this.hasImagePanelTarget) return
+    const show = !!data.isImage
+    this.imagePanelTarget.hidden = !show
+    if (!show) return
+    const src = data.attrs?.src || this.extractBgUrl(data.styles?.["background-image"]) || ""
+    if (this.hasImageUrlTarget) this.imageUrlTarget.value = src
+    if (this.hasImageAltTarget) this.imageAltTarget.value = data.attrs?.alt || ""
+    if (this.hasImagePreviewTarget) {
+      this.imagePreviewTarget.src = src || ""
+      this.imagePreviewTarget.hidden = !src
+    }
+  }
+
+  extractBgUrl(value) {
+    const match = String(value || "").match(/url\((['"]?)(.*?)\1\)/i)
+    return match ? match[2] : ""
+  }
+
+  toHexColor(value) {
+    const v = String(value || "").trim()
+    if (/^#[0-9a-f]{3,8}$/i.test(v)) return v.length === 4
+      ? `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`
+      : v.slice(0, 7)
+    const rgb = v.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i)
+    if (!rgb) return ""
+    return `#${[rgb[1], rgb[2], rgb[3]].map((n) => Number(n).toString(16).padStart(2, "0")).join("")}`
+  }
+
+  openInspector() {
+    this.element.classList.add("has-inspector")
+  }
+
+  closeInspector() {
+    this.element.classList.remove("has-inspector")
+  }
+
+  clearSelection({ keepStatus = false } = {}) {
+    this.selected = null
+    this.closeInspector()
+    this.postToFrame({ type: "clear-selection" })
+    if (!keepStatus) this.setStatus("Ready")
+  }
+
+  doneEditing() {
+    this.flushSave().finally(() => this.clearSelection())
+  }
+
+  onBubbleInput() {
+    if (!this.selected?.path) return
+    const value = this.bubbleInputTarget.value
+    this.postToFrame({ type: "apply-text", value })
+    this.scheduleSave(() =>
+      this.patch({
+        op: "update_text",
+        path: this.staticPathValue,
+        element_path: this.selected.path,
+        value
+      })
+    )
+  }
+
+  onStyleInput(event) {
+    if (!this.selected?.path) return
+    const key = event.target.getAttribute("data-style-key")
+    if (!key) return
+    const value = event.target.value
+    this.postToFrame({ type: "apply-styles", styles: { [key]: value } })
+    window.clearTimeout(this.styleTimer)
+    this.styleTimer = window.setTimeout(() => {
+      this.patch({
+        op: "update_styles",
+        path: this.staticPathValue,
+        element_path: this.selected.path,
+        styles: { [key]: value }
+      }).then(() => this.setStatus("Style saved", "ok"))
+        .catch((error) => this.setStatus(error.message || "Save failed", "error"))
+    }, 350)
+  }
+
+  onAttrInput(event) {
+    if (!this.selected?.path) return
+    const key = event.target.getAttribute("data-attr-key")
+    if (!key) return
+    this.patch({
+      op: "update_attrs",
+      path: this.staticPathValue,
+      element_path: this.selected.path,
+      attrs: { [key]: event.target.value }
+    }).then(() => this.setStatus("Saved", "ok"))
+      .catch((error) => this.setStatus(error.message || "Save failed", "error"))
+  }
+
+  onLinkAttrInput() {
+    if (!this.selected?.path) return
+    const tag = this.selected.tag
+    const value = this.linkAttrTarget.value
+    const attrs = tag === "img" ? { src: value } : { href: value }
+    this.patch({
+      op: "update_attrs",
+      path: this.staticPathValue,
+      element_path: this.selected.path,
+      attrs
+    }).then(() => this.setStatus("Saved", "ok"))
+      .catch((error) => this.setStatus(error.message || "Save failed", "error"))
+  }
+
+  saveImageUrl() {
+    if (!this.selected?.path) return
+    this.patch({
+      op: "replace_image",
+      path: this.staticPathValue,
+      element_path: this.selected.path,
+      src: this.imageUrlTarget.value,
+      alt: this.imageAltTarget?.value
+    }).then(() => {
+      this.setStatus("Image updated", "ok")
+      return this.refreshLive({ reason: "image", reselectPath: this.selected.path, status: "Image updated", tone: "ok" })
+    }).catch((error) => this.setStatus(error.message || "Save failed", "error"))
+  }
+
+  async uploadImage(event) {
+    const file = event.target.files?.[0]
+    if (!file || !this.selected?.path) return
+    const body = new FormData()
+    body.append("path", this.staticPathValue)
+    body.append("element_path", this.selected.path)
+    body.append("file", file)
+    body.append("alt", this.imageAltTarget?.value || "")
+    this.setStatus("Uploading…", "saving")
+    try {
+      const response = await fetch(this.staticUploadUrlValue, {
+        method: "POST",
+        headers: { Accept: "application/json", "X-CSRF-Token": this.csrfToken() },
+        body
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.message || "Upload failed")
+      this.setHistoryFlags(payload)
+      if (this.hasImageUrlTarget) this.imageUrlTarget.value = payload.src || ""
+      if (this.hasImagePreviewTarget) this.imagePreviewTarget.src = payload.src || ""
+      await this.refreshLive({ reason: "image", reselectPath: this.selected.path, status: "Image uploaded", tone: "ok" })
+    } catch (error) {
+      this.setStatus(error.message || "Upload failed", "error")
+    } finally {
+      event.target.value = ""
+    }
+  }
+
+  saveNow() {
+    this.flushSave({ keepOpen: true })
+  }
+
+  scheduleSave(fn) {
+    this.setStatus("Saving…", "saving")
+    window.clearTimeout(this.saveTimer)
+    this.saveTimer = window.setTimeout(() => {
+      Promise.resolve(fn())
+        .then(() => this.setStatus("Saved", "ok"))
+        .catch((error) => this.setStatus(error.message || "Save failed", "error"))
+    }, 450)
+  }
+
+  flushSave({ keepOpen = false } = {}) {
+    window.clearTimeout(this.saveTimer)
+    if (!this.selected?.path || !this.hasBubbleInputTarget) return Promise.resolve()
+    this.setStatus("Saving…", "saving")
+    return this.patch({
+      op: "update_text",
+      path: this.staticPathValue,
+      element_path: this.selected.path,
+      value: this.bubbleInputTarget.value
+    })
+      .then(() => {
+        this.setStatus("Saved", "ok")
+        if (!keepOpen) this.clearSelection({ keepStatus: true })
+      })
+      .catch((error) => this.setStatus(error.message || "Save failed", "error"))
+  }
+
+  // --- Context menu --------------------------------------------------------
+
+  showContextMenu(data) {
+    if (!this.hasContextMenuTarget) return
+    const frameRect = this.frameTarget.getBoundingClientRect()
+    const x = frameRect.left + (data.x || 0)
+    const y = frameRect.top + (data.y || 0)
+    this.contextMenuTarget.hidden = false
+    this.contextMenuTarget.style.left = `${Math.min(x, window.innerWidth - 220)}px`
+    this.contextMenuTarget.style.top = `${Math.min(y, window.innerHeight - 320)}px`
+    this.contextMenuTarget.querySelector('[data-ctx="replace-image"]')?.toggleAttribute("hidden", !data.isImage)
+  }
+
+  hideContextMenu() {
+    if (this.hasContextMenuTarget) this.contextMenuTarget.hidden = true
+  }
+
+  onDocumentClick(event) {
+    if (this.hasPageMenuTarget && !this.pageMenuTarget.hasAttribute("hidden")) {
+      if (!event.target.closest?.(".xb-page-menu") && !event.target.closest?.("[data-action*='togglePages']")) {
+        this.hidePageMenu()
+      }
+    }
+    if (this.hasContextMenuTarget && !this.contextMenuTarget.hasAttribute("hidden")) {
+      if (!event.target.closest?.(".xb-ctx-menu")) this.hideContextMenu()
+    }
+  }
+
+  async onContextAction(event) {
+    const btn = event.target.closest("[data-ctx]")
+    if (!btn || !this.selected?.path) return
+    const action = btn.getAttribute("data-ctx")
+    this.hideContextMenu()
+    const path = this.selected.path
+    const blockPath = this.structurePath()
+
+    try {
+      if (action === "edit-text" || action === "edit-styles") {
+        this.openInspector()
+        if (action === "edit-text") this.bubbleInputTarget?.focus()
+        return
+      }
+      if (action === "edit-html" || action === "open-code") {
+        await this.openCodeFocused(path)
+        return
+      }
+      if (action === "duplicate") {
+        await this.runStructureOp("duplicate", { op: "duplicate", path: this.staticPathValue, element_path: blockPath }, "Duplicated")
+        return
+      }
+      if (action === "delete") {
+        const ok = await this.askConfirm("Delete this element from the live site? You can undo afterwards.", {
+          title: "Delete element?",
+          confirmLabel: "Delete"
+        })
+        if (!ok) return
+        await this.runStructureOp("delete", { op: "delete", path: this.staticPathValue, element_path: blockPath }, "Deleted", {
+          clearSelection: true
+        })
+        return
+      }
+      if (action === "move-up" || action === "move-down") {
+        await this.runStructureOp(
+          "move",
+          {
+            op: "move",
+            path: this.staticPathValue,
+            element_path: blockPath,
+            direction: action === "move-up" ? "up" : "down"
+          },
+          "Moved",
+          { reselectPath: blockPath }
+        )
+        return
+      }
+      if (action === "wrap") {
+        await this.runStructureOp(
+          "wrap",
+          { op: "wrap", path: this.staticPathValue, element_path: blockPath, tag: "section" },
+          "Wrapped"
+        )
+        return
+      }
+      if (action === "replace-image") {
+        this.openInspector()
+        this.imagePanelTarget?.removeAttribute("hidden")
+        return
+      }
+      if (action === "copy-html") {
+        await navigator.clipboard.writeText(this.selected.html || "")
+        this.setStatus("HTML copied", "ok")
+        return
+      }
+      if (action === "copy-css") {
+        const styles = this.selected.styles || {}
+        const body = Object.entries(styles)
+          .filter(([, v]) => v && v !== "none" && v !== "normal" && v !== "auto")
+          .map(([k, v]) => `  ${k}: ${v};`)
+          .join("\n")
+        await navigator.clipboard.writeText(`${this.selected.tag || "element"} {\n${body}\n}`)
+        this.setStatus("CSS copied", "ok")
+      }
+    } catch (error) {
+      this.setStatus(error.message || "Action failed", "error")
+    }
+  }
+
+  async runStructureOp(reason, body, status, { reselectPath = null, clearSelection = false } = {}) {
+    if (this.busy) return
+    this.busy = true
+    this.setStatus(`${status}…`, "saving")
+    try {
+      await this.patch(body)
+      if (clearSelection) this.clearSelection({ keepStatus: true })
+      await this.refreshLive({ reason, reselectPath, status, tone: "ok" })
+    } catch (error) {
+      this.setStatus(error.message || "Action failed", "error")
+    } finally {
+      this.busy = false
+    }
+  }
+
+  // --- Pages / navigation --------------------------------------------------
 
   togglePages(event) {
     event?.preventDefault()
     event?.stopPropagation()
     if (!this.hasPageMenuTarget) return
     if (this.pageMenuTarget.hasAttribute("hidden")) {
-      const anchor = this.pagesBtnTarget || event.currentTarget
-      const rect = anchor?.getBoundingClientRect?.()
+      const rect = this.pagesBtnTarget?.getBoundingClientRect?.()
       if (rect) {
         this.pageMenuTarget.style.top = `${Math.max(12, rect.top)}px`
         this.pageMenuTarget.style.left = `${rect.right + 10}px`
@@ -150,641 +559,413 @@ export default class extends Controller {
     this.pagesBtnTarget?.classList.remove("is-active")
   }
 
-  switchPage(event) {
-    const url = event.target.value
-    if (!url) return
-    const page = this.pagesList().find((entry) => entry.url === url)
+  switchPageLink(event) {
+    event.preventDefault()
+    const path = event.currentTarget.getAttribute("data-path")
+    const page = this.pagesList().find((entry) => entry.path === path)
     if (page) this.openEditorPage(page)
-    else window.location.assign(url)
+  }
+
+  handleNavigateMessage(raw) {
+    const page = this.resolveEditorPage(raw)
+    if (!page) {
+      this.setStatus("No matching page", "error")
+      return
+    }
+    this.openEditorPage(page)
+  }
+
+  async openEditorPage(page) {
+    if (!page?.path) return
+    if (this.codeDirty) {
+      const ok = await this.askConfirm("You have unsaved code changes. Discard them and switch pages?", {
+        title: "Discard code changes?",
+        confirmLabel: "Discard"
+      })
+      if (!ok) return
+    }
+    this.hidePageMenu()
+    this.staticPathValue = page.path
+    this.previewUrlValue = this.previewUrlFor(page.path)
+    try {
+      window.history.replaceState({}, "", page.url)
+    } catch {
+      /* ignore */
+    }
+    document.querySelectorAll(".xb-page-link").forEach((node) => {
+      node.classList.toggle("is-current", node.getAttribute("data-path") === page.path)
+    })
+    this.codeDirty = false
+    this.setStatus(`Opening ${page.title || page.path}…`, "saving")
+    await this.refreshLive({ reason: "navigate", status: `Editing ${page.title || page.path}`, tone: "ok" })
+    await this.loadSource({ quiet: true })
+  }
+
+  resolveEditorPage(href) {
+    if (!href) return null
+    let raw = href.trim()
+    if (!raw || raw.startsWith("mailto:") || raw.startsWith("tel:") || raw.startsWith("javascript:")) return null
+    if (raw.startsWith("#xbolt-page:")) raw = raw.slice("#xbolt-page:".length)
+    else if (raw.startsWith("#")) return null
+    if (raw.startsWith("/") && !raw.includes("://") && !raw.includes(".html")) {
+      return this.pagesList().find((page) => page.path === raw) || null
+    }
+    let path = raw
+    try {
+      if (/^https?:\/\//i.test(raw) || raw.startsWith("//")) {
+        const url = new URL(raw, window.location.origin)
+        path = url.pathname
+      }
+    } catch {
+      return null
+    }
+    path = path.split("?")[0].split("#")[0].replace(/^\.\//, "")
+    if (!path.startsWith("/")) path = `/${path}`
+    if (path.endsWith("/index.html") || path.endsWith("/index.htm")) path = path.replace(/\/index\.html?$/i, "") || "/"
+    if (/\.html?$/i.test(path)) path = path.replace(/\.html?$/i, "") || "/"
+    if (path !== "/" && path.endsWith("/")) path = path.slice(0, -1)
+    if (path === "/index") path = "/"
+    return this.pagesList().find((page) => page.path === path) || null
   }
 
   reloadPreview() {
     return this.refreshLive({ reason: "refresh", status: "Ready" })
   }
 
-  bindEditing(doc) {
-    this.clickHandler = (event) => {
-      if (event.target.closest?.("#xbolt-live-editor-ignore")) return
-
-      // Let the second click of a double-click pass through to dblclick.
-      const now = Date.now()
-      const isDouble = now - this.lastClickAt < 320
-      this.lastClickAt = now
-
-      const link = event.target.closest?.("a[href], a[data-xbolt-page]")
-      if (link && isDouble) {
-        event.preventDefault()
-        event.stopPropagation()
-        this.handlePageNavigation(link)
-        return
-      }
-
-      const editable = event.target.closest?.("[data-xbolt-editable]")
-      const item = event.target.closest?.("[data-xbolt-item]")
-
-      if (editable) {
-        event.preventDefault()
-        event.stopPropagation()
-        this.openEditor(editable, item)
-        return
-      }
-
-      if (item) {
-        event.preventDefault()
-        event.stopPropagation()
-        this.selectCard(item)
-        return
-      }
-
-      if (link || event.target.closest?.("button")) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-    }
-
-    this.dblClickHandler = (event) => {
-      const link = event.target.closest?.("a[href], a[data-xbolt-page]")
-      if (!link) return
-      event.preventDefault()
-      event.stopPropagation()
-      this.handlePageNavigation(link)
-    }
-
-    this.keyHandler = (event) => {
-      if (event.key === "Escape") {
-        this.doneEditing()
-        this.hidePageMenu()
-      }
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
-        event.preventDefault()
-        this.saveNow()
-      }
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d" && this.cardTarget()) {
-        event.preventDefault()
-        this.duplicateCard()
-      }
-    }
-
-    doc.addEventListener("click", this.clickHandler, true)
-    doc.addEventListener("dblclick", this.dblClickHandler, true)
-    doc.addEventListener("keydown", this.keyHandler, true)
-  }
-
-  teardownFrameListeners() {
-    const doc = this.frameDoc()
-    if (!doc) return
-    if (this.clickHandler) doc.removeEventListener("click", this.clickHandler, true)
-    if (this.dblClickHandler) doc.removeEventListener("dblclick", this.dblClickHandler, true)
-    if (this.keyHandler) doc.removeEventListener("keydown", this.keyHandler, true)
-    this.clickHandler = null
-    this.dblClickHandler = null
-    this.keyHandler = null
-  }
-
-  handlePageNavigation(link) {
-    const page =
-      this.resolveEditorPage(link.getAttribute("data-xbolt-page")) ||
-      this.resolveEditorPage(link.getAttribute("href"))
-
-    if (!page) {
-      this.setStatus("No matching page", "error")
-      return
-    }
-
-    this.openEditorPage(page)
-  }
-
-  openEditorPage(page) {
-    if (!page?.path) return
-    this.hidePageMenu()
-    this.staticPathValue = page.path
-    this.previewUrlValue = this.previewUrlFor(page.path)
-
-    try {
-      window.history.replaceState({}, "", page.url)
-    } catch {
-      // ignore
-    }
-
-    if (this.hasPageSwitcherTarget) {
-      this.pageSwitcherTarget.value = page.url
-    }
-
-    document.querySelectorAll(".xb-page-link").forEach((node) => {
-      node.classList.toggle("is-current", node.getAttribute("href") === page.url)
-    })
-
-    this.setStatus(`Opening ${page.title || page.path}…`, "saving")
-    this.refreshLive({ reason: "navigate", status: `Editing ${page.title || page.path}`, tone: "ok" })
-  }
-
-  resolveEditorPage(href) {
-    if (!href) return null
-    let raw = href.trim()
-    if (!raw || raw.startsWith("mailto:") || raw.startsWith("tel:") || raw.startsWith("javascript:")) {
-      return null
-    }
-
-    if (raw.startsWith("#xbolt-page:")) {
-      raw = raw.slice("#xbolt-page:".length)
-    } else if (raw.startsWith("#")) {
-      return null
-    }
-
-    // data-xbolt-page values are already normalized paths.
-    if (raw.startsWith("/") && !raw.includes("://") && !raw.includes(".html")) {
-      return this.pagesList().find((page) => page.path === raw) || null
-    }
-
-    let path = raw
-    try {
-      if (/^https?:\/\//i.test(raw) || raw.startsWith("//")) {
-        const url = new URL(raw, window.location.origin)
-        const siteHost = (() => {
-          try {
-            return new URL(this.siteUrlValue).host
-          } catch {
-            return ""
-          }
-        })()
-        if (url.origin !== window.location.origin && url.host !== siteHost) return null
-        path = url.pathname + url.search
-      }
-    } catch {
-      return null
-    }
-
-    // Unwrap asset-proxy or preview URLs back to a site path.
-    const assetMatch = path.match(/\/dashboard\/website\/static\/assets\/(.+)$/i)
-    if (assetMatch) path = assetMatch[1]
-
-    const previewMatch = path.match(/[?&]path=([^&]+)/i)
-    if (path.includes("/dashboard/website/static/preview") && previewMatch) {
-      path = decodeURIComponent(previewMatch[1])
-    }
-
-    path = path.split("?")[0].split("#")[0]
-    path = path.replace(/^\.\//, "")
-    if (!path.startsWith("/")) path = `/${path}`
-    if (path.endsWith("/index.html") || path.endsWith("/index.htm")) {
-      path = path.replace(/\/index\.html?$/i, "") || "/"
-    }
-    if (/\.html?$/i.test(path)) path = path.replace(/\.html?$/i, "") || "/"
-    if (path !== "/" && path.endsWith("/")) path = path.slice(0, -1)
-    if (path === "/index") path = "/"
-
-    return this.pagesList().find((page) => page.path === path) || null
-  }
-
-  bindSortables(doc) {
-    if (!window.Sortable) return
-
-    doc.querySelectorAll("[data-xbolt-items]").forEach((container) => {
-      this.sortables.push(
-        window.Sortable.create(container, {
-          draggable: "[data-xbolt-item]",
-          ghostClass: "xbolt-drag-ghost",
-          animation: 160,
-          handle: "[data-xbolt-item]",
-          filter: "[data-xbolt-editable]",
-          preventOnFilter: false,
-          delay: 120,
-          delayOnTouchOnly: true,
-          onEnd: (event) => {
-            if (event.oldIndex === event.newIndex) return
-            if (String(container.dataset.xboltContainerIndex) === "dynamic-reviews") {
-              this.setStatus("Review reorder not supported", "error")
-              this.refreshLive({ reason: "reorder-rollback" })
-              return
-            }
-            this.saveReorder({
-              containerIndex: Number(container.dataset.xboltContainerIndex || 0),
-              oldIndex: event.oldIndex,
-              newIndex: event.newIndex
-            })
-          }
-        })
-      )
-    })
-  }
-
-  destroySortables() {
-    this.sortables.forEach((sortable) => sortable.destroy())
-    this.sortables = []
-  }
-
-  openInspector() {
-    this.bubbleTarget?.classList.add("is-open")
-  }
-
-  closeInspector() {
-    this.bubbleTarget?.classList.remove("is-open")
-  }
-
-  openEditor(element, item = null) {
-    const raw = element.dataset.xboltTextIndex
-    if (raw == null || raw === "") return
-
-    this.clearHighlights()
-    this.selectedEl = element
-    this.selectedItem = item || element.closest?.("[data-xbolt-item]") || null
-    element.setAttribute("data-xbolt-selected", "true")
-    this.selectedItem?.setAttribute("data-xbolt-item-selected", "true")
-
-    this.selected = {
-      kind: "text",
-      textIndex: /^\d+$/.test(String(raw)) ? Number(raw) : raw
-    }
-
-    if (this.hasBubbleLabelTarget) {
-      this.bubbleLabelTarget.textContent = this.labelFor(this.selected.textIndex)
-    }
-    if (this.hasBubbleInputTarget) {
-      this.bubbleInputTarget.value = element.textContent || ""
-      this.bubbleInputTarget.disabled = false
-    }
-    this.toggleCardHint(Boolean(this.selectedItem))
-    this.openInspector()
-    this.bubbleInputTarget?.focus()
-    this.bubbleInputTarget?.select()
-    this.setStatus("Editing")
-  }
-
-  selectCard(item) {
-    this.clearHighlights()
-    this.selectedEl = item
-    this.selectedItem = item
-    item.setAttribute("data-xbolt-item-selected", "true")
-    this.selected = {
-      kind: "card",
-      containerIndex: item.closest("[data-xbolt-items]")?.dataset?.xboltContainerIndex,
-      itemIndex: item.dataset.xboltItemIndex
-    }
-
-    if (this.hasBubbleLabelTarget) {
-      this.bubbleLabelTarget.textContent = `Card ${(Number(item.dataset.xboltItemIndex) || 0) + 1}`
-    }
-    if (this.hasBubbleInputTarget) {
-      this.bubbleInputTarget.value = (item.textContent || "").replace(/\s+/g, " ").trim().slice(0, 280)
-      this.bubbleInputTarget.disabled = true
-    }
-    this.toggleCardHint(true)
-    this.openInspector()
-    this.setStatus("Card selected")
-  }
-
-  toggleCardHint(show) {
-    if (!this.hasCardHintTarget) return
-    if (show) this.cardHintTarget.removeAttribute("hidden")
-    else this.cardHintTarget.setAttribute("hidden", "")
-  }
-
-  clearHighlights() {
-    const doc = this.frameDoc()
-    doc?.querySelectorAll("[data-xbolt-selected], [data-xbolt-item-selected]").forEach((node) => {
-      node.removeAttribute("data-xbolt-selected")
-      node.removeAttribute("data-xbolt-item-selected")
-    })
-  }
-
-  clearSelection({ keepStatus = false } = {}) {
-    this.clearHighlights()
-    this.selectedEl = null
-    this.selectedItem = null
-    this.selected = null
-    this.closeInspector()
-    if (!keepStatus) this.setStatus("Ready")
-  }
-
-  onBubbleInput() {
-    if (!this.selectedEl || this.selected?.kind !== "text") return
-    this.selectedEl.textContent = this.bubbleInputTarget.value
-    this.scheduleSave()
-  }
-
-  doneEditing() {
-    const hadTextEdit = this.selected?.kind === "text"
-    this.flushSave().finally(() => {
-      this.clearSelection()
-      this.setStatus(hadTextEdit ? "Saved" : "Ready", hadTextEdit ? "ok" : "")
-    })
-  }
-
-  saveNow() {
-    this.flushSave({ keepOpen: true })
-  }
-
-  scheduleSave() {
-    this.setStatus("Saving…", "saving")
-    window.clearTimeout(this.saveTimer)
-    this.saveTimer = window.setTimeout(() => this.flushSave({ keepOpen: true }), 450)
-  }
-
-  flushSave({ keepOpen = false } = {}) {
-    window.clearTimeout(this.saveTimer)
-    if (!this.selected || this.selected.kind !== "text") return Promise.resolve()
-
-    const value = this.bubbleInputTarget?.value ?? this.selectedEl?.textContent ?? ""
-    this.setStatus("Saving…", "saving")
-
-    return this.patch({
-      path: this.staticPathValue,
-      text_index: this.selected.textIndex,
-      value
-    })
-      .then(() => {
-        this.setStatus("Saved", "ok")
-        if (!keepOpen) this.clearSelection({ keepStatus: true })
-      })
-      .catch((error) => this.setStatus(error.message || "Save failed", "error"))
-  }
-
-  saveReorder({ containerIndex, oldIndex, newIndex }) {
-    this.setStatus("Saving…", "saving")
-    return this.patch({
-      path: this.staticPathValue,
-      reorder: {
-        container_index: containerIndex,
-        old_index: oldIndex,
-        new_index: newIndex
-      }
-    })
-      .then(() => this.setStatus("Saved", "ok"))
-      .catch((error) => {
-        this.setStatus(error.message || "Save failed", "error")
-        this.refreshLive({ reason: "reorder-error" })
-      })
-  }
-
-  cardTarget() {
-    return this.selectedItem || this.selectedEl?.closest?.("[data-xbolt-item]") || null
-  }
-
-  cardCoords(item = this.cardTarget()) {
-    if (!item) return null
-    const container = item.closest("[data-xbolt-items]")
-    if (!container) return null
-    return {
-      containerIndex: container.dataset.xboltContainerIndex,
-      itemIndex: item.dataset.xboltItemIndex,
-      container,
-      item
-    }
-  }
-
-  async duplicateCard() {
-    const coords = this.cardCoords()
-    if (!coords) {
-      this.setStatus("Select a card first", "error")
-      return
-    }
-
-    const { item, container } = coords
-    const isDynamic = String(coords.containerIndex) === "dynamic-reviews"
-    const clone = item.cloneNode(true)
-    clone.removeAttribute("data-xbolt-item-selected")
-    clone.querySelectorAll("[data-xbolt-selected]").forEach((node) => node.removeAttribute("data-xbolt-selected"))
-    // Cloned static text must not keep the source indexes (would overwrite originals).
-    if (!isDynamic) this.detachEditableIndexes(clone)
-    this.annotateCopyLabel(clone)
-    item.after(clone)
-    this.reindexItems(container)
-    if (isDynamic) this.reindexDynamicReviews(container)
-    this.destroySortables()
-    this.bindSortables(this.frameDoc())
-    this.selectCard(clone)
-
-    this.setStatus("Duplicating…", "saving")
-    try {
-      await this.patch({
-        path: this.staticPathValue,
-        duplicate: {
-          container_index: coords.containerIndex,
-          item_index: coords.itemIndex
-        }
-      })
-      // Keep the optimistic card — never remount/refresh (JS-rendered pages lose cards past the first batch).
-      this.setStatus("Card duplicated", "ok")
-    } catch (error) {
-      clone.remove()
-      this.reindexItems(container)
-      if (isDynamic) this.reindexDynamicReviews(container)
-      this.destroySortables()
-      this.bindSortables(this.frameDoc())
-      this.setStatus(error.message || "Duplicate failed", "error")
-    }
-  }
-
-  async deleteCard() {
-    const coords = this.cardCoords()
-    if (!coords) {
-      this.setStatus("Select a card first", "error")
-      return
-    }
-    if (!window.confirm("Delete this card from the live site?")) return
-
-    const { item, container } = coords
-    const isDynamic = String(coords.containerIndex) === "dynamic-reviews"
-    const placeholder = document.createComment("xbolt-deleted-card")
-    item.after(placeholder)
-    item.remove()
-    this.reindexItems(container)
-    if (isDynamic) this.reindexDynamicReviews(container)
-    this.clearSelection({ keepStatus: true })
-    this.destroySortables()
-    this.bindSortables(this.frameDoc())
-
-    this.setStatus("Deleting…", "saving")
-    try {
-      await this.patch({
-        path: this.staticPathValue,
-        delete_item: {
-          container_index: coords.containerIndex,
-          item_index: coords.itemIndex
-        }
-      })
-      this.setStatus("Card deleted", "ok")
-    } catch (error) {
-      placeholder.replaceWith(item)
-      this.reindexItems(container)
-      if (isDynamic) this.reindexDynamicReviews(container)
-      this.destroySortables()
-      this.bindSortables(this.frameDoc())
-      this.setStatus(error.message || "Delete failed", "error")
-    }
-  }
-
-  reindexItems(container) {
-    if (!container) return
-    Array.from(container.children)
-      .filter((child) => child.hasAttribute?.("data-xbolt-item"))
-      .forEach((child, index) => {
-        child.setAttribute("data-xbolt-item-index", String(index))
-      })
-  }
-
-  reindexDynamicReviews(container) {
-    if (!container) return
-    Array.from(container.children)
-      .filter((child) => child.hasAttribute?.("data-xbolt-item"))
-      .forEach((card, index) => {
-        card.setAttribute("data-xbolt-item-index", String(index))
-        // Prefer name text (letter-spacing), not the avatar initial circle.
-        const name =
-          card.querySelector("div[style*='letter-spacing:0.5px']") ||
-          card.querySelector("div[style*='letter-spacing: 0.5px']")
-        const service = card.querySelector("div[style*='text-transform:uppercase']")
-        const body = card.querySelector("p.review-text, p")
-        ;[
-          [name, "name"],
-          [service, "service"],
-          [body, "reviewText"]
-        ].forEach(([node, field]) => {
-          if (!node) return
-          node.setAttribute("data-xbolt-editable", "true")
-          node.setAttribute("data-xbolt-text-index", `review:${index}:${field}`)
-        })
-      })
-  }
-
-  annotateCopyLabel(root) {
-    const heading =
-      root.querySelector?.(".review-name") ||
-      root.querySelector?.("div[style*='letter-spacing:0.5px']") ||
-      root.querySelector?.("div[style*='letter-spacing: 0.5px']") ||
-      root.querySelector?.("h1,h2,h3,h4,h5,h6") ||
-      root.querySelector?.("p,span,strong")
-    if (!heading) return
-    const text = (heading.textContent || "").trim()
-    if (!text || text.endsWith("(copy)")) return
-    heading.textContent = `${text} (copy)`
-    const avatar = root.querySelector?.(".review-avatar")
-    if (avatar) avatar.textContent = (heading.textContent || "").trim().charAt(0).toUpperCase()
-  }
-
-  detachEditableIndexes(root) {
-    root.querySelectorAll?.("[data-xbolt-editable]").forEach((el) => {
-      el.removeAttribute("data-xbolt-text-index")
-      el.removeAttribute("data-xbolt-editable")
-      el.removeAttribute("data-xbolt-selected")
-    })
-  }
-
-  /**
-   * Soft-reload the preview iframe via src navigation.
-   * This preserves CSP + allows external CDN/font/script requests.
-   * Never use document.write — that blanks the page and blocks remote assets.
-   */
-  refreshLive({
-    reason = "",
-    selectCardIndex = null,
-    containerIndex = null,
-    status = "Ready",
-    tone = ""
-  } = {}) {
+  refreshLive({ reason = "", reselectPath = null, status = "Ready", tone = "" } = {}) {
     if (!this.hasFrameTarget) return Promise.resolve()
-
     const win = this.frameWin()
-    const scrollX = win?.scrollX || 0
-    const scrollY = win?.scrollY || 0
     const url = `${this.previewUrlFor(this.staticPathValue)}&t=${Date.now()}`
-
     this.pendingRefresh = {
       reason,
-      selectCardIndex,
-      containerIndex,
-      scrollX,
-      scrollY,
+      reselectPath,
+      scrollX: win?.scrollX || 0,
+      scrollY: win?.scrollY || 0,
       status,
-      tone
+      tone,
+      keepSelection: !!reselectPath
     }
-
     this.setStatus(reason === "refresh" ? "Refreshing…" : "Updating…", "saving")
-
     return new Promise((resolve) => {
       this.refreshResolver = resolve
       this.frameTarget.src = url
-
-      // Safety timeout so callers don't hang if load never fires.
       window.setTimeout(() => {
         if (this.refreshResolver === resolve) {
           this.refreshResolver = null
           resolve()
         }
       }, 12000)
+    }).then(() => this.loadSource({ quiet: true }))
+  }
+
+  // --- Undo ----------------------------------------------------------------
+
+  async undo() {
+    this.setStatus("Undoing…", "saving")
+    try {
+      const response = await fetch(this.staticUndoUrlValue, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-CSRF-Token": this.csrfToken()
+        },
+        body: JSON.stringify({ path: this.staticPathValue })
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.message || "Undo failed")
+      this.setHistoryFlags(payload)
+      await this.refreshLive({ reason: "undo", status: "Undone", tone: "ok" })
+    } catch (error) {
+      this.setStatus(error.message || "Undo failed", "error")
+    }
+  }
+
+  async redo() {
+    if (!this.staticRedoUrlValue) return
+    this.setStatus("Redoing…", "saving")
+    try {
+      const response = await fetch(this.staticRedoUrlValue, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-CSRF-Token": this.csrfToken()
+        },
+        body: JSON.stringify({ path: this.staticPathValue })
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.message || "Redo failed")
+      this.setHistoryFlags(payload)
+      await this.refreshLive({ reason: "redo", status: "Redone", tone: "ok" })
+    } catch (error) {
+      this.setStatus(error.message || "Redo failed", "error")
+    }
+  }
+
+  setCanUndo(value) {
+    this.setHistoryFlags({ can_undo: value, can_redo: this.canRedo })
+  }
+
+  setHistoryFlags(payload = {}) {
+    this.canUndo = !!payload.can_undo
+    this.canRedo = !!payload.can_redo
+    if (this.hasUndoBtnTarget) this.undoBtnTarget.disabled = !this.canUndo
+    if (this.hasRedoBtnTarget) this.redoBtnTarget.disabled = !this.canRedo
+  }
+
+  // --- Code / Monaco -------------------------------------------------------
+
+  toggleCode() {
+    if (!this.hasCodeDrawerTarget) return
+    const open = !this.codeDrawerTarget.classList.contains("is-open")
+    this.codeDrawerTarget.classList.toggle("is-open", open)
+    this.codeBtnTarget?.classList.toggle("is-active", open)
+    if (open) {
+      this.loadSource()
+        .then(() => this.ensureCodeEditor())
+        .then(() => this.renderCodeContent())
+        .then(() => this.layoutCodeEditor())
+        .catch((error) => this.setStatus(error.message || "Code editor failed", "error"))
+    }
+  }
+
+  switchCodeTab(event) {
+    const tab = event.currentTarget.getAttribute("data-code-tab")
+    if (!tab || tab === this.codeTab) return
+    this.applyCodeTab(tab)
+  }
+
+  applyCodeTab(tab) {
+    this.codeTab = tab
+    this.element.querySelectorAll(".xb-code-tab").forEach((node) => {
+      node.classList.toggle("is-active", node.getAttribute("data-code-tab") === tab)
+    })
+    this.syncCodeSourcesVisibility()
+    this.renderCodeContent()
+    this.layoutCodeEditor()
+  }
+
+  syncCodeSourcesVisibility() {
+    const showSources = this.codeTab === "css"
+    if (this.hasCssSourcesTarget) this.cssSourcesTarget.hidden = !showSources
+    if (this.hasCodeBodyTarget) this.codeBodyTarget.classList.toggle("has-sources", showSources)
+  }
+
+  async loadSource({ quiet = false } = {}) {
+    if (!this.staticSourceUrlValue) return
+    if (!quiet) this.setStatus("Loading source…", "saving")
+    try {
+      const url = `${this.staticSourceUrlValue}?path=${encodeURIComponent(this.staticPathValue)}&t=${Date.now()}`
+      const response = await fetch(url, {
+        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+        credentials: "same-origin",
+        cache: "no-store"
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.message || "Could not load source")
+      this.sourcePayload = payload
+      this.setHistoryFlags(payload)
+      this.renderCssSources()
+      if (this.codeDrawerTarget?.classList.contains("is-open")) {
+        await this.ensureCodeEditor()
+        this.renderCodeContent()
+        this.layoutCodeEditor()
+      }
+      if (!quiet) this.setStatus("Ready")
+    } catch (error) {
+      if (!quiet) this.setStatus(error.message || "Source load failed", "error")
+    }
+  }
+
+  reloadSource() {
+    this.codeDirty = false
+    return this.loadSource()
+  }
+
+  renderCssSources() {
+    if (!this.hasCssSourcesTarget) return
+    const sources = this.sourcePayload?.css_sources || []
+    if (!this.activeCssSourceId && sources[0]) this.activeCssSourceId = sources[0].id
+    this.cssSourcesTarget.innerHTML = sources
+      .map(
+        (source) =>
+          `<button type="button" class="xb-code-source ${source.id === this.activeCssSourceId ? "is-active" : ""}" data-source-id="${source.id}">${this.escapeHtml(source.label)}</button>`
+      )
+      .join("")
+    this.cssSourcesTarget.querySelectorAll("[data-source-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.activeCssSourceId = btn.getAttribute("data-source-id")
+        this.renderCssSources()
+        this.renderCodeContent()
+      })
     })
   }
 
-  async copyHtml() {
-    const node = this.cardTarget() || this.selectedEl
-    if (!node) {
-      this.setStatus("Select something first", "error")
-      return
-    }
+  escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+  }
 
-    const clone = node.cloneNode(true)
-    clone.querySelectorAll("*").forEach((el) => this.stripEditorAttrs(el))
-    this.stripEditorAttrs(clone)
+  onCodeFallbackInput() {
+    this.codeDirty = true
+  }
 
+  async ensureCodeEditor() {
+    if (this.monacoReady || this.useCodeFallback) return
     try {
-      await navigator.clipboard.writeText(clone.outerHTML)
-      this.setStatus("HTML copied", "ok")
-    } catch {
-      this.setStatus("Could not copy HTML", "error")
+      await this.ensureMonaco()
+      this.monacoReady = true
+      this.useCodeFallback = false
+      if (this.hasMonacoHostTarget) this.monacoHostTarget.hidden = false
+      if (this.hasCodeFallbackTarget) this.codeFallbackTarget.hidden = true
+    } catch (error) {
+      console.warn("Monaco unavailable, using fallback editor", error)
+      this.useCodeFallback = true
+      if (this.hasMonacoHostTarget) this.monacoHostTarget.hidden = true
+      if (this.hasCodeFallbackTarget) this.codeFallbackTarget.hidden = false
     }
   }
 
-  async copyCss() {
-    const node = this.cardTarget() || this.selectedEl
-    const win = this.frameWin()
-    if (!node || !win) {
-      this.setStatus("Select something first", "error")
-      return
-    }
-
-    const computed = win.getComputedStyle(node)
-    const props = [
-      "display", "position", "width", "max-width", "height", "margin", "padding",
-      "background", "background-color", "color", "border", "border-radius",
-      "box-shadow", "font-family", "font-size", "font-weight", "line-height",
-      "letter-spacing", "text-align", "gap", "grid-template-columns", "flex-direction"
-    ]
-
-    const className = (node.className && typeof node.className === "string" && node.className.trim())
-      ? `.${node.className.trim().split(/\s+/).slice(0, 3).join(".")}`
-      : node.tagName.toLowerCase()
-
-    const body = props
-      .map((prop) => {
-        const value = computed.getPropertyValue(prop)
-        return value && value !== "none" && value !== "normal" && value !== "auto" && value !== "0px"
-          ? `  ${prop}: ${value};`
-          : null
-      })
-      .filter(Boolean)
-      .join("\n")
-
-    try {
-      await navigator.clipboard.writeText(`${className} {\n${body}\n}`)
-      this.setStatus("CSS copied", "ok")
-    } catch {
-      this.setStatus("Could not copy CSS", "error")
-    }
+  ensureMonaco() {
+    if (this.monacoEditor) return Promise.resolve()
+    return new Promise((resolve, reject) => {
+      if (!window.require) {
+        reject(new Error("Monaco loader missing"))
+        return
+      }
+      const timer = window.setTimeout(() => reject(new Error("Monaco load timed out")), 8000)
+      window.MonacoEnvironment = {
+        getWorker() {
+          return {
+            postMessage() {},
+            addEventListener() {},
+            removeEventListener() {},
+            terminate() {}
+          }
+        }
+      }
+      window.require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs" } })
+      window.require(
+        ["vs/editor/editor.main"],
+        () => {
+          window.clearTimeout(timer)
+          this.monaco = window.monaco
+          this.monacoEditor = this.monaco.editor.create(this.monacoHostTarget, {
+            value: "",
+            language: "html",
+            theme: "vs-dark",
+            automaticLayout: true,
+            minimap: { enabled: false },
+            fontSize: 13,
+            wordWrap: "on",
+            scrollBeyondLastLine: false
+          })
+          this.monacoEditor.onDidChangeModelContent(() => {
+            this.codeDirty = true
+          })
+          resolve()
+        },
+        (err) => {
+          window.clearTimeout(timer)
+          reject(err || new Error("Monaco failed to load"))
+        }
+      )
+    })
   }
 
-  stripEditorAttrs(el) {
-    ;[
-      "data-xbolt-editable",
-      "data-xbolt-text-index",
-      "data-xbolt-selected",
-      "data-xbolt-item",
-      "data-xbolt-item-index",
-      "data-xbolt-item-selected",
-      "data-xbolt-items",
-      "data-xbolt-container-index",
-      "data-xbolt-page",
-      "draggable"
-    ].forEach((attr) => el.removeAttribute?.(attr))
+  currentCodeValue() {
+    if (this.useCodeFallback && this.hasCodeFallbackTarget) return this.codeFallbackTarget.value
+    if (this.monacoEditor) return this.monacoEditor.getValue()
+    return ""
+  }
+
+  renderCodeContent() {
+    if (!this.sourcePayload) return
+    this.syncCodeSourcesVisibility()
+    let value = ""
+    if (this.codeTab === "html") {
+      value = this.sourcePayload.html || ""
+      if (this.monacoEditor) {
+        this.monaco.editor.setModelLanguage(this.monacoEditor.getModel(), "html")
+        this.monacoEditor.setValue(value)
+      }
+    } else {
+      const source =
+        (this.sourcePayload.css_sources || []).find((entry) => entry.id === this.activeCssSourceId) ||
+        (this.sourcePayload.css_sources || [])[0]
+      this.activeCssSourceId = source?.id || null
+      value = source?.content || "/* No local CSS sources on this page */\n"
+      if (this.monacoEditor) {
+        this.monaco.editor.setModelLanguage(this.monacoEditor.getModel(), "css")
+        this.monacoEditor.setValue(value)
+      }
+    }
+    if (this.useCodeFallback && this.hasCodeFallbackTarget) {
+      this.codeFallbackTarget.value = value
+    }
+    this.codeDirty = false
+  }
+
+  layoutCodeEditor() {
+    window.setTimeout(() => {
+      try {
+        this.monacoEditor?.layout()
+      } catch {
+        /* ignore */
+      }
+    }, 220)
+  }
+
+  async openCodeFocused(path) {
+    if (!this.codeDrawerTarget.classList.contains("is-open")) {
+      this.codeDrawerTarget.classList.add("is-open")
+      this.codeBtnTarget?.classList.add("is-active")
+    }
+    await this.loadSource()
+    await this.ensureCodeEditor()
+    this.applyCodeTab("html")
+    const html = this.selected?.html
+    if (html && this.monacoEditor && !this.useCodeFallback) {
+      const full = this.monacoEditor.getValue()
+      const snippet = html.slice(0, Math.min(html.length, 120))
+      const index = full.indexOf(snippet)
+      if (index >= 0) {
+        const start = this.monacoEditor.getModel().getPositionAt(index)
+        this.monacoEditor.revealPositionInCenter(start)
+        this.monacoEditor.setPosition(start)
+      }
+    }
+    this.setStatus(path ? `Code · ${path}` : "Code", "ok")
+  }
+
+  async applyCode() {
+    await this.ensureCodeEditor()
+    const value = this.currentCodeValue()
+    if (!value) {
+      this.setStatus("Nothing to apply", "error")
+      return
+    }
+    this.setStatus("Applying code…", "saving")
+    try {
+      if (this.codeTab === "html") {
+        await this.patch({ op: "save_html", path: this.staticPathValue, html: value })
+      } else {
+        await this.patch({
+          op: "save_css",
+          path: this.staticPathValue,
+          source_id: this.activeCssSourceId,
+          css: value
+        })
+      }
+      this.codeDirty = false
+      await this.refreshLive({ reason: "code", status: "Code applied", tone: "ok" })
+    } catch (error) {
+      this.setStatus(error.message || "Apply failed", "error")
+    }
   }
 
   patch(body) {
@@ -793,15 +974,21 @@ export default class extends Controller {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-        "X-CSRF-Token": this.csrfToken()
+        "X-CSRF-Token": this.csrfToken(),
+        "X-Requested-With": "XMLHttpRequest"
       },
       body: JSON.stringify(body)
-    }).then((response) =>
-      response.json().then((payload) => {
-        if (!response.ok) throw new Error(payload.message || "Save failed")
-        return payload
-      })
-    )
+    }).then(async (response) => {
+      let payload = {}
+      try {
+        payload = await response.json()
+      } catch {
+        payload = {}
+      }
+      if (!response.ok) throw new Error(payload.message || `Save failed (${response.status})`)
+      this.setHistoryFlags(payload)
+      return payload
+    })
   }
 
   setStatus(message, tone = "") {
@@ -816,13 +1003,5 @@ export default class extends Controller {
       }
       this.statusToastTarget.title = message
     }
-  }
-
-  labelFor(textIndex) {
-    if (typeof textIndex === "string" && textIndex.startsWith("review:")) {
-      const parts = textIndex.split(":")
-      return `Review ${Number(parts[1]) + 1} · ${parts[2] || "text"}`
-    }
-    return `Text ${Number(textIndex) + 1}`
   }
 }

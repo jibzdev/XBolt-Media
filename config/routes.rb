@@ -75,6 +75,10 @@ Rails.application.routes.draw do
     get '/website', to: 'tenant_site_builder#index', as: :website
     post '/website/publish', to: 'tenant_site_builder#publish', as: :publish_website
     patch '/website/static', to: 'tenant_site_builder#static_update', as: :static_website_update
+    get '/website/static/source', to: 'tenant_site_builder#static_source', as: :static_website_source
+    post '/website/static/undo', to: 'tenant_site_builder#static_undo', as: :static_website_undo
+    post '/website/static/redo', to: 'tenant_site_builder#static_redo', as: :static_website_redo
+    post '/website/static/upload_image', to: 'tenant_site_builder#static_upload_image', as: :static_website_upload_image
     get '/website/static/preview', to: 'tenant_site_builder#static_preview', as: :static_website_preview
     get '/website/static/assets/*path', to: 'tenant_site_builder#static_asset', as: :static_website_asset
     resources :website_pages, path: 'website/pages', controller: 'tenant_site_builder', except: [:index, :show] do

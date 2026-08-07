@@ -14,17 +14,22 @@ function resetConfirmModal() {
   dialog?.classList.remove("scale-100", "opacity-100");
 }
 
-function showConfirmModal(message) {
+function showConfirmModal(message, options = {}) {
   return new Promise((resolve) => {
     const modal = document.getElementById("confirm-modal");
     const backdrop = document.getElementById("confirm-backdrop");
     const dialog = document.getElementById("confirm-dialog");
     const messageEl = document.getElementById("confirm-message");
+    const titleEl = document.getElementById("confirm-title");
     const cancelBtn = document.getElementById("confirm-cancel");
     const acceptBtn = document.getElementById("confirm-accept");
 
     if (!modal) { resolve(confirm(message)); return; }
 
+    if (titleEl && options.title) titleEl.textContent = options.title;
+    else if (titleEl) titleEl.textContent = "Are you sure?";
+    if (acceptBtn && options.confirmLabel) acceptBtn.textContent = options.confirmLabel;
+    else if (acceptBtn) acceptBtn.textContent = "Confirm";
     messageEl.textContent = message;
     modal.classList.remove("hidden", "pointer-events-none");
     modal.classList.add("pointer-events-auto");
@@ -78,3 +83,5 @@ if (T && typeof T.setConfirmMethod === "function") {
 } else if (T && T.config && T.config.forms) {
   T.config.forms.confirm = showConfirmModal;
 }
+
+window.showConfirmModal = showConfirmModal;
